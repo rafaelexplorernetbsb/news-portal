@@ -6,8 +6,22 @@ Este é o frontend do News Portal, construído com [Next.js](https://nextjs.org)
 
 ### Pré-requisitos
 - Node.js 18+ 
+- pnpm (gerenciador de pacotes)
 - Docker e Docker Compose (para o backend)
 - Git
+
+### Instalação do pnpm
+Se você não tem o pnpm instalado:
+```bash
+# Via npm
+npm install -g pnpm
+
+# Via curl (Linux/macOS)
+curl -fsSL https://get.pnpm.io/install.sh | sh -
+
+# Via PowerShell (Windows)
+iwr https://get.pnpm.io/install.ps1 -useb | iex
+```
 
 ### Instalação
 
@@ -25,7 +39,7 @@ Este é o frontend do News Portal, construído com [Next.js](https://nextjs.org)
 3. **Instale as dependências do frontend:**
    ```bash
    cd frontend
-   npm install
+   pnpm install
    ```
 
 4. **Configure as variáveis de ambiente (opcional):**
@@ -36,8 +50,21 @@ Este é o frontend do News Portal, construído com [Next.js](https://nextjs.org)
 
 5. **Execute o servidor de desenvolvimento:**
    ```bash
-   npm run dev
+   pnpm dev
    ```
+
+### Comandos Disponíveis
+```bash
+# Desenvolvimento
+pnpm dev          # Inicia o servidor de desenvolvimento
+pnpm build        # Gera build de produção
+pnpm start        # Inicia o servidor de produção
+
+# Gerenciamento de dependências
+pnpm install      # Instala dependências
+pnpm add <pkg>    # Adiciona nova dependência
+pnpm remove <pkg> # Remove dependência
+```
 
 6. **Acesse a aplicação:**
    - Frontend: [http://localhost:3000](http://localhost:3000)
