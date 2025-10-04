@@ -1,0 +1,278 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import { Noticia, getNoticiaBySlug, getImageUrl, formatarData, capitalizarCategoria, getUltimasNoticias, getAutorNome } from '@/lib/directus';
+import Image from 'next/image';
+import Link from 'next/link';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import NoticiaCard from '@/components/NoticiaCard';
+import { FaFacebook, FaWhatsapp } from 'react-icons/fa';
+import { FaXTwitter } from 'react-icons/fa6';
+
+const API_URL = 'http://localhost:8055';
+const API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjM5ZjZjMDVlLWNmZmMtNGNlYi04NmU0LWJmYmM0N2VmY2ZkZSIsInJvbGUiOiI3MWYxYzIyZi1jOGMyLTRjYjctOGMzNS1jNDA1MDY4M2UwYmEiLCJhcHBfYWNjZXNzIjp0cnVlLCJhZG1pbl9hY2Nlc3MiOnRydWUsImlhdCI6MTc1OTMyNzQ4NCwiZXhwIjoxNzkwODYzNDg0LCJpc3MiOiJkaXJlY3R1cyJ9.-Vs4DXspNGEjFZZGM6YmDmyh43hcFuzgaLVMCFILScU';
+
+export default function NoticiaPage() {
+  const params = useParams();
+  const slug = params.slug as string;
+
+  const [noticia, setNoticia] = useState<Noticia | null>(null);
+  const [ultimasNoticias, setUltimasNoticias] = useState<Noticia[]>([]);
+  const [noticiasRelacionadas, setNoticiasRelacionadas] = useState<Noticia[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadNoticia() {
+      try {
+        setLoading(true);
+        const data = await getNoticiaBySlug(slug);
+        console.log("DEBUG noticia", data);
+        setNoticia(data);
+
+        // Carregar últimas notícias (excluindo a atual)
+        const ultimas = await getUltimasNoticias(6);
+        setUltimasNoticias(ultimas.filter(n => n.slug !== slug).slice(0, 5));
+
+        // Carregar notícias relacionadas (mesma categoria)
+        if (data.categoria) {
+          const response = await fetch(
+            `${API_URL}/items/noticias?filter[categoria][_eq]=${data.categoria}&filter[slug][_neq]=${slug}&filter[status][_eq]=published&sort=-data_publicacao&fields=*,imagem.*,autor.*&limit=6`,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${API_TOKEN}`,
+              },
+            }
+          );
+          const relacionadas = await response.json();
+          setNoticiasRelacionadas(relacionadas.data || []);
+        }
+      } catch (err) {
+        console.error('Erro ao carregar notícia:', err);
+        setError('Erro ao carregar notícia. Tente novamente mais tarde.');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (slug) {
+      loadNoticia();
+    }
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center py-32">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600"></div>
+            <p className="mt-4 text-gray-600 text-lg font-medium">Carregando notícia...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !noticia) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <main className="container mx-auto px-4 py-8">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-xl">
+            {error || 'Notícia não encontrada'}
+          </div>
+          <Link
+            href="/"
+            className="inline-block mt-6 text-blue-600 hover:text-blue-800 font-medium"
+          >
+            ← Voltar para Home
+          </Link>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  const imagemUrl = getImageUrl(noticia.imagem);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+
+      {/* Breadcrumb */}
+      <div className="bg-white border-b">
+        <div className="container mx-auto px-4 py-3">
+          <nav className="flex items-center gap-2 text-sm text-gray-600">
+            <Link href="/" className="hover:text-blue-600">Home</Link>
+            <span>/</span>
+            {noticia.categoria && (
+              <>
+                <Link href={`/categoria/${noticia.categoria}`} className="hover:text-blue-600">
+                  {capitalizarCategoria(noticia.categoria)}
+                </Link>
+                <span>/</span>
+              </>
+            )}
+            <span className="text-gray-900 font-medium truncate">{noticia.titulo}</span>
+          </nav>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Artigo Principal */}
+          <article className="lg:col-span-2">
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              {/* Imagem de Destaque */}
+              {noticia.imagem && (
+                <div className="relative w-full h-[500px]">
+                  <Image
+                    src={imagemUrl}
+                    alt={noticia.titulo}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                    priority
+                  />
+                </div>
+              )}
+
+              {/* Conteúdo */}
+              <div className="p-8 lg:p-12">
+                {/* Meta Info */}
+                <div className="flex flex-wrap gap-4 mb-6">
+                  {noticia.categoria && (
+                    <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold bg-blue-600 text-white uppercase tracking-wide">
+                      {capitalizarCategoria(noticia.categoria)}
+                    </span>
+                  )}
+                  {noticia.autor && (
+                    <span className="flex items-center gap-2 text-gray-600 font-medium">
+                      <span className="text-lg">👤</span>
+                      {getAutorNome(noticia.autor)}
+                    </span>
+                  )}
+                  {noticia.data_publicacao && (
+                    <span className="flex items-center gap-2 text-gray-600 font-medium">
+                      <span className="text-lg">📅</span>
+                      {formatarData(noticia.data_publicacao)}
+                    </span>
+                  )}
+                </div>
+
+                {/* Título */}
+                <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-8 leading-tight">
+                  {noticia.titulo}
+                </h1>
+
+                {/* Resumo */}
+                {noticia.resumo && (
+                  <div className="bg-blue-50 border-l-4 border-blue-600 p-6 rounded-r-xl mb-8">
+                    <p className="text-xl text-gray-800 italic leading-relaxed font-medium">
+                      {noticia.resumo}
+                    </p>
+                  </div>
+                )}
+
+                {/* Conteúdo HTML com tipografia melhorada */}
+                <div
+                  className="
+                    [&_p]:text-gray-900 [&_p]:text-lg [&_p]:leading-loose [&_p]:mb-6
+                    [&_h2]:text-gray-900 [&_h2]:text-3xl [&_h2]:font-bold [&_h2]:mt-12 [&_h2]:mb-5 [&_h2]:pb-2 [&_h2]:border-b-2 [&_h2]:border-gray-200
+                    [&_h3]:text-gray-900 [&_h3]:text-2xl [&_h3]:font-bold [&_h3]:mt-10 [&_h3]:mb-4
+                    [&_strong]:text-gray-900 [&_strong]:font-bold [&_strong]:text-lg
+                    [&_em]:text-gray-800 [&_em]:italic
+                    [&_a]:text-blue-600 [&_a]:font-semibold [&_a:hover]:text-blue-800 [&_a:hover]:underline
+                    [&_ul]:my-8 [&_ul]:space-y-3
+                    [&_ol]:my-8 [&_ol]:space-y-3
+                    [&_li]:text-gray-900 [&_li]:text-lg [&_li]:leading-loose [&_li]:pl-2
+                    [&_li::marker]:text-blue-600 [&_li::marker]:font-bold
+                    [&_img]:rounded-2xl [&_img]:shadow-2xl [&_img]:my-10
+                    [&_blockquote]:border-l-4 [&_blockquote]:border-blue-500 [&_blockquote]:pl-6 [&_blockquote]:py-4 [&_blockquote]:my-8 [&_blockquote]:italic [&_blockquote]:text-gray-800 [&_blockquote]:bg-gray-50 [&_blockquote]:rounded-r-xl"
+                  dangerouslySetInnerHTML={{ __html: noticia.conteudo }}
+                />
+
+                {/* Botão Compartilhar */}
+                <div className="bg-gray-50 p-6 rounded-xl mt-8">
+                  <p className="text-sm text-gray-600 mb-3 font-medium">Compartilhe esta notícia:</p>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        const url = window.location.href;
+                        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400');
+                      }}
+                      className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
+                    >
+                      <FaFacebook className="text-lg" />
+                      Facebook
+                    </button>
+                    <button
+                      onClick={() => {
+                        const url = window.location.href;
+                        const text = `${noticia.titulo} - Portal de Notícias`;
+                        window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank', 'width=600,height=400');
+                      }}
+                      className="flex-1 bg-black hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
+                    >
+                      <FaXTwitter className="text-lg" />
+                      Twitter
+                    </button>
+                    <button
+                      onClick={() => {
+                        const url = window.location.href;
+                        const text = `${noticia.titulo} - ${url}`;
+                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                      }}
+                      className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
+                    >
+                      <FaWhatsapp className="text-lg" />
+                      WhatsApp
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Notícias Relacionadas */}
+            {noticiasRelacionadas.length > 0 && (
+              <div className="mt-12 pt-12 border-t-2 border-gray-200">
+                <h2 className="text-3xl font-bold text-gray-900 mb-8 flex items-center gap-2">
+                  <span className="text-blue-600">🔗</span>
+                  Notícias Relacionadas
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {noticiasRelacionadas.map((noticiaRelacionada) => (
+                    <NoticiaCard key={noticiaRelacionada.id} noticia={noticiaRelacionada} featured />
+                  ))}
+                </div>
+              </div>
+            )}
+          </article>
+
+          {/* Sidebar */}
+          <aside className="space-y-6">
+            {/* Últimas Notícias */}
+            <div className="bg-white rounded-xl shadow-md p-6 sticky top-32">
+              <h3 className="text-xl font-bold text-gray-900 mb-5 pb-3 border-b-2 border-red-500 flex items-center gap-2">
+                <span className="text-red-500">📰</span>
+                Últimas Notícias
+              </h3>
+              <div className="space-y-4">
+                {ultimasNoticias.map((noticia) => (
+                  <NoticiaCard key={noticia.id} noticia={noticia} compact />
+                ))}
+              </div>
+            </div>
+          </aside>
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}
