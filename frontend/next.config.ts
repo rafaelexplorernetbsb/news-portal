@@ -12,6 +12,11 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Desabilitar Sentry para evitar erros de configuração
+  sentry: {
+    disableServerWebpackPlugin: true,
+    disableClientWebpackPlugin: true,
+  },
 };
 
 export default nextConfig;

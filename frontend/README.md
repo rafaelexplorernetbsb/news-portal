@@ -1,22 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# News Portal - Frontend
 
-## Getting Started
+Este é o frontend do News Portal, construído com [Next.js](https://nextjs.org) e integrado com Directus CMS.
 
-First, run the development server:
+## 🚀 Como Executar
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### Pré-requisitos
+- Node.js 18+ 
+- Docker e Docker Compose (para o backend)
+- Git
+
+### Instalação
+
+1. **Clone o repositório:**
+   ```bash
+   git clone https://github.com/rafaelexplorernetbsb/news-portal.git
+   cd news-portal
+   ```
+
+2. **Execute o backend (Directus + PostgreSQL):**
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **Instale as dependências do frontend:**
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+4. **Configure as variáveis de ambiente (opcional):**
+   ```bash
+   cp env.example .env.local
+   # Edite o arquivo .env.local se necessário
+   ```
+
+5. **Execute o servidor de desenvolvimento:**
+   ```bash
+   npm run dev
+   ```
+
+6. **Acesse a aplicação:**
+   - Frontend: [http://localhost:3000](http://localhost:3000)
+   - Directus CMS: [http://localhost:8055](http://localhost:8055)
+
+## 🛠️ Solução de Problemas
+
+### Erro do Sentry
+Se você encontrar o erro:
+```
+unhandledRejection Error: Command failed: sentry-cli releases new...
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Solução:** O Sentry está desabilitado por padrão no `next.config.ts`. Se o erro persistir:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Crie um arquivo `.env.local` no diretório frontend:**
+   ```bash
+   cd frontend
+   cp env.example .env.local
+   ```
+
+2. **Ou desabilite completamente o Sentry:**
+   ```bash
+   export SENTRY_DSN=""
+   export SENTRY_ORG=""
+   export SENTRY_PROJECT=""
+   ```
+
+### Backend não conecta
+Certifique-se de que o Docker Compose está rodando:
+```bash
+docker-compose ps
+```
+
+Se necessário, reinicie os serviços:
+```bash
+docker-compose down && docker-compose up -d
+```
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
