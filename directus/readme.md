@@ -1,82 +1,203 @@
-<p align="center"><img alt="Directus Logo" src="https://user-images.githubusercontent.com/522079/158864859-0fbeae62-9d7a-4619-b35e-f8fa5f68e0c8.png"></p>
+# 📰 News Portal
+
+Um portal de notícias moderno construído com **Directus CMS** e **Next.js**, oferecendo uma experiência completa de gerenciamento de conteúdo e exibição de notícias.
+
+## 🚀 Características
+
+- **Backend:** Directus CMS com PostgreSQL
+- **Frontend:** Next.js 15 com TypeScript
+- **Styling:** Tailwind CSS
+- **Containerização:** Docker e Docker Compose
+- **Gerenciamento de Pacotes:** pnpm
+
+## 📋 Funcionalidades
+
+### 🎯 Frontend
+- ✅ Homepage com notícias em destaque
+- ✅ Páginas de categoria com filtros
+- ✅ Páginas individuais de notícias
+- ✅ Sistema de busca
+- ✅ Design responsivo e moderno
+- ✅ SEO otimizado
+
+### 🔧 Backend (Directus CMS)
+- ✅ Gerenciamento de notícias
+- ✅ Sistema de autores
+- ✅ Categorização de conteúdo
+- ✅ Upload de imagens
+- ✅ API REST completa
+- ✅ Interface administrativa
+
+## 🛠️ Instalação e Configuração
+
+### Pré-requisitos
+- Node.js 18+
+- pnpm (gerenciador de pacotes)
+- Docker e Docker Compose
+- Git
+
+### Instalação do pnpm
+Se você não tem o pnpm instalado:
+```bash
+# Via npm
+npm install -g pnpm
+
+# Via curl (Linux/macOS)
+curl -fsSL https://get.pnpm.io/install.sh | sh -
+
+# Via PowerShell (Windows)
+iwr https://get.pnpm.io/install.ps1 -useb | iex
+```
+
+### Setup Rápido
+
+1. **Clone o repositório:**
+   ```bash
+   git clone https://github.com/rafaelexplorernetbsb/news-portal.git
+   cd news-portal
+   ```
+
+2. **Execute o backend (Directus + PostgreSQL):**
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **Configure dados de demonstração:**
+   ```bash
+   ./setup-demo-data.sh
+   ```
+
+4. **Instale e execute o frontend:**
+   ```bash
+   cd frontend
+   pnpm install
+   pnpm dev
+   ```
+
+5. **Acesse a aplicação:**
+   - **Frontend:** [http://localhost:3000](http://localhost:3000)
+   - **Directus CMS:** [http://localhost:8055](http://localhost:8055)
+
+## 📊 Dados de Demonstração
+
+O script `setup-demo-data.sh` importa automaticamente:
+
+- **5 categorias:** Política, Economia, Tecnologia, Esportes, Cultura
+- **4 autores:** Jornalistas de exemplo com biografias
+- **10 notícias:** Artigos de demonstração com conteúdo completo
+
+### Conteúdo das Notícias
+- Notícias em destaque e regulares
+- Diferentes categorias e autores
+- Datas de publicação variadas
+- Conteúdo realista e profissional
+
+## 🎯 Comandos Úteis
+
+### Desenvolvimento
+```bash
+# Frontend
+pnpm dev          # Servidor de desenvolvimento
+pnpm build        # Build de produção
+pnpm start        # Servidor de produção
+
+# Backend
+docker-compose up -d        # Iniciar serviços
+docker-compose down         # Parar serviços
+docker-compose logs -f      # Ver logs
+```
+
+### Gerenciamento de Dados
+```bash
+# Importar dados de demonstração
+./setup-demo-data.sh
+
+# Backup do banco
+docker exec directus-postgres-1 pg_dump -U postgres -d directus > backup.sql
+
+# Restaurar backup
+docker exec -i directus-postgres-1 psql -U postgres -d directus < backup.sql
+```
+
+## 🛠️ Solução de Problemas
+
+### Erro do Sentry
+Se você encontrar o erro:
+```
+unhandledRejection Error: Command failed: sentry-cli releases new...
+```
+
+**Solução:** O Sentry está desabilitado por padrão. Se o erro persistir:
+
+1. **Crie um arquivo `.env.local` no diretório frontend:**
+   ```bash
+   cd frontend
+   cp env.example .env.local
+   ```
+
+2. **Ou desabilite completamente o Sentry:**
+   ```bash
+   export SENTRY_DSN=""
+   export SENTRY_ORG=""
+   export SENTRY_PROJECT=""
+   ```
+
+### Backend não conecta
+```bash
+# Verificar status dos containers
+docker-compose ps
+
+# Reiniciar serviços
+docker-compose down && docker-compose up -d
+
+# Ver logs de erro
+docker-compose logs directus
+docker-compose logs postgres
+```
+
+### Problemas de permissão
+```bash
+# Executar script de configuração
+node apply-permissions.js
+node create-collections.js
+```
+
+## 📁 Estrutura do Projeto
+
+```
+news-portal/
+├── frontend/                 # Aplicação Next.js
+│   ├── app/                 # Páginas da aplicação
+│   ├── components/          # Componentes React
+│   ├── lib/                 # Utilitários e configurações
+│   └── public/              # Arquivos estáticos
+├── docker-compose.yml       # Configuração dos containers
+├── database_schema.sql      # Schema do banco de dados
+├── demo_data.sql           # Dados de demonstração
+├── setup-demo-data.sh      # Script de configuração
+├── apply-permissions.js    # Configuração de permissões
+└── create-collections.js   # Criação de coleções
+```
+
+## 🤝 Contribuindo
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+## 🙏 Agradecimentos
+
+- [Directus](https://directus.io/) - CMS headless
+- [Next.js](https://nextjs.org/) - Framework React
+- [Tailwind CSS](https://tailwindcss.com/) - Framework CSS
+- [PostgreSQL](https://postgresql.org/) - Banco de dados
 
 ---
 
-## 🐰 Introduction
-
-Directus is a real-time API and App dashboard for managing SQL database content.
-
-- **REST & GraphQL API.** Instantly layers a blazingly fast Node.js API on top of any SQL database.
-- **Manage Pure SQL.** Works with new or existing SQL databases, no migration required.
-- **Choose your Database.** Supports PostgreSQL, MySQL, SQLite, OracleDB, CockroachDB, MariaDB, and MS-SQL.
-- **On-Prem or Cloud.** Run locally, install on-premises, or use our
-  [self-service Cloud service](https://directus.io/pricing).
-- **Completely Extensible.** Built to white-label, it is easy to customize our modular platform.
-- **A Modern Dashboard.** Our no-code Vue.js app is safe and intuitive for non-technical users, no training required.
-
-**[Learn more about Directus](https://directus.io)** • **[Documentation](https://docs.directus.io)**
-
-<br />
-
-## 🚀 Directus Cloud
-
-[Directus Cloud](https://directus.io/pricing) allows you to create projects, hosted by the Directus team, from
-$15/month.
-
-- A self-service dashboard to create and monitor all your projects in one place.
-- Everything you need: Directus, database, storage, auto-scaling, and a global CDN.
-- Select your desired region and provision a new project in ~90 seconds.
-
-**[Create a Directus Cloud Project](https://directus.cloud)**
-
-<br />
-
-## 🤔 Community Help
-
-[The Directus Documentation](https://docs.directus.io) is a great place to start, or explore these other channels:
-
-- [Community](https://community.directus.io) (Questions, Discussions)
-- [Discord](https://directus.chat) (Live Chat)
-- [GitHub Issues](https://github.com/directus/directus/issues) (Report Bugs)
-- [GitHub Discussions](https://github.com/directus/directus/discussions) (Feature Requests)
-- [Twitter](https://twitter.com/directus) (Latest News)
-- [YouTube](https://www.youtube.com/c/DirectusVideos/featured) (Video Tutorials)
-
-<br />
-
-## ❤️ Contributing & Sponsoring
-
-Please read our [Contributing Guide](./contributing.md) before submitting Pull Requests.
-
-All security vulnerabilities should be reported in accordance with our
-[Security Policy](https://docs.directus.io/contributing/introduction/#reporting-security-vulnerabilities).
-
-Directus is made possible with support from our passionate core team, talented contributors, and amazing
-[GitHub Sponsors](https://github.com/sponsors/directus). Thank you all!
-
-<br />
-
-## 📄 Understanding Our License
-
-Directus is licensed under [the Business Source License (BSL) 1.1](./license) with a permissive additional use grant.
-For most users, it operates just like open source! Here's what that means for you:
-
-### Free for Most Users
-
-If your organization has less than $5M in annual revenue and/or funding combined, you can use Directus freely in any way
-you'd like. Build that side project, launch your startup, or experiment with the platform — no strings attached.
-
-### Enterprise Usage
-
-For larger organizations (>$5M in annual revenue/funding) using Directus in production, we require a commercial license.
-This model helps us maintain a sustainable balance: keeping Directus free for the majority of our community while
-ensuring larger organizations who benefit from the platform contribute to its continued development.
-
-### Why This Approach?
-
-We believe in making powerful data tools accessible to everyone. This license lets us:
-
-- Keep Directus free for individuals, startups, and smaller companies
-- Maintain active development and strong support
-- Continue improving the platform for everyone
-- Stay sustainable as an independent project
+**Desenvolvido com ❤️ por [Rafael Soares](https://github.com/rafaelexplorernetbsb)**
