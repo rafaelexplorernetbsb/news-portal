@@ -62,9 +62,9 @@ iwr https://get.pnpm.io/install.ps1 -useb | iex
    docker-compose up -d
    ```
 
-3. **Configure dados de demonstração:**
+3. **Configure as coleções e dados de demonstração:**
    ```bash
-   ./setup-demo-data.sh
+   ./fix-collections.sh
    ```
 
 4. **Instale e execute o frontend:**
@@ -109,7 +109,10 @@ docker-compose logs -f      # Ver logs
 
 ### Gerenciamento de Dados
 ```bash
-# Importar dados de demonstração
+# Configurar coleções e dados de demonstração
+./fix-collections.sh
+
+# Apenas dados de demonstração (se coleções já existirem)
 ./setup-demo-data.sh
 
 # Backup do banco
@@ -154,6 +157,20 @@ docker-compose down && docker-compose up -d
 docker-compose logs directus
 docker-compose logs postgres
 ```
+
+### Coleções não aparecem no "Modelo de dados"
+Se as coleções (autores, categorias, noticias) não aparecerem no Directus:
+
+```bash
+# Execute o script de correção
+./fix-collections.sh
+```
+
+Este script:
+- Cria as tabelas diretamente no banco
+- Configura os metadados do Directus
+- Importa dados de demonstração
+- Reinicia o Directus
 
 ### Problemas de permissão
 ```bash
