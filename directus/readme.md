@@ -62,9 +62,9 @@ iwr https://get.pnpm.io/install.ps1 -useb | iex
    docker-compose up -d
    ```
 
-3. **Configure as coleções e dados de demonstração:**
+3. **Configure as coleções, dados de demonstração e token de API:**
    ```bash
-   ./fix-collections.sh
+   ./fix-all-collections.sh
    ```
 
 4. **Instale e execute o frontend:**
@@ -109,11 +109,14 @@ docker-compose logs -f      # Ver logs
 
 ### Gerenciamento de Dados
 ```bash
-# Configurar coleções e dados de demonstração
-./fix-collections.sh
+# Configurar coleções, dados de demonstração e token de API
+./fix-all-collections.sh
 
-# Apenas dados de demonstração (se coleções já existirem)
+# Apenas dados de demonstração e token (se coleções já existirem)
 ./setup-demo-data.sh
+
+# Gerar apenas token de API
+./generate-token.sh
 
 # Backup do banco
 docker exec directus-postgres-1 pg_dump -U postgres -d directus > backup.sql
@@ -163,14 +166,32 @@ Se as coleções (autores, categorias, noticias) não aparecerem no Directus:
 
 ```bash
 # Execute o script de correção
-./fix-collections.sh
+./fix-all-collections.sh
 ```
 
 Este script:
 - Cria as tabelas diretamente no banco
 - Configura os metadados do Directus
 - Importa dados de demonstração
+- Gera token de API válido
+- Configura o frontend automaticamente
 - Reinicia o Directus
+
+### Erro "Erro ao carregar noticias" no Frontend
+Se o frontend mostrar erro de carregamento:
+
+```bash
+# Reconfigure tudo com token válido
+./fix-all-collections.sh
+
+# Ou apenas gere um novo token
+./generate-token.sh
+```
+
+O script automaticamente:
+- Gera um token de API válido
+- Configura o arquivo `frontend/.env.local`
+- Resolve problemas de autenticação
 
 ### Problemas de permissão
 ```bash

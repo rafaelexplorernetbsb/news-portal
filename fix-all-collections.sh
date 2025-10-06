@@ -38,12 +38,61 @@ docker-compose restart directus
 echo "⏳ Aguardando Directus reiniciar..."
 sleep 20
 
+echo "🔑 Gerando token de API válido..."
+# Gerar token de API
+API_TOKEN=""
+MAX_ATTEMPTS=10
+ATTEMPT=1
+
+while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+    echo "🔄 Tentativa $ATTEMPT de $MAX_ATTEMPTS para gerar token..."
+    
+    # Fazer login e obter token
+    RESPONSE=$(curl -s -X POST "http://localhost:8055/auth/login" \
+        -H "Content-Type: application/json" \
+        -d '{"email":"admin@example.com","password":"directus"}' \
+        2>/dev/null || echo "")
+    
+    if [ -n "$RESPONSE" ] && echo "$RESPONSE" | grep -q "access_token"; then
+        # Extrair token da resposta
+        API_TOKEN=$(echo "$RESPONSE" | grep -o '"access_token":"[^"]*"' | cut -d'"' -f4)
+        
+        if [ -n "$API_TOKEN" ]; then
+            echo "✅ Token gerado com sucesso!"
+            break
+        fi
+    fi
+    
+    echo "❌ Tentativa $ATTEMPT falhou. Aguardando..."
+    sleep 10
+    ATTEMPT=$((ATTEMPT + 1))
+done
+
+if [ -n "$API_TOKEN" ]; then
+    echo "⚙️  Configurando frontend com token válido..."
+    
+    # Criar arquivo .env.local no frontend
+    cat > frontend/.env.local << EOF
+# Configurações do Directus
+NEXT_PUBLIC_DIRECTUS_URL=http://localhost:8055
+DIRECTUS_TOKEN=$API_TOKEN
+
+# Token de API válido (gerado automaticamente)
+# Este token permite acesso às notícias, autores e categorias
+EOF
+    
+    echo "✅ Frontend configurado com token válido!"
+fi
+
 echo "✅ TODAS as coleções foram configuradas!"
 echo ""
 echo "🎉 Agora acesse:"
 echo "   • http://localhost:8055/admin"
 echo "   • Vá para 'Modelo de dados'"
 echo "   • Você deve ver: autores, categorias, noticias"
+echo ""
+echo "🌐 Para executar o frontend:"
+echo "   cd frontend && pnpm install && pnpm dev"
 echo ""
 echo "📊 Se ainda não aparecer, tente:"
 echo "   • F5 para atualizar a página"
