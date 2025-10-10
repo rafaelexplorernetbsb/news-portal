@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Noticia, getNoticiasDestaque, getUltimasNoticias, getImageUrl, formatarData, capitalizarCategoria } from '@/lib/directus';
+import { Noticia, getNoticiasDestaque, getUltimasNoticias, getImageUrl, formatarData, capitalizarCategoria } from '@/lib/noticias';
 import NoticiaCard from '@/components/NoticiaCard';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -23,8 +23,6 @@ export default function Home() {
           getNoticiasDestaque(),
           getUltimasNoticias(20),
         ]);
-        console.log("DEBUG noticias destaque", destaque);
-        console.log("DEBUG ultimas noticias", ultimas);
         setNoticiasDestaque(destaque);
         setUltimasNoticias(ultimas);
         // Simular "mais lidas" pegando as primeiras notícias
@@ -75,7 +73,7 @@ export default function Home() {
                       >
                         <div className="relative h-[500px] lg:h-[640px]">
                           <Image
-                            src={getImageUrl(noticiasDestaque[0].imagem)}
+                            src={getImageUrl(noticiasDestaque[0].imagem, noticiasDestaque[0].url_imagem)}
                             alt={noticiasDestaque[0].titulo}
                             fill
                             sizes="(max-width: 1024px) 100vw, 33vw"
@@ -105,7 +103,7 @@ export default function Home() {
                         >
                           <div className="relative h-[240px] lg:h-[308px]">
                             <Image
-                              src={getImageUrl(noticia.imagem)}
+                              src={getImageUrl(noticia.imagem, noticia.url_imagem)}
                               alt={noticia.titulo}
                               fill
                               sizes="(max-width: 1024px) 100vw, 33vw"
@@ -136,7 +134,7 @@ export default function Home() {
                         >
                           <div className="relative h-[240px] lg:h-[308px]">
                             <Image
-                              src={getImageUrl(noticia.imagem)}
+                              src={getImageUrl(noticia.imagem, noticia.url_imagem)}
                               alt={noticia.titulo}
                               fill
                               sizes="(max-width: 1024px) 100vw, 33vw"

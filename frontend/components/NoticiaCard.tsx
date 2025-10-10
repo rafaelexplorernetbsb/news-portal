@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Noticia, getImageUrl, formatarData, capitalizarCategoria, getAutorNome } from '@/lib/directus';
+import { Noticia, getImageUrl, formatarData, capitalizarCategoria, getAutorNome } from '@/lib/noticias';
 
 interface NoticiaCardProps {
   noticia: Noticia;
@@ -9,7 +9,7 @@ interface NoticiaCardProps {
 }
 
 export default function NoticiaCard({ noticia, featured = false, compact = false }: NoticiaCardProps) {
-  const imagemUrl = getImageUrl(noticia.imagem);
+  const imagemUrl = getImageUrl(noticia.imagem, noticia.url_imagem);
 
   // Card compacto para sidebar
   if (compact) {

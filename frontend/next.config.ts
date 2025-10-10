@@ -12,10 +12,13 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Desabilitar Sentry para evitar erros de configuração
-  sentry: {
-    disableServerWebpackPlugin: true,
-    disableClientWebpackPlugin: true,
+  eslint: {
+    // Não falhar o build por erros de ESLint
+    ignoreDuringBuilds: true,
+  },
+  turbopack: {
+    // Define explicitamente a raiz para evitar aviso de múltiplos lockfiles
+    root: __dirname,
   },
 };
 

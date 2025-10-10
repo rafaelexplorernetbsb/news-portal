@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Noticia, getNoticiaBySlug, getImageUrl, formatarData, capitalizarCategoria, getUltimasNoticias, getAutorNome } from '@/lib/directus';
-import Image from 'next/image';
+import { Noticia, getNoticiaPorSlug, getImageUrl, formatarData, capitalizarCategoria, getUltimasNoticias, getAutorNome } from '@/lib/noticias';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import NoticiaCard from '@/components/NoticiaCard';
+import ArticleMedia from '@/components/ArticleMedia';
 import { FaFacebook, FaWhatsapp } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 
@@ -28,8 +28,7 @@ export default function NoticiaPage() {
     async function loadNoticia() {
       try {
         setLoading(true);
-        const data = await getNoticiaBySlug(slug);
-        console.log("DEBUG noticia", data);
+        const data = await getNoticiaPorSlug(slug);
         setNoticia(data);
 
         // Carregar últimas notícias (excluindo a atual)
@@ -97,7 +96,7 @@ export default function NoticiaPage() {
     );
   }
 
-  const imagemUrl = getImageUrl(noticia.imagem);
+  const imagemUrl = getImageUrl(noticia.imagem, noticia.url_imagem);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -128,19 +127,15 @@ export default function NoticiaPage() {
           {/* Artigo Principal */}
           <article className="lg:col-span-2">
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-              {/* Imagem de Destaque */}
-              {noticia.imagem && (
-                <div className="relative w-full h-[500px]">
-                  <Image
-                    src={imagemUrl}
-                    alt={noticia.titulo}
-                    fill
-                    className="object-cover"
-                    unoptimized
-                    priority
-                  />
-                </div>
-              )}
+              {/* Mídia Principal (Vídeo ou Imagem) */}
+              <ArticleMedia
+                title={noticia.titulo}
+                imageUrl={imagemUrl}
+                imageAlt={noticia.titulo}
+                embedHtml={noticia.embed_html}
+                videoUrl={noticia.video_url}
+                className="h-[500px]"
+              />
 
               {/* Conteúdo */}
               <div className="p-8 lg:p-12">
@@ -180,22 +175,22 @@ export default function NoticiaPage() {
                 )}
 
                 {/* Conteúdo HTML com tipografia melhorada */}
-                <div
-                  className="
-                    [&_p]:text-gray-900 [&_p]:text-lg [&_p]:leading-loose [&_p]:mb-6
-                    [&_h2]:text-gray-900 [&_h2]:text-3xl [&_h2]:font-bold [&_h2]:mt-12 [&_h2]:mb-5 [&_h2]:pb-2 [&_h2]:border-b-2 [&_h2]:border-gray-200
-                    [&_h3]:text-gray-900 [&_h3]:text-2xl [&_h3]:font-bold [&_h3]:mt-10 [&_h3]:mb-4
-                    [&_strong]:text-gray-900 [&_strong]:font-bold [&_strong]:text-lg
-                    [&_em]:text-gray-800 [&_em]:italic
-                    [&_a]:text-blue-600 [&_a]:font-semibold [&_a:hover]:text-blue-800 [&_a:hover]:underline
-                    [&_ul]:my-8 [&_ul]:space-y-3
-                    [&_ol]:my-8 [&_ol]:space-y-3
-                    [&_li]:text-gray-900 [&_li]:text-lg [&_li]:leading-loose [&_li]:pl-2
-                    [&_li::marker]:text-blue-600 [&_li::marker]:font-bold
-                    [&_img]:rounded-2xl [&_img]:shadow-2xl [&_img]:my-10
-                    [&_blockquote]:border-l-4 [&_blockquote]:border-blue-500 [&_blockquote]:pl-6 [&_blockquote]:py-4 [&_blockquote]:my-8 [&_blockquote]:italic [&_blockquote]:text-gray-800 [&_blockquote]:bg-gray-50 [&_blockquote]:rounded-r-xl"
-                  dangerouslySetInnerHTML={{ __html: noticia.conteudo }}
-                />
+                {(() => {
+                  const sanitized = (noticia.conteudo || '')
+                    .replace(/>\s*Ok\s*</gi, '><')
+                    .replace(/<h[1-6][^>]*>\s*Resumo do dia\s*<\/h[1-6]>\s*<p[^>]*>[\s\S]*?<\/p>/gi, '');
+                  return (
+                    <div
+                      className="news-content"
+                      style={{
+                        color: '#2d3748 !important',
+                        fontSize: '18px !important',
+                        lineHeight: '1.7 !important'
+                      }}
+                      dangerouslySetInnerHTML={{ __html: sanitized }}
+                    />
+                  );
+                })()}
 
                 {/* Botão Compartilhar */}
                 <div className="bg-gray-50 p-6 rounded-xl mt-8">

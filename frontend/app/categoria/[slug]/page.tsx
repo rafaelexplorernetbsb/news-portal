@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Noticia, capitalizarCategoria } from '@/lib/directus';
+import { Noticia, capitalizarCategoria, getNoticiasPorCategoria } from '@/lib/noticias';
 import NoticiaCard from '@/components/NoticiaCard';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';

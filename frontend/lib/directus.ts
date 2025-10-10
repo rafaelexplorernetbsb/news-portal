@@ -13,6 +13,9 @@ export interface Noticia {
     id: string;
     filename_download: string;
   } | string;
+  url_imagem?: string; // ← Novo campo para URL de imagem externa
+  video_url?: string; // ← URL do vídeo (Globoplay, YouTube, etc.)
+  embed_html?: string; // ← HTML do player embed
   data_publicacao: string;
   destaque: boolean;
   categoria: string;
@@ -50,41 +53,52 @@ async function fetchAPI(endpoint: string) {
 
 export async function getNoticiasDestaque(): Promise<Noticia[]> {
   const data: NoticiaResponse = await fetchAPI(
-    `/items/noticias?filter[destaque][_eq]=true&filter[status][_eq]=published&limit=15&sort=-data_publicacao&fields=*,imagem.*,autor.*&t=${Date.now()}`
+    `/items/noticias?filter[destaque][_eq]=true&filter[status][_eq]=published&limit=15&sort=-data_publicacao&fields=*,imagem.*,autor.*,url_imagem&t=${Date.now()}`
   );
-  console.log('🔍 getNoticiasDestaque - Primeira notícia autor:', JSON.stringify(data.data[0]?.autor, null, 2));
+
   return data.data;
 }
 
 export async function getUltimasNoticias(limit: number = 10): Promise<Noticia[]> {
   const data: NoticiaResponse = await fetchAPI(
-    `/items/noticias?filter[status][_eq]=published&limit=${limit}&sort=-data_publicacao&fields=*,imagem.*,autor.*&t=${Date.now()}`
+    `/items/noticias?filter[status][_eq]=published&limit=${limit}&sort=-data_publicacao&fields=*,imagem.*,autor.*,url_imagem&t=${Date.now()}`
   );
+
   return data.data;
 }
 
 export async function getNoticiaById(id: string): Promise<Noticia> {
   const data: SingleNoticiaResponse = await fetchAPI(
-    `/items/noticias/${id}?fields=*,imagem.*,autor.*&t=${Date.now()}`
+    `/items/noticias/${id}?fields=*,imagem.*,autor.*,url_imagem&t=${Date.now()}`
   );
+
   return data.data;
 }
 
 export async function getNoticiaBySlug(slug: string): Promise<Noticia> {
   const data: NoticiaResponse = await fetchAPI(
-    `/items/noticias?filter[slug][_eq]=${slug}&fields=*,imagem.*,autor.*&limit=1&t=${Date.now()}`
+    `/items/noticias?filter[slug][_eq]=${slug}&fields=*,imagem.*,autor.*,url_imagem&limit=1&t=${Date.now()}`
   );
+
   if (!data.data || data.data.length === 0) {
     throw new Error('Notícia não encontrada');
   }
+
   const noticia = data.data[0];
-  console.log('🔍 getNoticiaBySlug - Autor recebido:', JSON.stringify(noticia.autor, null, 2));
-  console.log('🔍 getNoticiaBySlug - Tipo do autor:', typeof noticia.autor);
+
   return noticia;
 }
 
-export function getImageUrl(imagem: Noticia['imagem']): string {
-  if (!imagem) return '/placeholder.svg';
+export function getImageUrl(imagem: Noticia['imagem'], url_imagem?: string): string {
+  // Prioridade 1: URL de imagem externa
+  if (url_imagem) {
+    return url_imagem;
+  }
+
+  // Prioridade 2: Imagem do Directus
+  if (!imagem) {
+    return '/placeholder.svg';
+  }
 
   // Sempre usa localhost:8055 para assets pois é acessado pelo navegador
   const assetUrl = 'http://localhost:8055';
@@ -119,6 +133,7 @@ export function capitalizarCategoria(categoria: string): string {
     'saude': 'Saúde',
     'educacao': 'Educação',
   };
+
   return categorias[categoria] || categoria.charAt(0).toUpperCase() + categoria.slice(1);
 }
 
@@ -126,8 +141,10 @@ export function getAutorNome(autor: Noticia['autor']): string {
   if (autor && typeof autor === 'object' && 'nome' in autor) {
     return autor.nome;
   }
+
   if (typeof autor === 'number') {
     return `Autor #${autor}`;
   }
+
   return 'Autor não informado';
 }
