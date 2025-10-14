@@ -1,0 +1,1028 @@
+version: 1
+directus: 11.12.0
+vendor: postgres
+collections:
+  - collection: autores
+    meta:
+      accountability: all
+      archive_app_filter: true
+      archive_field: null
+      archive_value: null
+      collapse: open
+      collection: autores
+      color: null
+      display_template: '{{nome}}'
+      group: null
+      hidden: false
+      icon: person
+      item_duplication_fields: null
+      note: Autores das notícias
+      preview_url: null
+      singleton: false
+      sort: null
+      sort_field: null
+      translations: null
+      unarchive_value: null
+      versioning: false
+    schema:
+      name: autores
+  - collection: categorias
+    meta:
+      accountability: all
+      archive_app_filter: true
+      archive_field: null
+      archive_value: null
+      collapse: open
+      collection: categorias
+      color: null
+      display_template: '{{nome}}'
+      group: null
+      hidden: false
+      icon: folder
+      item_duplication_fields: null
+      note: Categorias de notícias
+      preview_url: null
+      singleton: false
+      sort: null
+      sort_field: null
+      translations: null
+      unarchive_value: null
+      versioning: false
+    schema:
+      name: categorias
+  - collection: noticias
+    meta:
+      accountability: all
+      archive_app_filter: true
+      archive_field: status
+      archive_value: archived
+      collapse: open
+      collection: noticias
+      color: null
+      display_template: '{{titulo}}'
+      group: null
+      hidden: false
+      icon: article
+      item_duplication_fields: null
+      note: Notícias do portal
+      preview_url: null
+      singleton: false
+      sort: null
+      sort_field: sort
+      translations: null
+      unarchive_value: draft
+      versioning: false
+    schema:
+      name: noticias
+fields:
+  - collection: autores
+    field: id
+    type: integer
+    meta:
+      collection: autores
+      conditions: null
+      display: null
+      display_options: null
+      field: id
+      group: null
+      hidden: true
+      interface: numeric
+      note: null
+      options: null
+      readonly: true
+      required: false
+      sort: 1
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: id
+      table: autores
+      data_type: integer
+      default_value: nextval('autores_id_seq'::regclass)
+      max_length: null
+      numeric_precision: 32
+      numeric_scale: 0
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: true
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: true
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: autores
+    field: nome
+    type: string
+    meta:
+      collection: autores
+      conditions: null
+      display: null
+      display_options: null
+      field: nome
+      group: null
+      hidden: false
+      interface: input
+      note: Nome completo do autor
+      options: null
+      readonly: false
+      required: true
+      sort: 2
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: nome
+      table: autores
+      data_type: character varying
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: autores
+    field: biografia
+    type: text
+    meta:
+      collection: autores
+      conditions: null
+      display: null
+      display_options: null
+      field: biografia
+      group: null
+      hidden: false
+      interface: input-rich-text-html
+      note: Biografia do autor
+      options: null
+      readonly: false
+      required: false
+      sort: 3
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: biografia
+      table: autores
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: autores
+    field: foto
+    type: uuid
+    meta:
+      collection: autores
+      conditions: null
+      display: null
+      display_options: null
+      field: foto
+      group: null
+      hidden: false
+      interface: file-image
+      note: Foto do autor
+      options: null
+      readonly: false
+      required: false
+      sort: 4
+      special:
+        - file
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: foto
+      table: autores
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: autores
+    field: email
+    type: string
+    meta:
+      collection: autores
+      conditions: null
+      display: null
+      display_options: null
+      field: email
+      group: null
+      hidden: false
+      interface: input
+      note: Email do autor
+      options: null
+      readonly: false
+      required: false
+      sort: 5
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: email
+      table: autores
+      data_type: character varying
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: categorias
+    field: id
+    type: integer
+    meta:
+      collection: categorias
+      conditions: null
+      display: null
+      display_options: null
+      field: id
+      group: null
+      hidden: true
+      interface: numeric
+      note: null
+      options: null
+      readonly: true
+      required: false
+      sort: 1
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: id
+      table: categorias
+      data_type: integer
+      default_value: nextval('categorias_id_seq'::regclass)
+      max_length: null
+      numeric_precision: 32
+      numeric_scale: 0
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: true
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: true
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: categorias
+    field: nome
+    type: string
+    meta:
+      collection: categorias
+      conditions: null
+      display: null
+      display_options: null
+      field: nome
+      group: null
+      hidden: false
+      interface: input
+      note: Nome da categoria
+      options: null
+      readonly: false
+      required: true
+      sort: 2
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: nome
+      table: categorias
+      data_type: character varying
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: categorias
+    field: descricao
+    type: text
+    meta:
+      collection: categorias
+      conditions: null
+      display: null
+      display_options: null
+      field: descricao
+      group: null
+      hidden: false
+      interface: input-multiline
+      note: Descrição da categoria
+      options: null
+      readonly: false
+      required: false
+      sort: 3
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: descricao
+      table: categorias
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: categorias
+    field: slug
+    type: string
+    meta:
+      collection: categorias
+      conditions: null
+      display: null
+      display_options: null
+      field: slug
+      group: null
+      hidden: false
+      interface: input
+      note: Identificador único para URLs
+      options:
+        slug: true
+      readonly: false
+      required: true
+      sort: 4
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: slug
+      table: categorias
+      data_type: character varying
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: categorias
+    field: icone
+    type: uuid
+    meta:
+      collection: categorias
+      conditions: null
+      display: null
+      display_options: null
+      field: icone
+      group: null
+      hidden: false
+      interface: file-image
+      note: Ícone da categoria
+      options: null
+      readonly: false
+      required: false
+      sort: 5
+      special:
+        - file
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: icone
+      table: categorias
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: noticias
+    field: id
+    type: integer
+    meta:
+      collection: noticias
+      conditions: null
+      display: null
+      display_options: null
+      field: id
+      group: null
+      hidden: true
+      interface: numeric
+      note: null
+      options: null
+      readonly: true
+      required: false
+      sort: 1
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: id
+      table: noticias
+      data_type: integer
+      default_value: nextval('noticias_id_seq'::regclass)
+      max_length: null
+      numeric_precision: 32
+      numeric_scale: 0
+      is_nullable: false
+      is_unique: true
+      is_indexed: false
+      is_primary_key: true
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: true
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: noticias
+    field: titulo
+    type: string
+    meta:
+      collection: noticias
+      conditions: null
+      display: null
+      display_options: null
+      field: titulo
+      group: null
+      hidden: false
+      interface: input
+      note: Título da notícia
+      options: null
+      readonly: false
+      required: true
+      sort: 2
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: titulo
+      table: noticias
+      data_type: character varying
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: noticias
+    field: resumo
+    type: text
+    meta:
+      collection: noticias
+      conditions: null
+      display: null
+      display_options: null
+      field: resumo
+      group: null
+      hidden: false
+      interface: input-multiline
+      note: Resumo curto da notícia
+      options: null
+      readonly: false
+      required: true
+      sort: 3
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: resumo
+      table: noticias
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: noticias
+    field: conteudo
+    type: text
+    meta:
+      collection: noticias
+      conditions: null
+      display: null
+      display_options: null
+      field: conteudo
+      group: null
+      hidden: false
+      interface: input-rich-text-html
+      note: Conteúdo completo da notícia
+      options: null
+      readonly: false
+      required: true
+      sort: 4
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: conteudo
+      table: noticias
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: noticias
+    field: imagem
+    type: uuid
+    meta:
+      collection: noticias
+      conditions: null
+      display: null
+      display_options: null
+      field: imagem
+      group: null
+      hidden: false
+      interface: file-image
+      note: Imagem principal da notícia
+      options: null
+      readonly: false
+      required: false
+      sort: 5
+      special:
+        - '["file"]'
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: imagem
+      table: noticias
+      data_type: uuid
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: noticias
+    field: data_publicacao
+    type: timestamp
+    meta:
+      collection: noticias
+      conditions: null
+      display: null
+      display_options: null
+      field: data_publicacao
+      group: null
+      hidden: false
+      interface: datetime
+      note: Data de publicação da notícia
+      options: null
+      readonly: false
+      required: true
+      sort: 6
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: data_publicacao
+      table: noticias
+      data_type: timestamp with time zone
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: noticias
+    field: destaque
+    type: boolean
+    meta:
+      collection: noticias
+      conditions: null
+      display: null
+      display_options: null
+      field: destaque
+      group: null
+      hidden: false
+      interface: boolean
+      note: Marque para exibir na seção de destaque
+      options:
+        label: Esta notícia está em destaque?
+      readonly: false
+      required: false
+      sort: 7
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: destaque
+      table: noticias
+      data_type: boolean
+      default_value: false
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: noticias
+    field: categoria
+    type: m2o
+    meta:
+      collection: noticias
+      conditions: null
+      display: null
+      display_options: null
+      field: categoria
+      group: null
+      hidden: false
+      interface: select-dropdown-m2o
+      note: Categoria da notícia
+      options:
+        template: '{{nome}}'
+      readonly: false
+      required: true
+      sort: 8
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: categoria
+      table: noticias
+      data_type: integer
+      default_value: null
+      max_length: null
+      numeric_precision: 32
+      numeric_scale: 0
+      is_nullable: false
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: categorias
+      foreign_key_column: id
+  - collection: noticias
+    field: status
+    type: string
+    meta:
+      collection: noticias
+      conditions: null
+      display: null
+      display_options: null
+      field: status
+      group: null
+      hidden: false
+      interface: select-dropdown
+      note: null
+      options:
+        choices:
+          - text: Publicado
+            value: published
+          - text: Rascunho
+            value: draft
+          - text: Agendado
+            value: scheduled
+      readonly: false
+      required: false
+      sort: null
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: status
+      table: noticias
+      data_type: character varying
+      default_value: published
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: noticias
+    field: slug
+    type: string
+    meta:
+      collection: noticias
+      conditions: null
+      display: null
+      display_options: null
+      field: slug
+      group: null
+      hidden: false
+      interface: input-hash
+      note: URL amigável gerada automaticamente
+      options:
+        slug: true
+      readonly: false
+      required: true
+      sort: 10
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: slug
+      table: noticias
+      data_type: character varying
+      default_value: null
+      max_length: 255
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: true
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: noticias
+    field: data_agendada
+    type: dateTime
+    meta:
+      collection: noticias
+      conditions: null
+      display: datetime
+      display_options:
+        relative: true
+      field: data_agendada
+      group: null
+      hidden: false
+      interface: datetime
+      note: Agendar publicação para uma data e hora específica
+      options:
+        includeSeconds: false
+      readonly: false
+      required: false
+      sort: 11
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: data_agendada
+      table: noticias
+      data_type: timestamp without time zone
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+  - collection: noticias
+    field: autor
+    type: integer
+    meta:
+      collection: noticias
+      conditions: null
+      display: related-values
+      display_options:
+        template: '{{nome}}'
+      field: autor
+      group: null
+      hidden: false
+      interface: select-dropdown-m2o
+      note: Selecione o autor da notícia
+      options: null
+      readonly: false
+      required: false
+      sort: 12
+      special:
+        - m2o
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: autor
+      table: noticias
+      data_type: integer
+      default_value: null
+      max_length: null
+      numeric_precision: 32
+      numeric_scale: 0
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: autores
+      foreign_key_column: id
+  - collection: noticias
+    field: url_imagem
+    type: text
+    meta:
+      collection: noticias
+      conditions: null
+      display: raw
+      display_options: null
+      field: url_imagem
+      group: null
+      hidden: false
+      interface: input
+      note: URL da imagem externa
+      options:
+        placeholder: https://exemplo.com/imagem.jpg
+      readonly: false
+      required: false
+      sort: 1
+      special: null
+      translations: null
+      validation: null
+      validation_message: null
+      width: full
+    schema:
+      name: url_imagem
+      table: noticias
+      data_type: text
+      default_value: null
+      max_length: null
+      numeric_precision: null
+      numeric_scale: null
+      is_nullable: true
+      is_unique: false
+      is_indexed: false
+      is_primary_key: false
+      is_generated: false
+      generation_expression: null
+      has_auto_increment: false
+      foreign_key_table: null
+      foreign_key_column: null
+relations:
+  - collection: noticias
+    field: imagem
+    related_collection: directus_files
+    meta:
+      junction_field: null
+      many_collection: noticias
+      many_field: imagem
+      one_allowed_collections: null
+      one_collection: directus_files
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+  - collection: noticias
+    field: autor
+    related_collection: autores
+    meta:
+      junction_field: null
+      many_collection: noticias
+      many_field: autor
+      one_allowed_collections: null
+      one_collection: autores
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: noticias
+      column: autor
+      foreign_key_table: autores
+      foreign_key_column: id
+      constraint_name: noticias_autor_foreign
+      on_update: NO ACTION
+      on_delete: NO ACTION

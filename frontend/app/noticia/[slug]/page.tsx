@@ -36,7 +36,7 @@ export default function NoticiaPage() {
         setUltimasNoticias(ultimas.filter(n => n.slug !== slug).slice(0, 5));
 
         // Carregar notícias relacionadas (mesma categoria)
-        if (data.categoria) {
+        if (data && data.categoria) {
           const response = await fetch(
             `${API_URL}/items/noticias?filter[categoria][_eq]=${data.categoria}&filter[slug][_neq]=${slug}&filter[status][_eq]=published&sort=-data_publicacao&fields=*,imagem.*,autor.*&limit=6`,
             {
@@ -110,8 +110,8 @@ export default function NoticiaPage() {
             <span>/</span>
             {noticia.categoria && (
               <>
-                <Link href={`/categoria/${noticia.categoria}`} className="hover:text-blue-600">
-                  {capitalizarCategoria(noticia.categoria)}
+                <Link href={`/categoria/${typeof noticia.categoria === 'string' ? noticia.categoria : noticia.categoria.slug}`} className="hover:text-blue-600">
+                  {capitalizarCategoria(typeof noticia.categoria === 'string' ? noticia.categoria : noticia.categoria.nome)}
                 </Link>
                 <span>/</span>
               </>
@@ -143,7 +143,7 @@ export default function NoticiaPage() {
                 <div className="flex flex-wrap gap-4 mb-6">
                   {noticia.categoria && (
                     <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold bg-blue-600 text-white uppercase tracking-wide">
-                      {capitalizarCategoria(noticia.categoria)}
+                      {capitalizarCategoria(typeof noticia.categoria === 'string' ? noticia.categoria : noticia.categoria.nome)}
                     </span>
                   )}
                   {noticia.autor && (

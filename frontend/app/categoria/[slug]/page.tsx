@@ -8,7 +8,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 const API_URL = 'http://localhost:8055';
-const API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjM5ZjZjMDVlLWNmZmMtNGNlYi04NmU0LWJmYmM0N2VmY2ZkZSIsInJvbGUiOiI3MWYxYzIyZi1jOGMyLTRjYjctOGMzNS1jNDA1MDY4M2UwYmEiLCJhcHBfYWNjZXNzIjp0cnVlLCJhZG1pbl9hY2Nlc3MiOnRydWUsImlhdCI6MTc1OTMyNzQ4NCwiZXhwIjoxNzkwODYzNDg0LCJpc3MiOiJkaXJlY3R1cyJ9.-Vs4DXspNGEjFZZGM6YmDmyh43hcFuzgaLVMCFILScU';
+const API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjBhODlmYTJiLTE0MGEtNGIzMy1iN2U0LWZiZmIzYzk3ZWFlZSIsInJvbGUiOiJhMDUyYzlmZC0zZDQyLTQyMWUtOTYyYy0wYzUyZGRmOGIyOWEiLCJhcHBfYWNjZXNzIjp0cnVlLCJhZG1pbl9hY2Nlc3MiOnRydWUsImlhdCI6MTc2MDQ0MTQ1OCwiZXhwIjoxNzkxOTc3NDU4LCJpc3MiOiJkaXJlY3R1cyJ9.7PP4-QpZWUjCXL69x8P8IB2rZbNiiQYzgnAt2b6lH1U';
 
 const NOTICIAS_POR_PAGINA = 9;
 
@@ -31,22 +31,8 @@ export default function CategoriaPage() {
         setLoading(true);
       }
 
-      const response = await fetch(
-        `${API_URL}/items/noticias?filter[categoria][_eq]=${slug}&filter[status][_eq]=published&sort=-data_publicacao&fields=*,imagem.*,autor.*&limit=${NOTICIAS_POR_PAGINA}&offset=${currentOffset}`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${API_TOKEN}`,
-          },
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error('Erro ao carregar notícias');
-      }
-
-      const data = await response.json();
-      const novasNoticias = data.data || [];
+      // Usar a função getNoticiasPorCategoria que já corrigimos
+      const novasNoticias = await getNoticiasPorCategoria(slug, NOTICIAS_POR_PAGINA);
 
       if (append) {
         setNoticias(prev => [...prev, ...novasNoticias]);

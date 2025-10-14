@@ -1,223 +1,348 @@
-# 📰 News Portal
+# 📰 Portal de Notícias - Directus + Next.js
 
-Um portal de notícias moderno construído com **Directus CMS** e **Next.js**, oferecendo uma experiência completa de gerenciamento de conteúdo e exibição de notícias.
+Portal de notícias moderno e completo com sistema de webscrapers automáticos, desenvolvido com **Directus** (backend/CMS), **Next.js** (frontend) e **TypeScript**.
 
-## 🚀 Características
+## ⚡ Setup Instantâneo (1 Comando!)
 
-- **Backend:** Directus CMS com PostgreSQL
-- **Frontend:** Next.js 15 com TypeScript
-- **Styling:** Tailwind CSS
-- **Containerização:** Docker e Docker Compose
-- **Gerenciamento de Pacotes:** pnpm
-
-## 📋 Funcionalidades
-
-### 🎯 Frontend
-- ✅ Homepage com notícias em destaque
-- ✅ Páginas de categoria com filtros
-- ✅ Páginas individuais de notícias
-- ✅ Sistema de busca
-- ✅ Design responsivo e moderno
-- ✅ SEO otimizado
-
-### 🔧 Backend (Directus CMS)
-- ✅ Gerenciamento de notícias
-- ✅ Sistema de autores
-- ✅ Categorização de conteúdo
-- ✅ Upload de imagens
-- ✅ API REST completa
-- ✅ Interface administrativa
-
-## 🛠️ Instalação e Configuração
-
-### Pré-requisitos
-- Node.js 18+
-- pnpm (gerenciador de pacotes)
-- Docker e Docker Compose
-- Git
-
-### Instalação do pnpm
-Se você não tem o pnpm instalado:
 ```bash
-# Via npm
+bash setup.sh
+```
+
+**É isso!** O script configura tudo automaticamente em poucos minutos:
+
+- ✅ Verifica e instala dependências
+- ✅ Inicia Docker automaticamente
+- ✅ Cria e configura banco de dados PostgreSQL
+- ✅ Executa migrations e popula dados iniciais
+- ✅ Configura Directus com usuário admin
+- ✅ Inicia frontend Next.js
+- ✅ Gera tokens de autenticação
+- ✅ Verifica saúde de todos os serviços
+
+Veja o **[Guia de Setup Completo](SETUP-GUIDE.md)** para mais detalhes.
+
+## 🎯 Características
+
+### 🔧 Backend (Directus)
+- API REST completa
+- CMS headless poderoso
+- Autenticação e permissões
+- Upload de mídia
+- Webhooks e automações
+
+### 🎨 Frontend (Next.js)
+- Server-Side Rendering (SSR)
+- Geração Estática (SSG)
+- Design responsivo e moderno
+- Performance otimizada
+- SEO-friendly
+
+### 🕷️ Webscrapers Automáticos
+- **G1 Tecnologia**: Importa notícias do G1
+- **Folha de S.Paulo**: Importa notícias da Folha (Tec)
+- **Olhar Digital**: Importa notícias do Olhar Digital
+- Execução automática a cada 5 minutos
+- Evita duplicatas
+- Formatação e limpeza de conteúdo
+
+## 📋 Pré-requisitos
+
+- **Docker Desktop** (ou Docker Engine + Docker Compose)
+- **Node.js 18+**
+- **pnpm** (recomendado) ou npm
+- **Git**
+
+### Instalar pnpm
+
+```bash
 npm install -g pnpm
-
-# Via curl (Linux/macOS)
-curl -fsSL https://get.pnpm.io/install.sh | sh -
-
-# Via PowerShell (Windows)
-iwr https://get.pnpm.io/install.ps1 -useb | iex
 ```
 
-### Setup Rápido
+## 🚀 Início Rápido
 
-1. **Clone o repositório:**
-   ```bash
-   git clone https://github.com/rafaelexplorernetbsb/news-portal.git
-   cd news-portal
-   ```
-
-2. **Execute o backend (Directus + PostgreSQL):**
-   ```bash
-   docker-compose up -d
-   ```
-
-3. **Configure as coleções, dados de demonstração e token de API:**
-   ```bash
-   ./fix-all-collections.sh
-   ```
-
-4. **Instale e execute o frontend:**
-   ```bash
-   cd frontend
-   pnpm install
-   pnpm dev
-   ```
-
-5. **Acesse a aplicação:**
-   - **Frontend:** [http://localhost:3000](http://localhost:3000)
-   - **Directus CMS:** [http://localhost:8055](http://localhost:8055)
-
-## 📊 Dados de Demonstração
-
-O script `setup-demo-data.sh` importa automaticamente:
-
-- **5 categorias:** Política, Economia, Tecnologia, Esportes, Cultura
-- **4 autores:** Jornalistas de exemplo com biografias
-- **10 notícias:** Artigos de demonstração com conteúdo completo
-
-### Conteúdo das Notícias
-- Notícias em destaque e regulares
-- Diferentes categorias e autores
-- Datas de publicação variadas
-- Conteúdo realista e profissional
-
-## 🎯 Comandos Úteis
-
-### Desenvolvimento
-```bash
-# Frontend
-pnpm dev          # Servidor de desenvolvimento
-pnpm build        # Build de produção
-pnpm start        # Servidor de produção
-
-# Backend
-docker-compose up -d        # Iniciar serviços
-docker-compose down         # Parar serviços
-docker-compose logs -f      # Ver logs
-```
-
-### Gerenciamento de Dados
-```bash
-# Configurar coleções, dados de demonstração e token de API
-./fix-all-collections.sh
-
-# Apenas dados de demonstração e token (se coleções já existirem)
-./setup-demo-data.sh
-
-# Gerar apenas token de API
-./generate-token.sh
-
-# Backup do banco
-docker exec directus-postgres-1 pg_dump -U postgres -d directus > backup.sql
-
-# Restaurar backup
-docker exec -i directus-postgres-1 psql -U postgres -d directus < backup.sql
-```
-
-## 🛠️ Solução de Problemas
-
-### Erro do Sentry
-Se você encontrar o erro:
-```
-unhandledRejection Error: Command failed: sentry-cli releases new...
-```
-
-**Solução:** O Sentry está desabilitado por padrão. Se o erro persistir:
-
-1. **Crie um arquivo `.env.local` no diretório frontend:**
-   ```bash
-   cd frontend
-   cp env.example .env.local
-   ```
-
-2. **Ou desabilite completamente o Sentry:**
-   ```bash
-   export SENTRY_DSN=""
-   export SENTRY_ORG=""
-   export SENTRY_PROJECT=""
-   ```
-
-### Backend não conecta
-```bash
-# Verificar status dos containers
-docker-compose ps
-
-# Reiniciar serviços
-docker-compose down && docker-compose up -d
-
-# Ver logs de erro
-docker-compose logs directus
-docker-compose logs postgres
-```
-
-### Coleções não aparecem no "Modelo de dados"
-Se as coleções (autores, categorias, noticias) não aparecerem no Directus:
+### 1. Clone o Repositório
 
 ```bash
-# Execute o script de correção
-./fix-all-collections.sh
+git clone https://github.com/seu-usuario/portal-noticias.git
+cd portal-noticias
 ```
 
-Este script:
-- Cria as tabelas diretamente no banco
-- Configura os metadados do Directus
-- Importa dados de demonstração
-- Gera token de API válido
-- Configura o frontend automaticamente
-- Reinicia o Directus
-
-### Erro "Erro ao carregar noticias" no Frontend
-Se o frontend mostrar erro de carregamento:
+### 2. Execute o Setup
 
 ```bash
-# Reconfigure tudo com token válido
-./fix-all-collections.sh
-
-# Ou apenas gere um novo token
-./generate-token.sh
+bash setup.sh
 ```
 
-O script automaticamente:
-- Gera um token de API válido
-- Configura o arquivo `frontend/.env.local`
-- Resolve problemas de autenticação
+### 3. Acesse o Sistema
 
-### Problemas de permissão
+- **Frontend**: [http://localhost:3000](http://localhost:3000)
+- **Directus Admin**: [http://localhost:8055/admin](http://localhost:8055/admin)
+  - Email: `admin@example.com`
+  - Senha: `admin123`
+
+### 4. Rode os Webscrapers (Opcional)
+
 ```bash
-# Executar script de configuração
-node apply-permissions.js
-node create-collections.js
+cd webscraper-service
+
+# G1 - Tecnologia
+node g1.js
+
+# Folha - Tecnologia  
+node folha.js
+
+# Olhar Digital
+node olhar-digital.js
 ```
 
-## 📁 Estrutura do Projeto
+## 📊 Dados Iniciais
+
+O setup automaticamente cria:
+
+### Categorias
+1. **Tecnologia** (ID: 1, slug: `tecnologia`)
+2. **Política** (ID: 2, slug: `politica`)
+3. **Economia** (ID: 3, slug: `economia`)
+4. **Esportes** (ID: 4, slug: `esportes`)
+5. **Cultura** (ID: 5, slug: `cultura`)
+
+### Autor Padrão
+- **Sistema Webscraper** (ID: 1)
+- Usado por todos os webscrapers automáticos
+
+## 🗂️ Estrutura do Projeto
 
 ```
-news-portal/
-├── frontend/                 # Aplicação Next.js
-│   ├── app/                 # Páginas da aplicação
+directus/
+├── database/
+│   ├── migrations/          # Migrations SQL
+│   └── seeds/               # Seeds SQL (dados iniciais)
+├── frontend/                # Next.js frontend
+│   ├── app/                 # App Router do Next.js
 │   ├── components/          # Componentes React
-│   ├── lib/                 # Utilitários e configurações
+│   ├── lib/                 # Utilitários e SDK
 │   └── public/              # Arquivos estáticos
-├── docker-compose.yml       # Configuração dos containers
-├── database_schema.sql      # Schema do banco de dados
-├── demo_data.sql           # Dados de demonstração
-├── setup-demo-data.sh      # Script de configuração
-├── apply-permissions.js    # Configuração de permissões
-└── create-collections.js   # Criação de coleções
+├── webscraper-service/      # Webscrapers
+│   ├── g1.js               # Webscraper do G1
+│   ├── folha.js            # Webscraper da Folha
+│   └── olhar-digital.js    # Webscraper do Olhar Digital
+├── api/                     # Directus API (opcional)
+├── .env                    # Configurações principais
+├── setup.sh                # Setup automático ⭐
+├── stop.sh                 # Parar todos os serviços
+├── health-check.sh         # Verificar saúde dos serviços
+├── diagnose.sh             # Diagnóstico completo
+└── docker-compose.yml      # Docker Compose (desenvolvimento)
 ```
+
+## 💡 Comandos Úteis
+
+### Parar Tudo
+```bash
+./stop.sh
+```
+
+### Ver Logs do Frontend
+```bash
+tail -f frontend.log
+```
+
+### Health Check
+```bash
+./health-check.sh
+```
+
+### Diagnóstico Completo
+```bash
+./diagnose.sh
+```
+
+### Reiniciar Setup
+```bash
+./stop.sh
+bash setup.sh
+```
+
+### Docker Compose
+```bash
+# Ver status
+docker compose ps
+
+# Ver logs do Directus
+docker compose logs -f directus
+
+# Ver logs do PostgreSQL
+docker compose logs -f db
+
+# Parar containers
+docker compose down
+
+# Parar e remover volumes
+docker compose down -v
+```
+
+## 🔧 Configuração
+
+### Variáveis de Ambiente
+
+As principais configurações estão em `.env`:
+
+```bash
+# Directus
+DIRECTUS_URL=http://localhost:8055
+DIRECTUS_ADMIN_EMAIL=admin@example.com
+DIRECTUS_ADMIN_PASSWORD=admin123
+
+# Frontend
+NEXT_PUBLIC_DIRECTUS_URL=http://localhost:8055
+
+# Webscrapers
+G1_ENABLED=true
+FOLHA_ENABLED=true
+OLHAR_DIGITAL_ENABLED=true
+WEBSCRAPER_INTERVAL_MINUTES=5
+```
+
+### Configuração dos Webscrapers
+
+Edite `webscraper-service/.env`:
+
+```bash
+# Configurações do G1
+G1_ENABLED=true
+G1_INTERVAL_MINUTES=5
+G1_MAX_ARTICLES=5
+G1_RSS_URL=https://g1.globo.com/rss/g1/tecnologia/
+G1_CATEGORY_SLUG=tecnologia
+```
+
+## 🐳 Docker
+
+O projeto usa Docker para rodar:
+- **PostgreSQL** (banco de dados)
+- **Redis** (cache)
+- **Directus** (API/CMS)
+
+Os containers são iniciados automaticamente pelo `setup.sh`.
+
+### Modo Desenvolvimento
+
+```bash
+docker compose up -d
+```
+
+### Modo Produção
+
+```bash
+docker compose -f docker-compose.prod.yml up -d
+```
+
+## 🔍 Troubleshooting
+
+### Docker não inicia
+
+```bash
+# macOS
+open -a Docker
+
+# Linux
+sudo systemctl start docker
+
+# Ou use o helper script
+./start-docker.sh
+```
+
+### Portas já estão em uso
+
+```bash
+# O setup.sh automaticamente libera as portas
+# Mas você pode fazer manualmente:
+lsof -ti:3000 | xargs kill -9  # Frontend
+lsof -ti:8055 | xargs kill -9  # Directus
+```
+
+### Erro de dependências
+
+```bash
+# Limpar caches
+pnpm store prune
+rm -rf node_modules frontend/node_modules webscraper-service/node_modules
+
+# Rodar setup novamente
+bash setup.sh
+```
+
+### Banco de dados não está populado
+
+```bash
+# Executar migrations e seeds manualmente
+docker compose exec -T db psql -U directus -d directus < database/migrations/001_initial_schema.sql
+docker compose exec -T db psql -U directus -d directus < database/seeds/001_initial_data.sql
+```
+
+## 📚 Documentação Adicional
+
+- **[Guia de Setup Completo](SETUP-GUIDE.md)** - Documentação detalhada do setup
+- **[Directus Docs](https://docs.directus.io/)** - Documentação oficial do Directus
+- **[Next.js Docs](https://nextjs.org/docs)** - Documentação oficial do Next.js
+
+## 🛠️ Stack Tecnológico
+
+### Backend
+- **Directus** - Headless CMS
+- **PostgreSQL** - Banco de dados
+- **Redis** - Cache
+
+### Frontend
+- **Next.js 14+** - Framework React
+- **TypeScript** - Tipagem estática
+- **Tailwind CSS** - Estilização
+- **React Icons** - Ícones
+
+### Webscrapers
+- **Node.js** - Runtime
+- **Cheerio** - Parser HTML
+- **node-fetch** - HTTP client
+- **dotenv** - Variáveis de ambiente
+
+### DevOps
+- **Docker** - Containerização
+- **Docker Compose** - Orquestração
+- **pnpm** - Gerenciador de pacotes
+
+## 🚀 Deploy em Produção
+
+Para produção:
+
+1. **Configure as variáveis de ambiente**:
+   ```bash
+   cp .env .env.production
+   # Edite .env.production com valores de produção
+   ```
+
+2. **Execute o setup em modo produção**:
+   ```bash
+   bash setup.sh prod
+   ```
+
+3. **Configure domínios e SSL**:
+   - Use Nginx ou Caddy como reverse proxy
+   - Configure certificados SSL (Let's Encrypt)
+   - Aponte domínios para os serviços
+
+4. **Ajuste permissões do Directus**:
+   - Acesse o Admin
+   - Configure roles e permissões
+   - Proteja endpoints sensíveis
+
+5. **Monitore os serviços**:
+   ```bash
+   ./health-check.sh
+   ```
 
 ## 🤝 Contribuindo
+
+Contribuições são bem-vindas! Por favor:
 
 1. Fork o projeto
 2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
@@ -227,15 +352,18 @@ news-portal/
 
 ## 📄 Licença
 
-Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para detalhes.
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
 
-## 🙏 Agradecimentos
+## 🆘 Suporte
 
-- [Directus](https://directus.io/) - CMS headless
-- [Next.js](https://nextjs.org/) - Framework React
-- [Tailwind CSS](https://tailwindcss.com/) - Framework CSS
-- [PostgreSQL](https://postgresql.org/) - Banco de dados
+Se encontrar problemas:
+
+1. Execute o diagnóstico: `./diagnose.sh`
+2. Verifique os logs: `tail -f frontend.log`
+3. Verifique os logs do Docker: `docker compose logs -f`
+4. Consulte o [Guia de Setup](SETUP-GUIDE.md)
+5. Abra uma issue no GitHub
 
 ---
 
-**Desenvolvido com ❤️ por [Rafael Soares](https://github.com/rafaelexplorernetbsb)**
+**✨ Feito com ❤️ usando Directus e Next.js**

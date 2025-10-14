@@ -1,10 +1,9 @@
-version: '3.8'
-
 services:
   postgres:
     image: postgres:13-alpine
     environment:
-      POSTGRES_PASSWORD: secret
+      POSTGRES_PASSWORD: directus123
+      POSTGRES_USER: directus
       POSTGRES_DB: directus
     ports:
       - 5432:5432
@@ -31,8 +30,8 @@ services:
       DB_HOST: 'postgres'
       DB_PORT: '5432'
       DB_DATABASE: 'directus'
-      DB_USER: 'postgres'
-      DB_PASSWORD: 'secret'
+      DB_USER: 'directus'
+      DB_PASSWORD: 'directus123'
       CACHE_ENABLED: 'false'
       CACHE_STORE: 'redis'
       REDIS: 'redis://redis:6379'
@@ -61,18 +60,17 @@ services:
       - redis
     platform: linux/arm64
 
-  frontend:
-    build: ./frontend
-    ports:
-      - 3000:3000
-    environment:
-      - NEXT_PUBLIC_DIRECTUS_URL=http://localhost:8055
-      - DIRECTUS_URL=http://directus:8055
-      - NEXT_PUBLIC_API_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjM5ZjZjMDVlLWNmZmMtNGNlYi04NmU0LWJmYmM0N2VmY2ZkZSIsInJvbGUiOiI3MWYxYzIyZi1jOGMyLTRjYjctOGMzNS1jNDA1MDY4M2UwYmEiLCJhcHBfYWNjZXNzIjp0cnVlLCJhZG1pbl9hY2Nlc3MiOnRydWUsImlhdCI6MTc1OTMyNTY0MywiZXhwIjoxNzU5MzI2NTQzLCJpc3MiOiJkaXJlY3R1cyJ9.nHSqFgkygHQ36DRJe3b6wSEmBqGiA-t_o8uDAnSmQQc
-      - API_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjM5ZjZjMDVlLWNmZmMtNGNlYi04NmU0LWJmYmM0N2VmY2ZkZSIsInJvbGUiOiI3MWYxYzIyZi1jOGMyLTRjYjctOGMzNS1jNDA1MDY4M2UwYmEiLCJhcHBfYWNjZXNzIjp0cnVlLCJhZG1pbl9hY2Nlc3MiOnRydWUsImlhdCI6MTc1OTMyNTY0MywiZXhwIjoxNzU5MzI2NTQzLCJpc3MiOiJkaXJlY3R1cyJ9.nHSqFgkygHQ36DRJe3b6wSEmBqGiA-t_o8uDAnSmQQc
-    depends_on:
-      - directus
-    platform: linux/arm64
+  # Frontend será rodado localmente via pnpm dev
+  # frontend:
+  #   build: ./frontend
+  #   ports:
+  #     - 3000:3000
+  #   environment:
+  #     - NEXT_PUBLIC_DIRECTUS_URL=http://localhost:8055
+  #     - DIRECTUS_URL=http://directus:8055
+  #   depends_on:
+  #     - directus
+  #   platform: linux/arm64
 
 volumes:
   postgres_data:

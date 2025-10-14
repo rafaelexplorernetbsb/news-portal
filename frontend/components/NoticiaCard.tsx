@@ -58,7 +58,7 @@ export default function NoticiaCard({ noticia, featured = false, compact = false
           {noticia.categoria && (
             <div className="absolute top-4 left-4">
               <span className="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-bold uppercase tracking-wide rounded-full">
-                {capitalizarCategoria(noticia.categoria)}
+                {capitalizarCategoria(typeof noticia.categoria === 'string' ? noticia.categoria : noticia.categoria.nome)}
               </span>
             </div>
           )}

@@ -83,7 +83,7 @@ export default function Home() {
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
                           <div className="absolute bottom-0 left-0 p-6 text-white">
                             <span className="bg-blue-600 text-xs font-semibold px-3 py-1 rounded-full mb-3 inline-block">
-                              {capitalizarCategoria(noticiasDestaque[0].categoria)}
+                              {capitalizarCategoria(typeof noticiasDestaque[0].categoria === 'string' ? noticiasDestaque[0].categoria : noticiasDestaque[0].categoria.nome)}
                             </span>
                             <h2 className="text-2xl font-bold leading-tight group-hover:text-blue-200 transition-colors mb-2">
                               {noticiasDestaque[0].titulo}
@@ -113,7 +113,7 @@ export default function Home() {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                             <div className="absolute bottom-0 left-0 p-4 text-white w-full">
                               <span className="bg-blue-600 text-xs font-semibold px-2 py-1 rounded-full mb-2 inline-block">
-                                {capitalizarCategoria(noticia.categoria)}
+                                {capitalizarCategoria(typeof noticia.categoria === 'string' ? noticia.categoria : noticia.categoria.nome)}
                               </span>
                               <h3 className="text-base font-bold leading-tight group-hover:text-blue-200 transition-colors line-clamp-2">
                                 {noticia.titulo}
@@ -144,7 +144,7 @@ export default function Home() {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                             <div className="absolute bottom-0 left-0 p-4 text-white w-full">
                               <span className="bg-blue-600 text-xs font-semibold px-2 py-1 rounded-full mb-2 inline-block">
-                                {capitalizarCategoria(noticia.categoria)}
+                                {capitalizarCategoria(typeof noticia.categoria === 'string' ? noticia.categoria : noticia.categoria.nome)}
                               </span>
                               <h3 className="text-base font-bold leading-tight group-hover:text-blue-200 transition-colors line-clamp-2">
                                 {noticia.titulo}

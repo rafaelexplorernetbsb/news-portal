@@ -21,7 +21,11 @@ export interface Noticia {
   audio_url?: string;
   data_publicacao: string;
   destaque: boolean;
-  categoria: string;
+  categoria: {
+    id: number;
+    nome: string;
+    slug: string;
+  } | string;
   autor: {
     id: number;
     nome: string;

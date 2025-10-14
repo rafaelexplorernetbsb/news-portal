@@ -1,0 +1,970 @@
+{
+  "version": 1,
+  "directus": "10.0.0",
+  "collections": [
+    {
+      "collection": "noticias",
+      "meta": {
+        "accountability": "all",
+        "archive_app_filter": true,
+        "archive_field": "status",
+        "archive_value": "archived",
+        "collapse": "open",
+        "collection": "noticias",
+        "color": null,
+        "display_template": null,
+        "group": null,
+        "hidden": false,
+        "icon": "article",
+        "item_duplication_fields": null,
+        "note": null,
+        "singleton": false,
+        "sort": null,
+        "sort_field": "sort",
+        "translations": {},
+        "unarchive_value": "draft"
+      },
+      "schema": {
+        "name": "noticias"
+      },
+      "fields": [
+        {
+          "field": "id",
+          "type": "uuid",
+          "meta": {
+            "hidden": true,
+            "readonly": true,
+            "interface": "input",
+            "special": ["uuid"]
+          },
+          "schema": {
+            "is_primary_key": true,
+            "length": 36,
+            "name": "id",
+            "table": "noticias",
+            "type": "char"
+          }
+        },
+        {
+          "field": "status",
+          "type": "string",
+          "meta": {
+            "width": "full",
+            "options": {
+              "choices": [
+                {
+                  "text": "$t:published",
+                  "value": "published"
+                },
+                {
+                  "text": "$t:draft",
+                  "value": "draft"
+                },
+                {
+                  "text": "$t:archived",
+                  "value": "archived"
+                }
+              ]
+            },
+            "interface": "select-dropdown",
+            "display": "labels",
+            "display_options": {
+              "showAsDot": true,
+              "choices": [
+                {
+                  "text": "$t:published",
+                  "value": "published",
+                  "foreground": "#FFFFFF",
+                  "background": "var(--theme--primary)"
+                },
+                {
+                  "text": "$t:draft",
+                  "value": "draft",
+                  "foreground": "#18222F",
+                  "background": "#D3DAE4"
+                },
+                {
+                  "text": "$t:archived",
+                  "value": "archived",
+                  "foreground": "#FFFFFF",
+                  "background": "var(--theme--warning)"
+                }
+              ]
+            },
+            "special": null
+          },
+          "schema": {
+            "default_value": "draft",
+            "is_nullable": false,
+            "name": "status",
+            "table": "noticias",
+            "type": "varchar",
+            "length": 255
+          }
+        },
+        {
+          "field": "sort",
+          "type": "integer",
+          "meta": {
+            "hidden": true,
+            "interface": "input",
+            "special": null
+          },
+          "schema": {
+            "name": "sort",
+            "table": "noticias",
+            "type": "integer"
+          }
+        },
+        {
+          "field": "user_created",
+          "type": "uuid",
+          "meta": {
+            "hidden": true,
+            "interface": "select-dropdown-m2o",
+            "special": ["user-created"]
+          },
+          "schema": {
+            "name": "user_created",
+            "table": "noticias",
+            "type": "char",
+            "length": 36
+          }
+        },
+        {
+          "field": "date_created",
+          "type": "timestamp",
+          "meta": {
+            "hidden": true,
+            "interface": "datetime",
+            "special": ["date-created"]
+          },
+          "schema": {
+            "name": "date_created",
+            "table": "noticias",
+            "type": "timestamp"
+          }
+        },
+        {
+          "field": "user_updated",
+          "type": "uuid",
+          "meta": {
+            "hidden": true,
+            "interface": "select-dropdown-m2o",
+            "special": ["user-updated"]
+          },
+          "schema": {
+            "name": "user_updated",
+            "table": "noticias",
+            "type": "char",
+            "length": 36
+          }
+        },
+        {
+          "field": "date_updated",
+          "type": "timestamp",
+          "meta": {
+            "hidden": true,
+            "interface": "datetime",
+            "special": ["date-updated"]
+          },
+          "schema": {
+            "name": "date_updated",
+            "table": "noticias",
+            "type": "timestamp"
+          }
+        },
+        {
+          "field": "titulo",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "options": {
+              "trim": true
+            },
+            "display": "formatted-value",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "full",
+            "translations": null,
+            "required": true,
+            "note": "Título da notícia",
+            "special": null
+          },
+          "schema": {
+            "name": "titulo",
+            "table": "noticias",
+            "type": "varchar",
+            "length": 255,
+            "is_nullable": false
+          }
+        },
+        {
+          "field": "resumo",
+          "type": "text",
+          "meta": {
+            "interface": "input-multiline",
+            "options": {
+              "trim": true
+            },
+            "display": "formatted-value",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "full",
+            "translations": null,
+            "required": true,
+            "note": "Resumo curto da notícia",
+            "special": null
+          },
+          "schema": {
+            "name": "resumo",
+            "table": "noticias",
+            "type": "text",
+            "is_nullable": false
+          }
+        },
+        {
+          "field": "conteudo",
+          "type": "text",
+          "meta": {
+            "interface": "input-rich-text-html",
+            "options": {},
+            "display": "formatted-value",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "full",
+            "translations": null,
+            "required": true,
+            "note": "Conteúdo completo da notícia",
+            "special": null
+          },
+          "schema": {
+            "name": "conteudo",
+            "table": "noticias",
+            "type": "text",
+            "is_nullable": false
+          }
+        },
+        {
+          "field": "imagem",
+          "type": "uuid",
+          "meta": {
+            "interface": "file-image",
+            "options": {
+              "folder": null
+            },
+            "display": "image",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "full",
+            "translations": null,
+            "required": true,
+            "note": "Imagem principal da notícia",
+            "special": ["file"]
+          },
+          "schema": {
+            "name": "imagem",
+            "table": "noticias",
+            "type": "char",
+            "length": 36,
+            "is_nullable": false
+          }
+        },
+        {
+          "field": "data_publicacao",
+          "type": "timestamp",
+          "meta": {
+            "interface": "datetime",
+            "options": {
+              "includeSeconds": false
+            },
+            "display": "datetime",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "half",
+            "translations": null,
+            "required": true,
+            "note": "Data de publicação da notícia",
+            "special": null
+          },
+          "schema": {
+            "name": "data_publicacao",
+            "table": "noticias",
+            "type": "timestamp",
+            "is_nullable": false
+          }
+        },
+        {
+          "field": "destaque",
+          "type": "boolean",
+          "meta": {
+            "interface": "boolean",
+            "options": {
+              "label": "Esta notícia está em destaque?"
+            },
+            "display": "boolean",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "half",
+            "translations": null,
+            "required": false,
+            "note": "Marque para exibir na seção de destaque",
+            "special": null
+          },
+          "schema": {
+            "name": "destaque",
+            "table": "noticias",
+            "type": "boolean",
+            "default_value": false,
+            "is_nullable": true
+          }
+        },
+        {
+          "field": "categoria",
+          "type": "string",
+          "meta": {
+            "interface": "select-dropdown",
+            "options": {
+              "choices": [
+                {
+                  "text": "Política",
+                  "value": "politica"
+                },
+                {
+                  "text": "Economia",
+                  "value": "economia"
+                },
+                {
+                  "text": "Esportes",
+                  "value": "esportes"
+                },
+                {
+                  "text": "Tecnologia",
+                  "value": "tecnologia"
+                },
+                {
+                  "text": "Cultura",
+                  "value": "cultura"
+                },
+                {
+                  "text": "Saúde",
+                  "value": "saude"
+                },
+                {
+                  "text": "Educação",
+                  "value": "educacao"
+                }
+              ]
+            },
+            "display": "labels",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "half",
+            "translations": null,
+            "required": true,
+            "note": "Categoria da notícia",
+            "special": null
+          },
+          "schema": {
+            "name": "categoria",
+            "table": "noticias",
+            "type": "varchar",
+            "length": 255,
+            "is_nullable": false
+          }
+        },
+        {
+          "field": "autor",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "options": {
+              "trim": true
+            },
+            "display": "formatted-value",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "half",
+            "translations": null,
+            "required": true,
+            "note": "Nome do autor da notícia",
+            "special": null
+          },
+          "schema": {
+            "name": "autor",
+            "table": "noticias",
+            "type": "varchar",
+            "length": 255,
+            "is_nullable": false
+          }
+        }
+      ]
+    },
+    {
+      "collection": "categorias",
+      "meta": {
+        "accountability": "all",
+        "archive_app_filter": true,
+        "archive_field": null,
+        "archive_value": null,
+        "collapse": "open",
+        "collection": "categorias",
+        "color": null,
+        "display_template": "{{nome}}",
+        "group": null,
+        "hidden": false,
+        "icon": "folder",
+        "item_duplication_fields": null,
+        "note": null,
+        "singleton": false,
+        "sort": null,
+        "sort_field": null,
+        "translations": {},
+        "unarchive_value": null
+      },
+      "schema": {
+        "name": "categorias"
+      },
+      "fields": [
+        {
+          "field": "id",
+          "type": "uuid",
+          "meta": {
+            "hidden": true,
+            "readonly": true,
+            "interface": "input",
+            "special": ["uuid"]
+          },
+          "schema": {
+            "is_primary_key": true,
+            "length": 36,
+            "name": "id",
+            "table": "categorias",
+            "type": "char"
+          }
+        },
+        {
+          "field": "nome",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "options": {
+              "trim": true
+            },
+            "display": "formatted-value",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "full",
+            "translations": null,
+            "required": true,
+            "note": "Nome da categoria",
+            "special": null
+          },
+          "schema": {
+            "name": "nome",
+            "table": "categorias",
+            "type": "varchar",
+            "length": 255,
+            "is_nullable": false
+          }
+        },
+        {
+          "field": "descricao",
+          "type": "text",
+          "meta": {
+            "interface": "input-multiline",
+            "options": {
+              "trim": true
+            },
+            "display": "formatted-value",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "full",
+            "translations": null,
+            "required": false,
+            "note": "Descrição da categoria",
+            "special": null
+          },
+          "schema": {
+            "name": "descricao",
+            "table": "categorias",
+            "type": "text",
+            "is_nullable": true
+          }
+        },
+        {
+          "field": "slug",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "options": {
+              "trim": true,
+              "slug": true
+            },
+            "display": "formatted-value",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "full",
+            "translations": null,
+            "required": true,
+            "note": "Identificador único para URLs",
+            "special": null
+          },
+          "schema": {
+            "name": "slug",
+            "table": "categorias",
+            "type": "varchar",
+            "length": 255,
+            "is_nullable": false
+          }
+        },
+        {
+          "field": "icone",
+          "type": "uuid",
+          "meta": {
+            "interface": "file-image",
+            "options": {
+              "folder": null
+            },
+            "display": "image",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "half",
+            "translations": null,
+            "required": false,
+            "note": "Ícone da categoria",
+            "special": ["file"]
+          },
+          "schema": {
+            "name": "icone",
+            "table": "categorias",
+            "type": "char",
+            "length": 36,
+            "is_nullable": true
+          }
+        }
+      ]
+    },
+    {
+      "collection": "autores",
+      "meta": {
+        "accountability": "all",
+        "archive_app_filter": true,
+        "archive_field": null,
+        "archive_value": null,
+        "collapse": "open",
+        "collection": "autores",
+        "color": null,
+        "display_template": "{{nome}}",
+        "group": null,
+        "hidden": false,
+        "icon": "person",
+        "item_duplication_fields": null,
+        "note": null,
+        "singleton": false,
+        "sort": null,
+        "sort_field": null,
+        "translations": {},
+        "unarchive_value": null
+      },
+      "schema": {
+        "name": "autores"
+      },
+      "fields": [
+        {
+          "field": "id",
+          "type": "uuid",
+          "meta": {
+            "hidden": true,
+            "readonly": true,
+            "interface": "input",
+            "special": ["uuid"]
+          },
+          "schema": {
+            "is_primary_key": true,
+            "length": 36,
+            "name": "id",
+            "table": "autores",
+            "type": "char"
+          }
+        },
+        {
+          "field": "nome",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "options": {
+              "trim": true
+            },
+            "display": "formatted-value",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "full",
+            "translations": null,
+            "required": true,
+            "note": "Nome completo do autor",
+            "special": null
+          },
+          "schema": {
+            "name": "nome",
+            "table": "autores",
+            "type": "varchar",
+            "length": 255,
+            "is_nullable": false
+          }
+        },
+        {
+          "field": "biografia",
+          "type": "text",
+          "meta": {
+            "interface": "input-rich-text-html",
+            "options": {},
+            "display": "formatted-value",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "full",
+            "translations": null,
+            "required": false,
+            "note": "Biografia do autor",
+            "special": null
+          },
+          "schema": {
+            "name": "biografia",
+            "table": "autores",
+            "type": "text",
+            "is_nullable": true
+          }
+        },
+        {
+          "field": "foto",
+          "type": "uuid",
+          "meta": {
+            "interface": "file-image",
+            "options": {
+              "folder": null
+            },
+            "display": "image",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "half",
+            "translations": null,
+            "required": false,
+            "note": "Foto do autor",
+            "special": ["file"]
+          },
+          "schema": {
+            "name": "foto",
+            "table": "autores",
+            "type": "char",
+            "length": 36,
+            "is_nullable": true
+          }
+        },
+        {
+          "field": "email",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "options": {
+              "trim": true
+            },
+            "display": "formatted-value",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "half",
+            "translations": null,
+            "required": false,
+            "note": "Email do autor",
+            "special": null
+          },
+          "schema": {
+            "name": "email",
+            "table": "autores",
+            "type": "varchar",
+            "length": 255,
+            "is_nullable": true
+          }
+        }
+      ]
+    },
+    {
+      "collection": "comentarios",
+      "meta": {
+        "accountability": "all",
+        "archive_app_filter": true,
+        "archive_field": "status",
+        "archive_value": "arquivado",
+        "collapse": "open",
+        "collection": "comentarios",
+        "color": null,
+        "display_template": null,
+        "group": null,
+        "hidden": false,
+        "icon": "chat",
+        "item_duplication_fields": null,
+        "note": null,
+        "singleton": false,
+        "sort": null,
+        "sort_field": null,
+        "translations": {},
+        "unarchive_value": "pendente"
+      },
+      "schema": {
+        "name": "comentarios"
+      },
+      "fields": [
+        {
+          "field": "id",
+          "type": "uuid",
+          "meta": {
+            "hidden": true,
+            "readonly": true,
+            "interface": "input",
+            "special": ["uuid"]
+          },
+          "schema": {
+            "is_primary_key": true,
+            "length": 36,
+            "name": "id",
+            "table": "comentarios",
+            "type": "char"
+          }
+        },
+        {
+          "field": "noticia",
+          "type": "uuid",
+          "meta": {
+            "interface": "select-dropdown-m2o",
+            "options": {
+              "template": "{{titulo}}"
+            },
+            "display": "related-values",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "full",
+            "translations": null,
+            "required": true,
+            "note": "Notícia relacionada ao comentário",
+            "special": ["m2o"]
+          },
+          "schema": {
+            "name": "noticia",
+            "table": "comentarios",
+            "type": "char",
+            "length": 36,
+            "is_nullable": false,
+            "foreign_key_column": "id",
+            "foreign_key_table": "noticias"
+          }
+        },
+        {
+          "field": "nome",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "options": {
+              "trim": true
+            },
+            "display": "formatted-value",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "half",
+            "translations": null,
+            "required": true,
+            "note": "Nome do autor do comentário",
+            "special": null
+          },
+          "schema": {
+            "name": "nome",
+            "table": "comentarios",
+            "type": "varchar",
+            "length": 255,
+            "is_nullable": false
+          }
+        },
+        {
+          "field": "email",
+          "type": "string",
+          "meta": {
+            "interface": "input",
+            "options": {
+              "trim": true
+            },
+            "display": "formatted-value",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "half",
+            "translations": null,
+            "required": true,
+            "note": "Email do autor do comentário",
+            "special": null
+          },
+          "schema": {
+            "name": "email",
+            "table": "comentarios",
+            "type": "varchar",
+            "length": 255,
+            "is_nullable": false
+          }
+        },
+        {
+          "field": "conteudo",
+          "type": "text",
+          "meta": {
+            "interface": "input-multiline",
+            "options": {
+              "trim": true
+            },
+            "display": "formatted-value",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "full",
+            "translations": null,
+            "required": true,
+            "note": "Conteúdo do comentário",
+            "special": null
+          },
+          "schema": {
+            "name": "conteudo",
+            "table": "comentarios",
+            "type": "text",
+            "is_nullable": false
+          }
+        },
+        {
+          "field": "data",
+          "type": "timestamp",
+          "meta": {
+            "interface": "datetime",
+            "options": {
+              "includeSeconds": true
+            },
+            "display": "datetime",
+            "display_options": {},
+            "readonly": false,
+            "hidden": false,
+            "width": "half",
+            "translations": null,
+            "required": true,
+            "note": "Data e hora do comentário",
+            "special": ["date-created"]
+          },
+          "schema": {
+            "name": "data",
+            "table": "comentarios",
+            "type": "timestamp",
+            "is_nullable": false
+          }
+        },
+        {
+          "field": "status",
+          "type": "string",
+          "meta": {
+            "interface": "select-dropdown",
+            "options": {
+              "choices": [
+                {
+                  "text": "Pendente",
+                  "value": "pendente"
+                },
+                {
+                  "text": "Aprovado",
+                  "value": "aprovado"
+                },
+                {
+                  "text": "Rejeitado",
+                  "value": "rejeitado"
+                },
+                {
+                  "text": "Arquivado",
+                  "value": "arquivado"
+                }
+              ]
+            },
+            "display": "labels",
+            "display_options": {
+              "showAsDot": true,
+              "choices": [
+                {
+                  "text": "Pendente",
+                  "value": "pendente",
+                  "foreground": "#18222F",
+                  "background": "#D3DAE4"
+                },
+                {
+                  "text": "Aprovado",
+                  "value": "aprovado",
+                  "foreground": "#FFFFFF",
+                  "background": "var(--theme--primary)"
+                },
+                {
+                  "text": "Rejeitado",
+                  "value": "rejeitado",
+                  "foreground": "#FFFFFF",
+                  "background": "var(--theme--danger)"
+                },
+                {
+                  "text": "Arquivado",
+                  "value": "arquivado",
+                  "foreground": "#FFFFFF",
+                  "background": "var(--theme--warning)"
+                }
+              ]
+            },
+            "readonly": false,
+            "hidden": false,
+            "width": "half",
+            "translations": null,
+            "required": true,
+            "note": "Status do comentário",
+            "special": null
+          },
+          "schema": {
+            "name": "status",
+            "table": "comentarios",
+            "type": "varchar",
+            "length": 255,
+            "default_value": "pendente",
+            "is_nullable": false
+          }
+        }
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "collection": "comentarios",
+      "field": "noticia",
+      "related_collection": "noticias",
+      "schema": {
+        "on_delete": "CASCADE"
+      },
+      "meta": {
+        "one_field": "comentarios",
+        "sort_field": null,
+        "one_deselect_action": "nullify",
+        "junction_field": null
+      }
+    }
+  ]
+}

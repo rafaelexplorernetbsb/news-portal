@@ -1,14 +1,20 @@
 import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
+import dotenv from 'dotenv';
 
-const DIRECTUS_URL = 'http://localhost:8055';
-const DIRECTUS_TOKEN = 'webscraper-token-12345';
+// Carregar variáveis de ambiente
+dotenv.config();
+
+const DIRECTUS_URL = process.env.DIRECTUS_URL || 'http://localhost:8055';
+const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN || '';
 const RSS_URL = 'https://g1.globo.com/rss/g1/tecnologia/';
+const INTERVAL_MINUTES = parseInt(process.env.WEBSCRAPER_INTERVAL_MINUTES || process.env.G1_INTERVAL_MINUTES || '5');
+const MAX_ARTICLES = parseInt(process.env.WEBSCRAPER_MAX_ARTICLES || process.env.G1_MAX_ARTICLES || '5');
 
-console.log('[Webscraper] Serviço iniciado - G1 Tecnologia');
+console.log('[G1 Webscraper] Serviço iniciado - G1 Tecnologia');
 
 async function fetchRSS() {
-  console.log('[Webscraper] Buscando RSS...');
+  console.log('[G1 Webscraper] Buscando RSS...');
   const response = await fetch(RSS_URL);
   const xml = await response.text();
 
@@ -33,12 +39,12 @@ async function fetchRSS() {
     }
   }
 
-  console.log(`[Webscraper] ${urls.length} URLs extraídas do RSS`);
+  console.log(`[G1 Webscraper] ${urls.length} URLs extraídas do RSS`);
   return urls;
 }
 
 async function scrapePage(url) {
-  console.log(`[Webscraper] Fazendo scraping: ${url}`);
+  console.log(`[G1 Webscraper] Fazendo scraping: ${url}`);
 
   const response = await fetch(url, {
     headers: {
@@ -66,7 +72,7 @@ async function scrapePage(url) {
     const videoId = bsPlayer.attr('videoid');
     if (videoId) {
       video_url = `https://globoplay.globo.com/v/${videoId}/`;
-      console.log(`[Webscraper] Vídeo Globoplay: ${video_url}`);
+      console.log(`[G1 Webscraper] Vídeo Globoplay: ${video_url}`);
     }
   }
 
@@ -78,7 +84,7 @@ async function scrapePage(url) {
     const src = videoIframe.attr('src');
     if (src) {
       video_url = src;
-      console.log(`[Webscraper] Vídeo iframe: ${video_url}`);
+      console.log(`[G1 Webscraper] Vídeo iframe: ${video_url}`);
     }
   }
 
@@ -104,14 +110,14 @@ async function scrapePage(url) {
       if (h && h.length > conteudo.length) {
         conteudo = h;
         console.log(
-          `[Webscraper] Conteúdo com ${selector} (${h.length} chars)`
+          `[G1 Webscraper] Conteúdo com ${selector} (${h.length} chars)`
         );
       }
     }
   }
 
   if (!conteudo || conteudo.length < 500) {
-    console.log('[Webscraper] Conteúdo curto, pegando parágrafos do body');
+    console.log('[G1 Webscraper] Conteúdo curto, pegando parágrafos do body');
     const paragraphs = $('p, h2, h3, h4, ul, ol, blockquote').toArray();
     conteudo = paragraphs.map(p => $.html(p)).join('\n');
   }
@@ -284,7 +290,7 @@ async function scrapePage(url) {
   $content('bs-player').each((i, el) => {
     const $bs = $content(el);
     const videoId = $bs.attr('videoid');
-    console.log(`[Webscraper] Encontrado bs-player com videoId: ${videoId}`);
+    console.log(`[G1 Webscraper] Encontrado bs-player com videoId: ${videoId}`);
 
     if (!videoId) {
       $bs.remove();
@@ -378,8 +384,8 @@ async function scrapePage(url) {
 
   const bodyHtml = `<div class="news-content">${$content.html()}</div>`;
 
-  console.log(`[Webscraper] Scraping completo: ${titulo.substring(0, 50)}...`);
-  console.log(`[Webscraper] Tamanho do conteúdo: ${bodyHtml.length} chars`);
+  console.log(`[G1 Webscraper] Scraping completo: ${titulo.substring(0, 50)}...`);
+  console.log(`[G1 Webscraper] Tamanho do conteúdo: ${bodyHtml.length} chars`);
 
   return {
     titulo,
@@ -406,7 +412,7 @@ async function noticiaExiste(url, slug) {
 
     const dataUrl = await responseUrl.json();
     if (dataUrl.data && dataUrl.data.length > 0) {
-      console.log(`[Webscraper] Notícia já existe (link_original): ${url}`);
+      console.log(`[G1 Webscraper] Notícia já existe (link_original): ${url}`);
       return true;
     }
 
@@ -423,13 +429,13 @@ async function noticiaExiste(url, slug) {
 
     const dataSlug = await responseSlug.json();
     if (dataSlug.data && dataSlug.data.length > 0) {
-      console.log(`[Webscraper] Notícia já existe (slug): ${slug}`);
+      console.log(`[G1 Webscraper] Notícia já existe (slug): ${slug}`);
       return true;
     }
 
     return false;
   } catch (error) {
-    console.error('[Webscraper] Erro ao verificar duplicata:', error.message);
+    console.error('[G1 Webscraper] Erro ao verificar duplicata:', error.message);
     return false; // Em caso de erro, permite criar (evita bloquear todo o processo)
   }
 }
@@ -448,7 +454,7 @@ async function createNoticia(item, url, data_publicacao) {
   // Verificar se já existe
   const existe = await noticiaExiste(url, slug);
   if (existe) {
-    console.log(`[Webscraper] Pulando notícia duplicada: ${item.titulo.substring(0, 50)}...`);
+    console.log(`[G1 Webscraper] Pulando notícia duplicada: ${item.titulo.substring(0, 50)}...`);
     return 'skipped';
   }
 
@@ -469,7 +475,7 @@ async function createNoticia(item, url, data_publicacao) {
     data_publicacao: data_publicacao ? new Date(data_publicacao).toISOString() : new Date().toISOString()
   };
 
-  console.log(`[Webscraper] Criando notícia: ${noticia.titulo.substring(0, 50)}...`);
+  console.log(`[G1 Webscraper] Criando notícia: ${noticia.titulo.substring(0, 50)}...`);
 
   const response = await fetch(`${DIRECTUS_URL}/items/noticias`, {
     method: 'POST',
@@ -481,18 +487,18 @@ async function createNoticia(item, url, data_publicacao) {
   });
 
   if (response.ok) {
-    console.log('[Webscraper] Notícia criada com sucesso!');
+    console.log('[G1 Webscraper] Notícia criada com sucesso!');
     return true;
   } else {
     const error = await response.text();
-    console.log('[Webscraper] Erro ao criar notícia:', error);
+    console.log('[G1 Webscraper] Erro ao criar notícia:', error);
     return false;
   }
 }
 
 async function run() {
   try {
-    console.log('[Webscraper] Iniciando importação...');
+    console.log('[G1 Webscraper] Iniciando importação...');
     const urls = await fetchRSS();
 
     let criadas = 0;
@@ -512,24 +518,24 @@ async function run() {
 
         await new Promise(resolve => setTimeout(resolve, 2000));
       } catch (error) {
-        console.error(`[Webscraper] Erro ao processar ${url}:`, error.message);
+        console.error(`[G1 Webscraper] Erro ao processar ${url}:`, error.message);
         erros++;
       }
     }
 
-    console.log('[Webscraper] ========================================');
-    console.log(`[Webscraper] Importação concluída!`);
-    console.log(`[Webscraper] Total processado: ${urls.length}`);
-    console.log(`[Webscraper] Criadas: ${criadas}`);
-    console.log(`[Webscraper] Puladas (duplicadas): ${puladas}`);
-    console.log(`[Webscraper] Erros: ${erros}`);
-    console.log('[Webscraper] ========================================');
+    console.log('[G1 Webscraper] ========================================');
+    console.log(`[G1 Webscraper] Importação concluída!`);
+    console.log(`[G1 Webscraper] Total processado: ${urls.length}`);
+    console.log(`[G1 Webscraper] Criadas: ${criadas}`);
+    console.log(`[G1 Webscraper] Puladas (duplicadas): ${puladas}`);
+    console.log(`[G1 Webscraper] Erros: ${erros}`);
+    console.log('[G1 Webscraper] ========================================');
   } catch (error) {
-    console.error('[Webscraper] Erro:', error);
+    console.error('[G1 Webscraper] Erro:', error);
   }
 }
 
-// Executar a cada 5 minutos
-console.log('[Webscraper] Agendando execuções a cada 5 minutos...');
+// Executar a cada X minutos
+console.log(`[G1 Webscraper] Agendando execuções a cada ${INTERVAL_MINUTES} minutos...`);
 run(); // imediato
-setInterval(run, 5 * 60 * 1000); // 5 minutos
+setInterval(run, INTERVAL_MINUTES * 60 * 1000); // X minutos
