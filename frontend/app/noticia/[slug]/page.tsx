@@ -2,7 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Noticia, getNoticiaPorSlug, getImageUrl, formatarData, capitalizarCategoria, getUltimasNoticias, getAutorNome } from '@/lib/noticias';
+import {
+  Noticia,
+  getNoticiaPorSlug,
+  getImageUrl,
+  formatarData,
+  capitalizarCategoria,
+  getUltimasNoticias,
+  getAutorNome,
+} from '@/lib/noticias';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -12,7 +20,7 @@ import { FaFacebook, FaWhatsapp } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 
 const API_URL = 'http://localhost:8055';
-const API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjM5ZjZjMDVlLWNmZmMtNGNlYi04NmU0LWJmYmM0N2VmY2ZkZSIsInJvbGUiOiI3MWYxYzIyZi1jOGMyLTRjYjctOGMzNS1jNDA1MDY4M2UwYmEiLCJhcHBfYWNjZXNzIjp0cnVlLCJhZG1pbl9hY2Nlc3MiOnRydWUsImlhdCI6MTc1OTMyNzQ4NCwiZXhwIjoxNzkwODYzNDg0LCJpc3MiOiJkaXJlY3R1cyJ9.-Vs4DXspNGEjFZZGM6YmDmyh43hcFuzgaLVMCFILScU';
+const API_TOKEN = '094d174e18964f1fbd01a13a8a96870e517e629de8c2c9884760864153d2281c';
 
 export default function NoticiaPage() {
   const params = useParams();
@@ -33,7 +41,7 @@ export default function NoticiaPage() {
 
         // Carregar últimas notícias (excluindo a atual)
         const ultimas = await getUltimasNoticias(6);
-        setUltimasNoticias(ultimas.filter(n => n.slug !== slug).slice(0, 5));
+        setUltimasNoticias(ultimas.filter((n) => n.slug !== slug).slice(0, 5));
 
         // Carregar notícias relacionadas (mesma categoria)
         if (data && data.categoria) {
@@ -42,9 +50,9 @@ export default function NoticiaPage() {
             {
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${API_TOKEN}`,
+                Authorization: `Bearer ${API_TOKEN}`,
               },
-            }
+            },
           );
           const relacionadas = await response.json();
           setNoticiasRelacionadas(relacionadas.data || []);
@@ -84,10 +92,7 @@ export default function NoticiaPage() {
           <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-xl">
             {error || 'Notícia não encontrada'}
           </div>
-          <Link
-            href="/"
-            className="inline-block mt-6 text-blue-600 hover:text-blue-800 font-medium"
-          >
+          <Link href="/" className="inline-block mt-6 text-blue-600 hover:text-blue-800 font-medium">
             ← Voltar para Home
           </Link>
         </main>
@@ -106,12 +111,19 @@ export default function NoticiaPage() {
       <div className="bg-white border-b">
         <div className="container mx-auto px-4 py-3">
           <nav className="flex items-center gap-2 text-sm text-gray-600">
-            <Link href="/" className="hover:text-blue-600">Home</Link>
+            <Link href="/" className="hover:text-blue-600">
+              Home
+            </Link>
             <span>/</span>
             {noticia.categoria && (
               <>
-                <Link href={`/categoria/${typeof noticia.categoria === 'string' ? noticia.categoria : noticia.categoria.slug}`} className="hover:text-blue-600">
-                  {capitalizarCategoria(typeof noticia.categoria === 'string' ? noticia.categoria : noticia.categoria.nome)}
+                <Link
+                  href={`/categoria/${typeof noticia.categoria === 'string' ? noticia.categoria : noticia.categoria.slug}`}
+                  className="hover:text-blue-600"
+                >
+                  {capitalizarCategoria(
+                    typeof noticia.categoria === 'string' ? noticia.categoria : noticia.categoria.nome,
+                  )}
                 </Link>
                 <span>/</span>
               </>
@@ -143,7 +155,9 @@ export default function NoticiaPage() {
                 <div className="flex flex-wrap gap-4 mb-6">
                   {noticia.categoria && (
                     <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold bg-blue-600 text-white uppercase tracking-wide">
-                      {capitalizarCategoria(typeof noticia.categoria === 'string' ? noticia.categoria : noticia.categoria.nome)}
+                      {capitalizarCategoria(
+                        typeof noticia.categoria === 'string' ? noticia.categoria : noticia.categoria.nome,
+                      )}
                     </span>
                   )}
                   {noticia.autor && (
@@ -168,9 +182,7 @@ export default function NoticiaPage() {
                 {/* Resumo */}
                 {noticia.resumo && (
                   <div className="bg-blue-50 border-l-4 border-blue-600 p-6 rounded-r-xl mb-8">
-                    <p className="text-xl text-gray-800 italic leading-relaxed font-medium">
-                      {noticia.resumo}
-                    </p>
+                    <p className="text-xl text-gray-800 italic leading-relaxed font-medium">{noticia.resumo}</p>
                   </div>
                 )}
 
@@ -185,7 +197,7 @@ export default function NoticiaPage() {
                       style={{
                         color: '#2d3748 !important',
                         fontSize: '18px !important',
-                        lineHeight: '1.7 !important'
+                        lineHeight: '1.7 !important',
                       }}
                       dangerouslySetInnerHTML={{ __html: sanitized }}
                     />
@@ -199,7 +211,11 @@ export default function NoticiaPage() {
                     <button
                       onClick={() => {
                         const url = window.location.href;
-                        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400');
+                        window.open(
+                          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+                          '_blank',
+                          'width=600,height=400',
+                        );
                       }}
                       className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
                     >
@@ -210,7 +226,11 @@ export default function NoticiaPage() {
                       onClick={() => {
                         const url = window.location.href;
                         const text = `${noticia.titulo} - Portal de Notícias`;
-                        window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank', 'width=600,height=400');
+                        window.open(
+                          `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
+                          '_blank',
+                          'width=600,height=400',
+                        );
                       }}
                       className="flex-1 bg-black hover:bg-gray-800 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
                     >

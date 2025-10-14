@@ -7,15 +7,25 @@ dotenv.config();
 
 const DIRECTUS_URL = process.env.DIRECTUS_URL || 'http://localhost:8055';
 const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN || '';
-const RSS_URL = 'https://g1.globo.com/rss/g1/tecnologia/';
-const INTERVAL_MINUTES = parseInt(process.env.WEBSCRAPER_INTERVAL_MINUTES || process.env.G1_INTERVAL_MINUTES || '5');
-const MAX_ARTICLES = parseInt(process.env.WEBSCRAPER_MAX_ARTICLES || process.env.G1_MAX_ARTICLES || '5');
+const RSS_FEEDS = [
+  { url: 'https://g1.globo.com/rss/g1/tecnologia/', categoria: 'tecnologia' },
+  { url: 'https://g1.globo.com/rss/g1/brasil/', categoria: 'economia' },
+];
+
+const CATEGORIAS_MAP = {
+  'tecnologia': 1,
+  'politica': 2,
+  'economia': 3,
+  'esportes': 4,
+  'cultura': 5
+};
+
 
 console.log('[G1 Webscraper] Serviço iniciado - G1 Tecnologia');
 
-async function fetchRSS() {
-  console.log('[G1 Webscraper] Buscando RSS...');
-  const response = await fetch(RSS_URL);
+async function fetchRSS(feedUrl, categoria) {
+  console.log(`[G1 Webscraper] Buscando RSS de ${categoria}: ${feedUrl}...`);
+  const response = await fetch(feedUrl);
   const xml = await response.text();
 
   // Extrair URLs dos itens
@@ -34,17 +44,18 @@ async function fetchRSS() {
       urls.push({
         url: linkMatch[1].trim(),
         titulo: titleMatch[1].trim(),
-        data_publicacao: dateMatch ? dateMatch[1].trim() : ''
+        data_publicacao: dateMatch ? dateMatch[1].trim() : '',
+        categoria: categoria  // Adiciona a categoria ao item
       });
     }
   }
 
-  console.log(`[G1 Webscraper] ${urls.length} URLs extraídas do RSS`);
+  console.log(`[G1 Webscraper] ${urls.length} URLs extraídas do RSS de ${categoria}`);
   return urls;
 }
 
-async function scrapePage(url) {
-  console.log(`[G1 Webscraper] Fazendo scraping: ${url}`);
+async function scrapePage(url, categoria) {
+  console.log(`[G1 Webscraper] Fazendo scraping de ${categoria}: ${url}`);
 
   const response = await fetch(url, {
     headers: {
@@ -440,7 +451,9 @@ async function noticiaExiste(url, slug) {
   }
 }
 
-async function createNoticia(item, url, data_publicacao) {
+async function createNoticia(item, url, data_publicacao, categoria) {
+  const categoriaId = CATEGORIAS_MAP[item.categoria] || CATEGORIAS_MAP['tecnologia'];
+
   const slug = item.titulo
     .toLowerCase()
     .normalize('NFD')
@@ -464,7 +477,7 @@ async function createNoticia(item, url, data_publicacao) {
     resumo: item.resumo,
     conteudo: item.conteudo,
     link_original: url,
-    categoria: 'tecnologia',
+    categoria: categoriaId,
     autor: 1,
     status: 'published',
     destaque: false,
@@ -496,46 +509,71 @@ async function createNoticia(item, url, data_publicacao) {
   }
 }
 
-async function run() {
+async function runImport() {
   try {
-    console.log('[G1 Webscraper] Iniciando importação...');
-    const urls = await fetchRSS();
+   let criadas = 0;
+   let puladas = 0;
+   let erros = 0;
+   let totalProcessado = 0;
 
-    let criadas = 0;
-    let puladas = 0;
-    let erros = 0;
+   for (const feed of RSS_FEEDS) {
+     console.log(`\n[Olhar Digital Test] ========================================`);
+     console.log(`[Olhar Digital Test] Processando feed: ${feed.categoria.toUpperCase()}`);
+     console.log(`[Olhar Digital Test] URL: ${feed.url}`);
+     console.log(`[Olhar Digital Test] ========================================\n`);
+     
+     const urls = await fetchRSS(feed.url, feed.categoria);
 
-    for (let i = 0; i < urls.length; i++) {
-      const { url, data_publicacao } = urls[i];
+     for (let i = 0; i < urls.length; i++) {
+      const {url, data_publicacao } = urls[i];
       try {
+        totalProcessado++;
         const item = await scrapePage(url);
-        item.destaque = i === 0; // primeira é destaque
-        const resultado = await createNoticia(item, url, data_publicacao);
+
+        if (!item) {
+          erros++;
+          continue;
+        }
+        if (item && item.titulo) {
+          const tituloLower = item.titulo.toLowerCase();
+          if (tituloLower.includes('oferta') ||
+              tituloLower.includes('promoção') ||
+              tituloLower.includes('promocao') ||
+              tituloLower.includes('desconto') ||
+              tituloLower.includes('venda') ||
+              tituloLower.includes('preço') ||
+              tituloLower.includes('preco') ||
+              tituloLower.includes('compra') ||
+              tituloLower.includes('review') ||
+              tituloLower.includes('análise') ||
+              tituloLower.includes('analise')) {
+            console.log(`[Olhar Digital Test] 🚫 FILTRANDO artigo de oferta/promoção: ${item.titulo.substring(0, 50)}...`);
+            continue; // Pular para o próximo item
+          }
+        }
+        item.categoria = feed.categoria;
+        item.destaque = i === 0 && criadas === 0; // Primeira notícia em destaque (apenas a primeira de todos os feeds)
+        const resultado = await createNoticia(item, url, data_publicacao, feed.categoria);
 
         if (resultado === true) criadas++;
         else if (resultado === 'skipped') puladas++;
         else erros++;
 
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Pausa entre requisições
       } catch (error) {
-        console.error(`[G1 Webscraper] Erro ao processar ${url}:`, error.message);
+        console.error(`[Olhar Digital Test] ❌ Erro ao processar: ${error.message}`);
         erros++;
+      }
+      }
+     }
+
+      } catch (error) {
+        console.error(`[Olhar Digital Test] ❌ Erro ao processar feed: ${error.message}`);
+
       }
     }
 
-    console.log('[G1 Webscraper] ========================================');
-    console.log(`[G1 Webscraper] Importação concluída!`);
-    console.log(`[G1 Webscraper] Total processado: ${urls.length}`);
-    console.log(`[G1 Webscraper] Criadas: ${criadas}`);
-    console.log(`[G1 Webscraper] Puladas (duplicadas): ${puladas}`);
-    console.log(`[G1 Webscraper] Erros: ${erros}`);
-    console.log('[G1 Webscraper] ========================================');
-  } catch (error) {
-    console.error('[G1 Webscraper] Erro:', error);
-  }
-}
-
 // Executar a cada X minutos
-console.log(`[G1 Webscraper] Agendando execuções a cada ${INTERVAL_MINUTES} minutos...`);
-run(); // imediato
-setInterval(run, INTERVAL_MINUTES * 60 * 1000); // X minutos
+console.log(`[G1 Webscraper] Agendando execuções a cada 5 minutos...`);
+runImport(); // imediato
+setInterval(runImport, 5 * 60 * 1000); // 5 minutos

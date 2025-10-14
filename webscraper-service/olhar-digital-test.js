@@ -2,21 +2,29 @@ import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
 
 // Configurações do webscraper
-const DIRECTUS_URL = 'http://localhost:8055';
-const DIRECTUS_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjM5ZjZjMDVlLWNmZmMtNGNlYi04NmU0LWJmYmM0N2VmY2ZkZSIsInJvbGUiOiI3MWYxYzIyZi1jOGMyLTRjYjctOGMzNS1jNDA1MDY4M2UwYmEiLCJhcHBfYWNjZXNzIjp0cnVlLCJhZG1pbl9hY2Nlc3MiOnRydWUsImlhdCI6MTc1OTMyNzQ4NCwiZXhwIjoxNzkwODYzNDg0LCJpc3MiOiJkaXJlY3R1cyJ9.-Vs4DXspNGEjFZZGM6YmDmyh43hcFuzgaLVMCFILScU';
-const RSS_URL = 'https://olhardigital.com.br/feed/';
+const DIRECTUS_URL = process.env.DIRECTUS_URL || 'http://localhost:8055';
+const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN || '';
+const RSS_FEEDS = [
+  { url: 'https://olhardigital.com.br/carros-e-tecnologia/feed', categoria: 'tecnologia' },
+  // { url: 'https://www.metropoles.com/esportes/feed', categoria: 'esportes' },
+  { url: 'https://olhardigital.com.br/economia-e-negocios/feed', categoria: 'economia' },
+  // { url: 'https://olhardigital.com.br/entretenimento/feed', categoria: 'cultura' }
+];
 
-console.log('[Olhar Digital Test] Serviço iniciado - Teste Olhar Digital');
+const CATEGORIAS_MAP = {
+  'tecnologia': 1,
+  'politica': 2,
+  'economia': 3,
+  'esportes': 4,
+  'cultura': 5
+};
 
-console.log('[Olhar Digital Test] ========================================');
-console.log('[Olhar Digital Test] TESTE DO WEBSCRAPER OLHAR DIGITAL');
-console.log('[Olhar Digital Test] ========================================');
 
 // Função para buscar URLs do RSS
-async function fetchRSS() {
+async function fetchRSS(feedUrl, categoria) {
   try {
-    console.log('[Olhar Digital Test] Buscando RSS...');
-    const response = await fetch(RSS_URL);
+    console.log(`[Olhar Digital Test] Buscando RSS de ${categoria}: ${feedUrl}...`);
+    const response = await fetch(feedUrl);
 
     if (!response.ok) {
       throw new Error(`Erro HTTP: ${response.status}`);
@@ -543,6 +551,8 @@ async function createNoticia(item, url, data_publicacao) {
       }
     }
 
+    const categoriaId = CATEGORIAS_MAP[item.categoria] || CATEGORIAS_MAP['tecnologia'];
+
     const dadosNoticia = {
       titulo: item.titulo,
       slug: slug,
@@ -552,7 +562,7 @@ async function createNoticia(item, url, data_publicacao) {
       data_publicacao: dataFinal,
       link_original: item.link_original,
       fonte_rss: item.fonte_rss,
-      categoria: item.categoria,
+      categoria: categoriaId,
       autor: item.autor,
       destaque: false
     };
@@ -584,25 +594,29 @@ async function createNoticia(item, url, data_publicacao) {
 // Função principal de importação
 async function runImport() {
   try {
-    const urls = await fetchRSS();
+   let criadas = 0;
+   let puladas = 0;
+   let erros = 0;
+   let totalProcessado = 0;
 
-    let criadas = 0;
-    let puladas = 0;
-    let erros = 0;
+   for (const feed of RSS_FEEDS) {
+     console.log(`\n[Olhar Digital Test] ========================================`);
+     console.log(`[Olhar Digital Test] Processando feed: ${feed.categoria.toUpperCase()}`);
+     console.log(`[Olhar Digital Test] URL: ${feed.url}`);
+     console.log(`[Olhar Digital Test] ========================================\n`);
+     
+     const urls = await fetchRSS(feed.url, feed.categoria);
 
-    for (let i = 0; i < urls.length; i++) {
-      const { url, data_publicacao } = urls[i];
+     for (let i = 0; i < urls.length; i++) {
+      const {url, data_publicacao } = urls[i];
       try {
-        console.log(`\n[Olhar Digital Test] --- Processando ${i + 1}/${urls.length} ---`);
+        totalProcessado++;
         const item = await scrapePage(url);
 
         if (!item) {
-          console.log(`[Olhar Digital Test] ❌ Falha no scraping`);
           erros++;
           continue;
         }
-
-        // FILTRAR artigos de "Ofertas" - não devem aparecer no portal
         if (item && item.titulo) {
           const tituloLower = item.titulo.toLowerCase();
           if (tituloLower.includes('oferta') ||
@@ -620,9 +634,9 @@ async function runImport() {
             continue; // Pular para o próximo item
           }
         }
-
-        item.destaque = i === 0; // Primeira notícia em destaque
-        const resultado = await createNoticia(item, url, data_publicacao);
+        item.categoria = feed.categoria;
+        item.destaque = i === 0 && criadas === 0; // Primeira notícia em destaque (apenas a primeira de todos os feeds)
+        const resultado = await createNoticia(item, url, data_publicacao, feed.categoria);
 
         if (resultado === true) criadas++;
         else if (resultado === 'skipped') puladas++;
@@ -633,19 +647,14 @@ async function runImport() {
         console.error(`[Olhar Digital Test] ❌ Erro ao processar: ${error.message}`);
         erros++;
       }
+      }
+     }
+
+      } catch (error) {
+        console.error(`[Olhar Digital Test] ❌ Erro ao processar feed: ${error.message}`);
+
+      }
     }
-
-    console.log('\n[Olhar Digital Test] ========================================');
-    console.log(`[Olhar Digital Test] Total processado: ${urls.length}`);
-    console.log(`[Olhar Digital Test] ✅ Criadas: ${criadas}`);
-    console.log(`[Olhar Digital Test] ⏭️  Puladas: ${puladas}`);
-    console.log(`[Olhar Digital Test] ❌ Erros: ${erros}`);
-    console.log('[Olhar Digital Test] ========================================');
-
-  } catch (error) {
-    console.error('[Olhar Digital Test] ❌ Erro fatal:', error);
-  }
-}
 
 // Executar teste
 runImport();

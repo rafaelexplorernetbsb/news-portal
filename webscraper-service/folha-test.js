@@ -1,11 +1,19 @@
 import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
 
-const DIRECTUS_URL = 'http://localhost:8055';
-const DIRECTUS_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjBhODlmYTJiLTE0MGEtNGIzMy1iN2U0LWZiZmIzYzk3ZWFlZSIsInJvbGUiOiJhMDUyYzlmZC0zZDQyLTQyMWUtOTYyYy0wYzUyZGRmOGIyOWEiLCJhcHBfYWNjZXNzIjp0cnVlLCJhZG1pbl9hY2Nlc3MiOnRydWUsImlhdCI6MTc2MDQ0MTQ1OCwiZXhwIjoxNzkxOTc3NDU4LCJpc3MiOiJkaXJlY3R1cyJ9.7PP4-QpZWUjCXL69x8P8IB2rZbNiiQYzgnAt2b6lH1U';
+const DIRECTUS_URL = process.env.DIRECTUS_URL || 'http://localhost:8055';
+const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN || '';
 const RSS_URL = 'https://feeds.folha.uol.com.br/tec/rss091.xml';
 
-console.log('[Folha Test] Serviço iniciado - Teste Folha Tecnologia');
+
+const CATEGORIAS_MAP = {
+  'tecnologia': 1,
+  'politica': 2,
+  'economia': 3,
+  'esportes': 4,
+  'cultura': 5
+};
+
 
 async function fetchRSS() {
   console.log('[Folha Test] Buscando RSS...');

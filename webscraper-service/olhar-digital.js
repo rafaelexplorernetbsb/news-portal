@@ -1,18 +1,30 @@
 import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
+import dotenv from 'dotenv';
 
-// Configurações do webscraper
-const DIRECTUS_URL = 'http://localhost:8055';
-const DIRECTUS_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjBhODlmYTJiLTE0MGEtNGIzMy1iN2U0LWZiZmIzYzk3ZWFlZSIsInJvbGUiOiJhMDUyYzlmZC0zZDQyLTQyMWUtOTYyYy0wYzUyZGRmOGIyOWEiLCJhcHBfYWNjZXNzIjp0cnVlLCJhZG1pbl9hY2Nlc3MiOnRydWUsImlhdCI6MTc2MDQ0MTQ1OCwiZXhwIjoxNzkxOTc3NDU4LCJpc3MiOiJkaXJlY3R1cyJ9.7PP4-QpZWUjCXL69x8P8IB2rZbNiiQYzgnAt2b6lH1U';
-const RSS_URL = 'https://olhardigital.com.br/feed/';
+// Carregar variáveis de ambiente
+dotenv.config({ path: './env.local' });
 
-console.log('[Webscraper] Serviço iniciado - Olhar Digital');
+const DIRECTUS_URL = process.env.DIRECTUS_URL || 'http://localhost:8055';
+const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN || '';
+const RSS_FEEDS = [
+  { url: 'https://olhardigital.com.br/carros-e-tecnologia/feed', categoria: 'tecnologia' },
+  { url: 'https://olhardigital.com.br/economia-e-negocios/feed', categoria: 'economia' },
+];
+
+const CATEGORIAS_MAP = {
+  'tecnologia': 1,
+  'politica': 2,
+  'economia': 3,
+  'esportes': 4,
+  'cultura': 5
+};
 
 // Função para buscar URLs do RSS
-async function fetchRSS() {
+async function fetchRSS(feedUrl, categoria) {
   try {
-    console.log('[Webscraper] Buscando RSS...');
-    const response = await fetch(RSS_URL);
+    console.log(`[Webscraper] Buscando RSS de ${categoria}: ${feedUrl}...`);
+    const response = await fetch(feedUrl);
 
     if (!response.ok) {
       throw new Error(`Erro HTTP: ${response.status}`);
@@ -505,7 +517,7 @@ function criarSlug(titulo) {
 }
 
 // Função para criar notícia no Directus
-async function createNoticia(item, url, data_publicacao) {
+async function createNoticia(item, url, data_publicacao, categoria) {
   try {
     const slug = criarSlug(item.titulo);
 
@@ -531,6 +543,8 @@ async function createNoticia(item, url, data_publicacao) {
       }
     }
 
+    const categoriaId = CATEGORIAS_MAP[item.categoria] || CATEGORIAS_MAP['tecnologia'];
+
     const dadosNoticia = {
       titulo: item.titulo,
       slug: slug,
@@ -540,7 +554,7 @@ async function createNoticia(item, url, data_publicacao) {
       data_publicacao: dataFinal,
       link_original: item.link_original,
       fonte_rss: item.fonte_rss,
-      categoria: item.categoria,
+      categoria: categoriaId,
       autor: item.autor,
       destaque: false
     };
@@ -571,19 +585,29 @@ async function createNoticia(item, url, data_publicacao) {
 // Função principal de importação
 async function runImport() {
   try {
-    console.log('[Webscraper] Iniciando importação...');
-    const urls = await fetchRSS();
+   let criadas = 0;
+   let puladas = 0;
+   let erros = 0;
+   let totalProcessado = 0;
 
-    let criadas = 0;
-    let puladas = 0;
-    let erros = 0;
+   for (const feed of RSS_FEEDS) {
+     console.log(`\n[Olhar Digital Test] ========================================`);
+     console.log(`[Olhar Digital Test] Processando feed: ${feed.categoria.toUpperCase()}`);
+     console.log(`[Olhar Digital Test] URL: ${feed.url}`);
+     console.log(`[Olhar Digital Test] ========================================\n`);
+     
+     const urls = await fetchRSS(feed.url, feed.categoria);
 
-    for (let i = 0; i < urls.length; i++) {
-      const { url, data_publicacao } = urls[i];
+     for (let i = 0; i < urls.length; i++) {
+      const {url, data_publicacao } = urls[i];
       try {
+        totalProcessado++;
         const item = await scrapePage(url);
 
-        // FILTRAR artigos de "Ofertas" - não devem aparecer no portal
+        if (!item) {
+          erros++;
+          continue;
+        }
         if (item && item.titulo) {
           const tituloLower = item.titulo.toLowerCase();
           if (tituloLower.includes('oferta') ||
@@ -597,42 +621,31 @@ async function runImport() {
               tituloLower.includes('review') ||
               tituloLower.includes('análise') ||
               tituloLower.includes('analise')) {
-            console.log(`[Webscraper] 🚫 FILTRANDO artigo de oferta/promoção: ${item.titulo.substring(0, 50)}...`);
+            console.log(`[Olhar Digital Test] 🚫 FILTRANDO artigo de oferta/promoção: ${item.titulo.substring(0, 50)}...`);
             continue; // Pular para o próximo item
           }
         }
-
-        if (!item) {
-          console.log(`[Webscraper] Item inválido, pulando...`);
-          continue;
-        }
-
-        item.destaque = i === 0; // Primeira notícia em destaque
-        const resultado = await createNoticia(item, url, data_publicacao);
+        item.categoria = feed.categoria;
+        item.destaque = i === 0 && criadas === 0; // Primeira notícia em destaque (apenas a primeira de todos os feeds)
+        const resultado = await createNoticia(item, url, data_publicacao, feed.categoria);
 
         if (resultado === true) criadas++;
         else if (resultado === 'skipped') puladas++;
         else erros++;
 
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Pausa entre requisições
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Pausa entre requisições
       } catch (error) {
-        console.error(`[Webscraper] ❌ Erro ao processar: ${error.message}`);
+        console.error(`[Olhar Digital Test] ❌ Erro ao processar: ${error.message}`);
         erros++;
       }
+      }
+     }
+
+      } catch (error) {
+        console.error(`[Olhar Digital Test] ❌ Erro ao processar feed: ${error.message}`);
+
+      }
     }
-
-    console.log('[Webscraper] ========================================');
-    console.log('[Webscraper] Importação concluída!');
-    console.log(`[Webscraper] Total processado: ${urls.length}`);
-    console.log(`[Webscraper] Criadas: ${criadas}`);
-    console.log(`[Webscraper] Puladas (duplicadas): ${puladas}`);
-    console.log(`[Webscraper] Erros: ${erros}`);
-    console.log('[Webscraper] ========================================');
-
-  } catch (error) {
-    console.error('[Webscraper] ❌ Erro fatal:', error);
-  }
-}
 
 // Executar a cada 5 minutos
 console.log('[Olhar Digital Webscraper] Agendando execuções a cada 5 minutos...');

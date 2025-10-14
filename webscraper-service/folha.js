@@ -1,16 +1,44 @@
 import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
+import dotenv from 'dotenv';
+import iconv from 'iconv-lite';
 
-const DIRECTUS_URL = 'http://localhost:8055';
-const DIRECTUS_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjBhODlmYTJiLTE0MGEtNGIzMy1iN2U0LWZiZmIzYzk3ZWFlZSIsInJvbGUiOiJhMDUyYzlmZC0zZDQyLTQyMWUtOTYyYy0wYzUyZGRmOGIyOWEiLCJhcHBfYWNjZXNzIjp0cnVlLCJhZG1pbl9hY2Nlc3MiOnRydWUsImlhdCI6MTc2MDQ0MTQ1OCwiZXhwIjoxNzkxOTc3NDU4LCJpc3MiOiJkaXJlY3R1cyJ9.7PP4-QpZWUjCXL69x8P8IB2rZbNiiQYzgnAt2b6lH1U';
-const RSS_URL = 'https://feeds.folha.uol.com.br/tec/rss091.xml';
+// Carregar variáveis de ambiente
+dotenv.config({ path: './env.local' });
 
-console.log('[Webscraper] Serviço iniciado - Folha Tecnologia');
+const DIRECTUS_URL = process.env.DIRECTUS_URL || 'http://localhost:8055';
+const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN || '';
 
-async function fetchRSS() {
-  console.log('[Webscraper] Buscando RSS...');
-  const response = await fetch(RSS_URL);
-  const xml = await response.text();
+const RSS_FEEDS = [
+  { url: 'https://feeds.folha.uol.com.br/folha/tec/rss091.xml', categoria: 'tecnologia' },
+  { url: 'https://feeds.folha.uol.com.br/folha/esporte/rss091.xml', categoria: 'esportes' },
+  { url: 'https://feeds.folha.uol.com.br/folha/dinheiro/rss091.xml', categoria: 'economia' },
+  { url: 'https://feeds.folha.uol.com.br/folha/brasil/rss091.xml', categoria: 'cultura' },
+  { url: 'https://feeds.folha.uol.com.br/folha/poder/rss091.xml', categoria: 'politica' }
+];
+
+const CATEGORIAS_MAP = {
+  'tecnologia': 1,
+  'politica': 2,
+  'economia': 3,
+  'esportes': 4,
+  'cultura': 5
+};
+
+async function fetchRSS(feedUrl, categoria) {
+  console.log(`[Webscraper] Buscando RSS de ${categoria}: ${feedUrl}...`);
+  const response = await fetch(feedUrl);
+  const buffer = await response.buffer();
+  
+  // RSS feeds geralmente são UTF-8, mas vamos verificar
+  const contentType = response.headers.get('content-type') || '';
+  let charset = 'utf-8';
+  const charsetMatch = contentType.match(/charset=([^;]+)/i);
+  if (charsetMatch) {
+    charset = charsetMatch[1].trim().toLowerCase();
+  }
+  
+  const xml = iconv.decode(buffer, charset);
 
   // Extrair URLs dos itens
   const itemMatches = xml.match(/<item>[\s\S]*?<\/item>/gi) || [];
@@ -43,123 +71,52 @@ async function scrapePage(url) {
   const response = await fetch(url, {
     headers: {
       'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      'Accept-Charset': 'UTF-8'
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
     }
   });
 
-  const html = await response.text();
-  const $ = cheerio.load(html);
-
-  // Função para corrigir caracteres mal codificados
-  function corrigirEncoding(texto) {
-    if (!texto) return texto;
-
-    return texto
-      // Corrigir caracteres de substituição Unicode (U+FFFD)
-      .replace(/\uFFFD/g, 'ó')
-      // Corrigir padrões específicos com caracteres mal codificados
-      .replace(/D[^\x20-\x7E]lar/g, 'Dólar')
-      .replace(/D.{1}lar/g, 'Dólar')
-      .replace(/Ú[^\x20-\x7E]timas/g, 'Últimas')
-      .replace(/Ú.{1}timas/g, 'Últimas')
-      .replace(/fin[^\x20-\x7E]anas/g, 'Finanças')
-      .replace(/fin.{1}anas/g, 'Finanças')
-      .replace(/cm[^\x20-\x7E]bio/g, 'Câmbio')
-      .replace(/cm.{1}bio/g, 'Câmbio')
-      .replace(/cont[^\x20-\x7E]edo/g, 'Conteúdo')
-      .replace(/cont.{1}edo/g, 'Conteúdo')
-      .replace(/rod[^\x20-\x7E]p/g, 'Rodapé')
-      .replace(/rod.{1}p/g, 'Rodapé')
-      .replace(/not[^\x20-\x7E]cias/g, 'Notícias')
-      .replace(/not.{1}cias/g, 'Notícias')
-      .replace(/ao vivo/g, 'Ao vivo')
-      .replace(/mercado financeiro/g, 'Mercado financeiro')
-      .replace(/julgamento de Bolsonaro/g, 'Julgamento de Bolsonaro')
-      // Corrigir outros caracteres comuns
-      .replace(/Ã¡/g, 'á')
-      .replace(/Ã©/g, 'é')
-      .replace(/Ã­/g, 'í')
-      .replace(/Ã³/g, 'ó')
-      .replace(/Ãº/g, 'ú')
-      .replace(/Ã¢/g, 'â')
-      .replace(/Ãª/g, 'ê')
-      .replace(/Ã´/g, 'ô')
-      .replace(/Ã /g, 'à')
-      .replace(/Ã§/g, 'ç')
-      .replace(/Ã£/g, 'ã')
-      .replace(/Ãµ/g, 'õ')
-      .replace(/Ã‡/g, 'Ç')
-      .replace(/Ã€/g, 'À')
-      .replace(/Ã‚/g, 'Â')
-      .replace(/Ãƒ/g, 'Ã')
-      .replace(/Ã„/g, 'Ä')
-      .replace(/Ã…/g, 'Å')
-      .replace(/Ã†/g, 'Æ')
-      .replace(/Ãˆ/g, 'È')
-      .replace(/Ã‰/g, 'É')
-      .replace(/ÃŠ/g, 'Ê')
-      .replace(/Ã‹/g, 'Ë')
-      .replace(/ÃŒ/g, 'Ì')
-      .replace(/Ã/g, 'Í')
-      .replace(/ÃŽ/g, 'Î')
-      .replace(/Ã/g, 'Ï')
-      .replace(/Ã'/g, 'Ñ')
-      .replace(/Ã"/g, 'Ò')
-      .replace(/Ã"/g, 'Ó')
-      .replace(/Ã"/g, 'Ô')
-      .replace(/Ã–/g, 'Ö')
-      .replace(/Ã—/g, '×')
-      .replace(/Ã˜/g, 'Ø')
-      .replace(/Ã™/g, 'Ù')
-      .replace(/Ãš/g, 'Ú')
-      .replace(/Ã›/g, 'Û')
-      .replace(/Ãœ/g, 'Ü')
-      .replace(/Ã/g, 'Ý')
-      .replace(/Ãž/g, 'Þ')
-      .replace(/ÃŸ/g, 'ß')
-      .replace(/Ã /g, 'à')
-      .replace(/Ã¡/g, 'á')
-      .replace(/Ã¢/g, 'â')
-      .replace(/Ã£/g, 'ã')
-      .replace(/Ã¤/g, 'ä')
-      .replace(/Ã¥/g, 'å')
-      .replace(/Ã¦/g, 'æ')
-      .replace(/Ã§/g, 'ç')
-      .replace(/Ã¨/g, 'è')
-      .replace(/Ã©/g, 'é')
-      .replace(/Ãª/g, 'ê')
-      .replace(/Ã«/g, 'ë')
-      .replace(/Ã¬/g, 'ì')
-      .replace(/Ã­/g, 'í')
-      .replace(/Ã®/g, 'î')
-      .replace(/Ã¯/g, 'ï')
-      .replace(/Ã°/g, 'ð')
-      .replace(/Ã±/g, 'ñ')
-      .replace(/Ã²/g, 'ò')
-      .replace(/Ã³/g, 'ó')
-      .replace(/Ã´/g, 'ô')
-      .replace(/Ãµ/g, 'õ')
-      .replace(/Ã¶/g, 'ö')
-      .replace(/Ã·/g, '÷')
-      .replace(/Ã¸/g, 'ø')
-      .replace(/Ã¹/g, 'ù')
-      .replace(/Ãº/g, 'ú')
-      .replace(/Ã»/g, 'û')
-      .replace(/Ã¼/g, 'ü')
-      .replace(/Ã½/g, 'ý')
-      .replace(/Ã¾/g, 'þ')
-      .replace(/Ã¿/g, 'ÿ');
+  // Pegar o buffer e detectar encoding correto
+  const buffer = await response.buffer();
+  const contentType = response.headers.get('content-type') || '';
+  
+  // Detectar charset do Content-Type ou do HTML
+  let charset = 'utf-8';
+  const charsetMatch = contentType.match(/charset=([^;]+)/i);
+  if (charsetMatch) {
+    charset = charsetMatch[1].trim().toLowerCase();
+    console.log(`[Webscraper] Charset detectado no header: ${charset}`);
+  } else {
+    // Tentar detectar do HTML (meta tag)
+    const htmlSnippet = buffer.toString('latin1', 0, 1024);
+    const metaCharsetMatch = htmlSnippet.match(/<meta[^>]+charset=["']?([^"'\s>]+)/i);
+    if (metaCharsetMatch) {
+      charset = metaCharsetMatch[1].toLowerCase();
+      console.log(`[Webscraper] Charset detectado no HTML: ${charset}`);
+    }
   }
+  
+  // Decodificar com o charset correto
+  let html;
+  if (iconv.encodingExists(charset)) {
+    html = iconv.decode(buffer, charset);
+  } else {
+    console.log(`[Webscraper] Charset desconhecido (${charset}), usando UTF-8`);
+    html = iconv.decode(buffer, 'utf-8');
+  }
+  
+  const $ = cheerio.load(html, { decodeEntities: true });
+  
 
   // Metadados
-  const titulo = corrigirEncoding(
+  const titulo = 
     $('meta[property="og:title"]').attr('content') ||
     $('h1.c-content-head__title').first().text().trim() ||
-    $('h1').first().text()
-  );
-  const resumo = corrigirEncoding($('meta[property="og:description"]').attr('content') || '');
+    $('h1').first().text();
+  const resumo = $('meta[property="og:description"]').attr('content') || '';
   const ogImage = $('meta[property="og:image"]').attr('content') || '';
+  
+  // Debug: mostrar preview do título para verificar encoding
+  console.log(`[Webscraper] Preview título: ${titulo.substring(0, 100)}...`);
 
   // Vídeo
   let video_url = null;
@@ -458,7 +415,7 @@ async function scrapePage(url) {
   $content('.c-video, .js-widget-youtube, .widget-youtube').each((i, el) => {
     const $videoEl = $content(el);
     const dataHref = $videoEl.attr('data-href') || '';
-    // const dataVideo = $videoEl.attr('data-video') || ''; // Não utilizado no momento
+
 
     // Verificar se tem data-href com YouTube
     if (dataHref.includes('youtube.com/watch') || dataHref.includes('youtu.be/')) {
@@ -601,7 +558,7 @@ async function scrapePage(url) {
     }
   });
 
-  const bodyHtml = `<div class="news-content">${corrigirEncoding($content.html())}</div>`;
+  const bodyHtml = `<div class="news-content">${$content.html()}</div>`;
 
   console.log(`[Webscraper] Scraping completo: ${titulo.substring(0, 50)}...`);
   console.log(`[Webscraper] Tamanho do conteúdo: ${bodyHtml.length} chars`);
@@ -659,7 +616,7 @@ async function noticiaExiste(url, slug) {
   }
 }
 
-async function createNoticia(item, url, data_publicacao) {
+async function createNoticia(item, url, data_publicacao, categoria) {
   const slug = item.titulo
     .toLowerCase()
     .normalize('NFD')
@@ -677,13 +634,15 @@ async function createNoticia(item, url, data_publicacao) {
     return 'skipped';
   }
 
+  const categoriaId = CATEGORIAS_MAP[item.categoria] || CATEGORIAS_MAP['tecnologia'];
+
   const noticia = {
     titulo: item.titulo,
     slug,
     resumo: item.resumo,
     conteudo: item.conteudo,
     link_original: url,
-    categoria: 'tecnologia',
+    categoria: categoriaId,
     autor: 1,
     status: 'published',
     destaque: false,
@@ -699,7 +658,7 @@ async function createNoticia(item, url, data_publicacao) {
   const response = await fetch(`${DIRECTUS_URL}/items/noticias`, {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
+      'Content-Type': 'application/json; charset=utf-8',
       Authorization: `Bearer ${DIRECTUS_TOKEN}`
     },
     body: JSON.stringify(noticia)
@@ -715,47 +674,71 @@ async function createNoticia(item, url, data_publicacao) {
   }
 }
 
-async function run() {
+async function runImport() {
   try {
-    console.log('[Webscraper] Iniciando importação...');
-    const urls = await fetchRSS();
+   let criadas = 0;
+   let puladas = 0;
+   let erros = 0;
+   let totalProcessado = 0;
 
-    let criadas = 0;
-    let puladas = 0;
-    let erros = 0;
+   for (const feed of RSS_FEEDS) {
+     console.log(`\n[Olhar Digital Test] ========================================`);
+     console.log(`[Olhar Digital Test] Processando feed: ${feed.categoria.toUpperCase()}`);
+     console.log(`[Olhar Digital Test] URL: ${feed.url}`);
+     console.log(`[Olhar Digital Test] ========================================\n`);
+     
+     const urls = await fetchRSS(feed.url, feed.categoria);
 
-    for (let i = 0; i < urls.length; i++) {
-      const { url, data_publicacao } = urls[i];
+     for (let i = 0; i < urls.length; i++) {
+      const {url, data_publicacao } = urls[i];
       try {
+        totalProcessado++;
         const item = await scrapePage(url);
-        item.destaque = i === 0; // primeira é destaque
-        const resultado = await createNoticia(item, url, data_publicacao);
+
+        if (!item) {
+          erros++;
+          continue;
+        }
+        if (item && item.titulo) {
+          const tituloLower = item.titulo.toLowerCase();
+          if (tituloLower.includes('oferta') ||
+              tituloLower.includes('promoção') ||
+              tituloLower.includes('promocao') ||
+              tituloLower.includes('desconto') ||
+              tituloLower.includes('venda') ||
+              tituloLower.includes('preço') ||
+              tituloLower.includes('preco') ||
+              tituloLower.includes('compra') ||
+              tituloLower.includes('review') ||
+              tituloLower.includes('análise') ||
+              tituloLower.includes('analise')) {
+            console.log(`[Olhar Digital Test] 🚫 FILTRANDO artigo de oferta/promoção: ${item.titulo.substring(0, 50)}...`);
+            continue; // Pular para o próximo item
+          }
+        }
+        item.categoria = feed.categoria;
+        item.destaque = i === 0 && criadas === 0; // Primeira notícia em destaque (apenas a primeira de todos os feeds)
+        const resultado = await createNoticia(item, url, data_publicacao, feed.categoria);
 
         if (resultado === true) criadas++;
         else if (resultado === 'skipped') puladas++;
         else erros++;
 
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Pausa entre requisições
       } catch (error) {
-        console.error(`[Webscraper] Erro ao processar ${url}:`, error.message);
+        console.error(`[Olhar Digital Test] ❌ Erro ao processar: ${error.message}`);
         erros++;
       }
+      }
+     }
+
+      } catch (error) {
+        console.error(`[Olhar Digital Test] ❌ Erro ao processar feed: ${error.message}`);
+
+      }
     }
-
-    console.log('[Webscraper] ========================================');
-    console.log(`[Webscraper] Importação concluída!`);
-    console.log(`[Webscraper] Total processado: ${urls.length}`);
-    console.log(`[Webscraper] Criadas: ${criadas}`);
-    console.log(`[Webscraper] Puladas (duplicadas): ${puladas}`);
-    console.log(`[Webscraper] Erros: ${erros}`);
-    console.log('[Webscraper] ========================================');
-  } catch (error) {
-    console.error('[Webscraper] Erro:', error);
-  }
-}
-
 // Executar a cada 5 minutos
 console.log('[Webscraper] Agendando execuções a cada 5 minutos...');
-run(); // imediato
-setInterval(run, 5 * 60 * 1000); // 5 minutos
+runImport(); // imediato
+setInterval(runImport, 5 * 60 * 1000); // 5 minutos
 

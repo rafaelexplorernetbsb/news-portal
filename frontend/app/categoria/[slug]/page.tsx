@@ -8,7 +8,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
 const API_URL = 'http://localhost:8055';
-const API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjBhODlmYTJiLTE0MGEtNGIzMy1iN2U0LWZiZmIzYzk3ZWFlZSIsInJvbGUiOiJhMDUyYzlmZC0zZDQyLTQyMWUtOTYyYy0wYzUyZGRmOGIyOWEiLCJhcHBfYWNjZXNzIjp0cnVlLCJhZG1pbl9hY2Nlc3MiOnRydWUsImlhdCI6MTc2MDQ0MTQ1OCwiZXhwIjoxNzkxOTc3NDU4LCJpc3MiOiJkaXJlY3R1cyJ9.7PP4-QpZWUjCXL69x8P8IB2rZbNiiQYzgnAt2b6lH1U';
+const API_TOKEN = '094d174e18964f1fbd01a13a8a96870e517e629de8c2c9884760864153d2281c';
 
 const NOTICIAS_POR_PAGINA = 9;
 
@@ -35,14 +35,13 @@ export default function CategoriaPage() {
       const novasNoticias = await getNoticiasPorCategoria(slug, NOTICIAS_POR_PAGINA);
 
       if (append) {
-        setNoticias(prev => [...prev, ...novasNoticias]);
+        setNoticias((prev) => [...prev, ...novasNoticias]);
       } else {
         setNoticias(novasNoticias);
       }
 
       // Verifica se há mais notícias
       setHasMore(novasNoticias.length === NOTICIAS_POR_PAGINA);
-
     } catch (err) {
       console.error('Erro ao carregar notícias:', err);
       setError('Erro ao carregar notícias da categoria.');
@@ -76,9 +75,7 @@ export default function CategoriaPage() {
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-12">
         <div className="container mx-auto px-4">
           <h1 className="text-4xl lg:text-5xl font-extrabold mb-2">{categoriaNome}</h1>
-          <p className="text-blue-100 text-lg">
-            Todas as notícias sobre {categoriaNome.toLowerCase()}
-          </p>
+          <p className="text-blue-100 text-lg">Todas as notícias sobre {categoriaNome.toLowerCase()}</p>
         </div>
       </div>
 
@@ -89,9 +86,7 @@ export default function CategoriaPage() {
             <p className="mt-4 text-gray-600">Carregando notícias...</p>
           </div>
         ) : error ? (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl">
-            {error}
-          </div>
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl">{error}</div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Coluna Principal */}
@@ -128,12 +123,8 @@ export default function CategoriaPage() {
               ) : (
                 <div className="text-center py-20">
                   <div className="text-6xl mb-4">📰</div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                    Nenhuma notícia encontrada
-                  </h2>
-                  <p className="text-gray-600 mb-6">
-                    Não há notícias nesta categoria no momento.
-                  </p>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Nenhuma notícia encontrada</h2>
+                  <p className="text-gray-600 mb-6">Não há notícias nesta categoria no momento.</p>
                 </div>
               )}
             </div>
@@ -146,7 +137,7 @@ export default function CategoriaPage() {
                 </h3>
                 <ul className="space-y-3">
                   {['politica', 'economia', 'tecnologia', 'esportes', 'cultura', 'saude', 'educacao']
-                    .filter(cat => cat !== slug)
+                    .filter((cat) => cat !== slug)
                     .map((categoria) => (
                       <li key={categoria}>
                         <a
