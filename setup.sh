@@ -367,7 +367,37 @@ fi
 
 # Instalar dependências de cada projeto
 install_deps "." "projeto principal"
-install_deps "frontend" "frontend"
+
+# Frontend - usar pnpm
+if [ -d "frontend" ]; then
+    log "Instalando dependências do frontend com pnpm..."
+    cd frontend
+
+    # Criar .npmrc específico para o frontend
+    cat > .npmrc << 'EOF'
+engine-strict=false
+legacy-peer-deps=true
+auto-install-peers=true
+strict-peer-dependencies=false
+shamefully-hoist=true
+EOF
+
+    # Instalar com pnpm
+    if [ "$PKG_MANAGER" = "pnpm" ]; then
+        pnpm install --no-frozen-lockfile --shamefully-hoist 2>&1 | grep -v "WARN" || \
+        pnpm install --force 2>&1 | grep -v "WARN" || \
+        warning "Instalação do frontend pode ter problemas, mas continuando..."
+    else
+        # Fallback para npm se pnpm não estiver disponível
+        npm install --legacy-peer-deps 2>&1 | grep -v "WARN" || \
+        npm install --force 2>&1 | grep -v "WARN" || \
+        warning "Instalação do frontend pode ter problemas, mas continuando..."
+    fi
+
+    cd - > /dev/null
+    success "Dependências do frontend processadas"
+fi
+
 install_deps "webscraper-service" "webscraper"
 
 # Garantir que node-fetch, cheerio e dotenv estejam instalados no webscraper
@@ -711,6 +741,41 @@ if [ -n "$ACCESS_TOKEN" ] && [ "$ACCESS_TOKEN" != "null" ]; then
         success "Campos criados com sucesso"
 
         # =====================================================
+        # 13.2.5. CRIAR RELAÇÕES M2O
+        # =====================================================
+        log "🔗 Criando relações M2O..."
+
+        # Função para criar relação M2O
+        create_m2o_relation() {
+            local collection=$1
+            local field=$2
+            local related_collection=$3
+
+            log "Criando relação M2O $field em $collection -> $related_collection"
+
+            curl -s -X POST "http://localhost:8055/relations" \
+                -H "Authorization: Bearer $STATIC_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d "{
+                    \"collection\": \"$collection\",
+                    \"field\": \"$field\",
+                    \"related_collection\": \"$related_collection\"
+                }" > /dev/null
+
+            if [ $? -eq 0 ]; then
+                success "Relação M2O $field criada"
+            else
+                warning "Relação M2O $field pode já existir"
+            fi
+        }
+
+        # Criar relações M2O
+        create_m2o_relation "noticias" "categoria" "categorias"
+        create_m2o_relation "noticias" "autor" "autores"
+
+        success "Relações M2O criadas com sucesso"
+
+        # =====================================================
         # 13.3. CRIAR DADOS INICIAIS (SEEDS)
         # =====================================================
         log "🌱 Populando banco com dados iniciais..."
@@ -740,6 +805,74 @@ if [ -n "$ACCESS_TOKEN" ] && [ "$ACCESS_TOKEN" != "null" ]; then
 
         success "Dados iniciais criados com sucesso"
 
+        # =====================================================
+        # 13.4. APLICAR SCHEMA COMPLETO
+        # =====================================================
+        log "📋 Aplicando schema completo do banco de dados..."
+
+        # Aplicar schema via API
+        if [ -f "schema.yaml" ]; then
+            log "Aplicando schema.yaml..."
+            curl -s -X POST "http://localhost:8055/schema/apply" \
+                -H "Authorization: Bearer $STATIC_TOKEN" \
+                -H "Content-Type: application/json" \
+                -d @schema.yaml > /dev/null 2>/dev/null || {
+                warning "Falha ao aplicar schema.yaml via API, continuando..."
+            }
+        fi
+
+        # Configurar campo conteudo como WYSIWYG
+        log "Configurando campo conteudo como editor WYSIWYG..."
+        curl -s -X PATCH "http://localhost:8055/fields/noticias/conteudo" \
+            -H "Authorization: Bearer $STATIC_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+                "meta": {
+                    "interface": "input-rich-text-html",
+                    "display": "wysiwyg",
+                    "options": {
+                        "toolbar": [
+                            "bold", "italic", "underline", "strikethrough",
+                            "h1", "h2", "h3", "h4", "h5", "h6",
+                            "blockquote", "code", "bulletList", "orderedList",
+                            "link", "image", "table", "horizontalRule",
+                            "undo", "redo", "fullscreen", "source"
+                        ],
+                        "placeholder": "Digite o conteúdo da notícia aqui...",
+                        "defaultValue": "<p>Digite o conteúdo da notícia aqui...</p>"
+                    }
+                }
+            }' > /dev/null 2>/dev/null || {
+            warning "Falha ao configurar editor WYSIWYG, continuando..."
+        }
+
+        # Configurar campo biografia como WYSIWYG
+        log "Configurando campo biografia como editor WYSIWYG..."
+        curl -s -X PATCH "http://localhost:8055/fields/autores/biografia" \
+            -H "Authorization: Bearer $STATIC_TOKEN" \
+            -H "Content-Type: application/json" \
+            -d '{
+                "meta": {
+                    "interface": "input-rich-text-html",
+                    "display": "wysiwyg",
+                    "options": {
+                        "toolbar": [
+                            "bold", "italic", "underline", "strikethrough",
+                            "h1", "h2", "h3", "h4", "h5", "h6",
+                            "blockquote", "code", "bulletList", "orderedList",
+                            "link", "image", "table", "horizontalRule",
+                            "undo", "redo", "fullscreen", "source"
+                        ],
+                        "placeholder": "Digite a biografia do autor aqui...",
+                        "defaultValue": "<p>Digite a biografia do autor aqui...</p>"
+                    }
+                }
+            }' > /dev/null 2>/dev/null || {
+            warning "Falha ao configurar editor WYSIWYG para biografia, continuando..."
+        }
+
+        success "Schema aplicado com sucesso"
+
     else
         warning "Não foi possível obter ID do usuário"
         info "Você precisará gerar um token manualmente no Directus Admin"
@@ -765,7 +898,142 @@ sleep 2
 
 cd frontend
 
-# Iniciar frontend em background
+# Corrigir CSS que pode estar causando problemas
+log "Corrigindo arquivo CSS..."
+if [ -f "src/styles/content-renderer.css" ]; then
+    # Verificar se o CSS tem @apply (que causa erro)
+    if grep -q "@apply" src/styles/content-renderer.css; then
+        log "Corrigindo CSS com @apply..."
+        cat > src/styles/content-renderer.css << 'EOF'
+/* Estilos para conteúdo HTML e Markdown */
+.news-content {
+  font-family: 'Inter', sans-serif;
+  color: #2d3748;
+  line-height: 1.7;
+  font-size: 18px;
+}
+
+.news-content h1,
+.news-content h2,
+.news-content h3,
+.news-content h4,
+.news-content h5,
+.news-content h6 {
+  font-weight: 700;
+  margin-top: 1.5em;
+  margin-bottom: 0.8em;
+  line-height: 1.2;
+  color: #1a202c;
+}
+
+.news-content h1 { font-size: 2.5em; }
+.news-content h2 { font-size: 2em; }
+.news-content h3 { font-size: 1.75em; }
+.news-content h4 { font-size: 1.5em; }
+
+.news-content p {
+  margin-bottom: 1em;
+}
+
+.news-content a {
+  color: #3182ce;
+  text-decoration: underline;
+}
+
+.news-content a:hover {
+  color: #2c5282;
+}
+
+.news-content ul,
+.news-content ol {
+  margin-left: 1.5em;
+  margin-bottom: 1em;
+}
+
+.news-content ul li {
+  list-style-type: disc;
+}
+
+.news-content ol li {
+  list-style-type: decimal;
+}
+
+.news-content blockquote {
+  border-left: 4px solid #4299e1;
+  padding-left: 1em;
+  margin-left: 0;
+  font-style: italic;
+  color: #4a5568;
+  background-color: #ebf8ff;
+  padding: 0.8em 1em;
+  border-radius: 0 0.5rem 0.5rem 0;
+  margin-bottom: 1em;
+}
+
+.news-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1em auto;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.news-content pre {
+  background-color: #2d3748;
+  color: #e2e8f0;
+  padding: 1em;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  margin-bottom: 1em;
+}
+
+.news-content code {
+  font-family: 'Fira Code', monospace;
+  background-color: #edf2f7;
+  color: #c53030;
+  padding: 0.2em 0.4em;
+  border-radius: 0.25rem;
+  font-size: 0.9em;
+}
+
+.news-content pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+.news-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1em;
+}
+
+.news-content th,
+.news-content td {
+  border: 1px solid #e2e8f0;
+  padding: 0.8em;
+  text-align: left;
+}
+
+.news-content th {
+  background-color: #f7fafc;
+  font-weight: 600;
+}
+
+@media (max-width: 768px) {
+  .news-content {
+    font-size: 16px;
+  }
+  .news-content h1 { font-size: 2em; }
+  .news-content h2 { font-size: 1.75em; }
+}
+EOF
+        success "CSS corrigido"
+    fi
+fi
+
+# Iniciar frontend em background (usar pnpm)
 if [ "$PKG_MANAGER" = "pnpm" ]; then
     log "Iniciando frontend com pnpm dev..."
     nohup pnpm dev > ../frontend.log 2>&1 &
@@ -869,11 +1137,31 @@ echo -e "   • G1:            ${GREEN}webscraper-service/g1.js${NC}"
 echo -e "   • Folha:         ${GREEN}webscraper-service/folha.js${NC}"
 echo -e "   • Olhar Digital: ${GREEN}webscraper-service/olhar-digital.js${NC}"
 echo ""
+# Configurar token automático
+log "Configurando sistema de token automático..."
+
+# Tornar scripts executáveis
+chmod +x refresh-token.sh 2>/dev/null || true
+chmod +x auto-refresh-token.sh 2>/dev/null || true
+
+# Iniciar sistema de token automático em background
+if [ -f "auto-refresh-token.sh" ]; then
+    log "Iniciando renovação automática de token..."
+    nohup ./auto-refresh-token.sh > token-refresh.log 2>&1 &
+    success "Sistema de token automático iniciado!"
+    info "Logs do token: tail -f token-refresh.log"
+else
+    warning "Script auto-refresh-token.sh não encontrado"
+fi
+
+echo ""
 echo -e "${BLUE}💡 Comandos Úteis:${NC}"
 echo -e "   • Parar tudo:     ${YELLOW}./stop.sh${NC}"
 echo -e "   • Ver logs:       ${YELLOW}tail -f frontend.log${NC}"
 echo -e "   • Health check:   ${YELLOW}./health-check.sh${NC}"
 echo -e "   • Diagnóstico:    ${YELLOW}./diagnose.sh${NC}"
+echo -e "   • Renovar token:  ${YELLOW}./refresh-token.sh${NC}"
 echo ""
 echo -e "${GREEN}✨ Seu portal de notícias está pronto para uso!${NC}"
+echo -e "${CYAN}🔄 Token será renovado automaticamente a cada 10 minutos${NC}"
 echo ""

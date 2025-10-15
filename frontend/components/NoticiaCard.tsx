@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Noticia, getImageUrl, formatarData, capitalizarCategoria, getAutorNome } from '@/lib/noticias';
+import { Noticia, getImageUrl, formatarData, capitalizarCategoria, getAutorNome } from '@/lib/directus';
 
 interface NoticiaCardProps {
   noticia: Noticia;
@@ -58,7 +58,7 @@ export default function NoticiaCard({ noticia, featured = false, compact = false
           {noticia.categoria && (
             <div className="absolute top-4 left-4">
               <span className="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-bold uppercase tracking-wide rounded-full">
-                {capitalizarCategoria(typeof noticia.categoria === 'string' ? noticia.categoria : noticia.categoria.nome)}
+                {capitalizarCategoria(typeof noticia.categoria === 'string' ? noticia.categoria : typeof noticia.categoria === 'object' && noticia.categoria?.nome ? noticia.categoria.nome : 'tecnologia')}
               </span>
             </div>
           )}

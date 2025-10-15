@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Noticia, capitalizarCategoria, getNoticiasPorCategoria } from '@/lib/noticias';
+import { Noticia, capitalizarCategoria, getNoticiasPorCategoria } from '@/lib/directus';
 import NoticiaCard from '@/components/NoticiaCard';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 
-const API_URL = 'http://localhost:8055';
-const API_TOKEN = '094d174e18964f1fbd01a13a8a96870e517e629de8c2c9884760864153d2281c';
+// Usar as variáveis de ambiente do .env
+const API_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'http://localhost:8055';
+const API_TOKEN = process.env.NEXT_PUBLIC_API_TOKEN || '';
 
 const NOTICIAS_POR_PAGINA = 9;
 

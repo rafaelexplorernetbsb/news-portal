@@ -1,0 +1,54 @@
+# ========================================
+# CURSORIGNORE PARA PORTAL DE NOTÍCIAS
+# ========================================
+
+# Node modules
+node_modules/
+*/node_modules/
+
+# Build outputs
+.next/
+out/
+build/
+dist/
+
+# Cache
+.cache/
+.parcel-cache
+
+# Logs
+*.log
+logs/
+
+# Lock files
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Environment files
+.env.local
+.env.production
+
+# Database
+*.db
+*.sqlite
+
+# Test coverage
+coverage/
+
+# OS files
+.DS_Store
+
+# Directus uploads
+uploads/
+
+# Temporary files
+*.tmp
+*.bak
+*~
+
+# Documentação gerada
+EDITOR-GUIDE.md
+SCHEMA-UPDATED.md
+TURBOPACK-FIX.md
+

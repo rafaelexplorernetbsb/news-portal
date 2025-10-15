@@ -159,14 +159,39 @@ fields:
     meta:
       collection: autores
       conditions: null
-      display: null
+      display: wysiwyg
       display_options: null
       field: biografia
       group: null
       hidden: false
       interface: input-rich-text-html
       note: Biografia do autor
-      options: null
+      options:
+        toolbar:
+          - bold
+          - italic
+          - underline
+          - strikethrough
+          - h1
+          - h2
+          - h3
+          - h4
+          - h5
+          - h6
+          - blockquote
+          - code
+          - bulletList
+          - orderedList
+          - link
+          - image
+          - table
+          - horizontalRule
+          - undo
+          - redo
+          - fullscreen
+          - source
+        placeholder: "Digite a biografia do autor aqui..."
+        defaultValue: "<p>Digite a biografia do autor aqui...</p>"
       readonly: false
       required: false
       sort: 3
@@ -591,14 +616,39 @@ fields:
     meta:
       collection: noticias
       conditions: null
-      display: null
+      display: wysiwyg
       display_options: null
       field: conteudo
       group: null
       hidden: false
       interface: input-rich-text-html
       note: Conteúdo completo da notícia
-      options: null
+      options:
+        toolbar:
+          - bold
+          - italic
+          - underline
+          - strikethrough
+          - h1
+          - h2
+          - h3
+          - h4
+          - h5
+          - h6
+          - blockquote
+          - code
+          - bulletList
+          - orderedList
+          - link
+          - image
+          - table
+          - horizontalRule
+          - undo
+          - redo
+          - fullscreen
+          - source
+        placeholder: "Digite o conteúdo da notícia aqui..."
+        defaultValue: "<p>Digite o conteúdo da notícia aqui...</p>"
       readonly: false
       required: true
       sort: 4
@@ -1005,6 +1055,27 @@ relations:
       one_deselect_action: nullify
       one_field: null
       sort_field: null
+  - collection: noticias
+    field: categoria
+    related_collection: categorias
+    meta:
+      junction_field: null
+      many_collection: noticias
+      many_field: categoria
+      one_allowed_collections: null
+      one_collection: categorias
+      one_collection_field: null
+      one_deselect_action: nullify
+      one_field: null
+      sort_field: null
+    schema:
+      table: noticias
+      column: categoria
+      foreign_key_table: categorias
+      foreign_key_column: id
+      constraint_name: noticias_categoria_foreign
+      on_update: NO ACTION
+      on_delete: NO ACTION
   - collection: noticias
     field: autor
     related_collection: autores

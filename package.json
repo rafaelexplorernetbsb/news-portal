@@ -1,44 +1,30 @@
 {
-	"name": "directus-monorepo",
-	"private": true,
-	"homepage": "https://directus.io",
-	"type": "module",
-	"scripts": {
-		"build": "pnpm --recursive run build",
-		"format": "prettier --cache --check .",
-		"lint": "eslint --cache .",
-		"lint:style": "stylelint '**/*.{css,scss,vue}' --ignore-path .gitignore --cache",
-		"test": "pnpm --recursive --filter '!tests-blackbox' test",
-		"test:blackbox": "rimraf ./dist && pnpm --filter directus deploy --legacy --prod dist && pnpm --filter tests-blackbox test",
-		"test:coverage": "pnpm --recursive --filter '!tests-blackbox' test:coverage"
-	},
-	"devDependencies": {
-		"@changesets/cli": "catalog:",
-		"@directus/release-notes-generator": "workspace:*",
-		"@eslint/js": "catalog:",
-		"eslint": "catalog:",
-		"eslint-config-prettier": "catalog:",
-		"eslint-plugin-vue": "catalog:",
-		"globals": "catalog:",
-		"postcss-html": "catalog:",
-		"prettier": "catalog:",
-		"rimraf": "catalog:",
-		"stylelint": "catalog:",
-		"stylelint-config-standard": "catalog:",
-		"stylelint-config-standard-scss": "catalog:",
-		"stylelint-config-standard-vue": "catalog:",
-		"stylelint-use-logical": "catalog:",
-		"typescript": "catalog:",
-		"typescript-eslint": "catalog:"
-	},
-	"pnpm": {
-		"overrides": {
-			"tar-fs": "2.1.3"
-		}
-	},
-	"packageManager": "pnpm@10.14.0",
-	"engines": {
-		"node": ">=18",
-		"pnpm": ">=9"
-	}
+  "name": "news-portal",
+  "version": "1.0.0",
+  "description": "Portal de Notícias com Directus CMS e Next.js",
+  "private": true,
+  "scripts": {
+    "install:all": "pnpm install && cd frontend && pnpm install && cd ../webscraper-service && pnpm install",
+    "dev": "concurrently \"pnpm dev:directus\" \"pnpm dev:frontend\" \"pnpm dev:webscraper\"",
+    "dev:directus": "cd api && pnpm dev",
+    "dev:frontend": "cd frontend && pnpm dev",
+    "dev:webscraper": "cd webscraper-service && pnpm start",
+    "build": "cd frontend && pnpm build",
+    "start": "cd frontend && pnpm start",
+    "setup": "pnpm install:all && echo '✅ Instalação concluída! Execute: pnpm dev'",
+    "clean": "rm -rf node_modules frontend/node_modules webscraper-service/node_modules",
+    "reset": "pnpm clean && pnpm install:all",
+    "sync-env": "./sync-env.sh"
+  },
+  "devDependencies": {
+    "concurrently": "catalog:"
+  },
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=9"
+  },
+  "packageManager": "pnpm@10.14.0",
+  "dependencies": {
+    "node-fetch": "catalog:"
+  }
 }

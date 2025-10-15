@@ -1,7 +1,7 @@
 // URL da API - sempre usa localhost pois agora é Client-Side Rendering
-const API_URL = 'http://localhost:8055';
-// Token de autenticação do Directus
-const API_TOKEN = '094d174e18964f1fbd01a13a8a96870e517e629de8c2c9884760864153d2281c';
+const API_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'http://localhost:8055';
+// Token de autenticação do Directus - obtido das variáveis de ambiente
+const API_TOKEN = process.env.NEXT_PUBLIC_API_TOKEN || '';
 
 export interface Noticia {
   id: number;
@@ -53,18 +53,18 @@ async function fetchAPI(endpoint: string) {
 
 export async function getNoticiasDestaque(): Promise<Noticia[]> {
   const data: NoticiaResponse = await fetchAPI(
-    `/items/noticias?filter[destaque][_eq]=true&filter[status][_eq]=published&limit=15&sort=-data_publicacao&fields=*,imagem.*,autor.*,url_imagem&t=${Date.now()}`
+    `/items/noticias?limit=15&sort=-data_publicacao&fields=*,imagem.*,autor.*,url_imagem&t=${Date.now()}`
   );
 
-  return data.data;
+  return data.data || [];
 }
 
 export async function getUltimasNoticias(limit: number = 10): Promise<Noticia[]> {
   const data: NoticiaResponse = await fetchAPI(
-    `/items/noticias?filter[status][_eq]=published&limit=${limit}&sort=-data_publicacao&fields=*,imagem.*,autor.*,url_imagem&t=${Date.now()}`
+    `/items/noticias?limit=${limit}&sort=-data_publicacao&fields=*,imagem.*,autor.*,url_imagem&t=${Date.now()}`
   );
 
-  return data.data;
+  return data.data || [];
 }
 
 export async function getNoticiaById(id: string): Promise<Noticia> {
@@ -124,6 +124,11 @@ export function formatarData(dataString: string): string {
 }
 
 export function capitalizarCategoria(categoria: string): string {
+  // Verificar se categoria é válida
+  if (!categoria || typeof categoria !== 'string') {
+    return 'Categoria';
+  }
+
   const categorias: Record<string, string> = {
     'politica': 'Política',
     'economia': 'Economia',
@@ -147,4 +152,47 @@ export function getAutorNome(autor: Noticia['autor']): string {
   }
 
   return 'Autor não informado';
+}
+
+export async function getNoticiasPorCategoria(categoria: string, limit: number = 10): Promise<Noticia[]> {
+  try {
+    // Buscar todas as notícias
+    const data: NoticiaResponse = await fetchAPI(
+      `/items/noticias?limit=50&fields=*,imagem.*,autor.*,categoria.*,url_imagem&t=${Date.now()}`
+    );
+
+    if (!data.data || data.data.length === 0) {
+      return [];
+    }
+
+    // Filtrar por categoria no frontend
+    const noticiasFiltradas = data.data.filter(noticia => {
+      if (typeof noticia.categoria === 'object' && noticia.categoria?.slug) {
+        return noticia.categoria.slug === categoria;
+      }
+      return false;
+    });
+
+    return noticiasFiltradas.slice(0, limit);
+  } catch (error) {
+    console.error('Erro ao buscar notícias:', error);
+    return [];
+  }
+}
+
+export async function getNoticiaPorSlug(slug: string): Promise<Noticia | null> {
+  try {
+    const data: NoticiaResponse = await fetchAPI(
+      `/items/noticias?filter[slug][_eq]=${slug}&fields=*,imagem.*,autor.*,categoria.*,url_imagem&limit=1&t=${Date.now()}`
+    );
+
+    if (!data.data || data.data.length === 0) {
+      return null;
+    }
+
+    return data.data[0];
+  } catch (error) {
+    console.error('Erro ao buscar notícia por slug:', error);
+    return null;
+  }
 }

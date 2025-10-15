@@ -10,12 +10,13 @@ import {
   capitalizarCategoria,
   getUltimasNoticias,
   getAutorNome,
-} from '@/lib/noticias';
+} from '@/lib/directus';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import NoticiaCard from '@/components/NoticiaCard';
 import ArticleMedia from '@/components/ArticleMedia';
+import ContentRenderer from '@/components/ContentRenderer';
 import { FaFacebook, FaWhatsapp } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
 
@@ -186,23 +187,11 @@ export default function NoticiaPage() {
                   </div>
                 )}
 
-                {/* Conteúdo HTML com tipografia melhorada */}
-                {(() => {
-                  const sanitized = (noticia.conteudo || '')
-                    .replace(/>\s*Ok\s*</gi, '><')
-                    .replace(/<h[1-6][^>]*>\s*Resumo do dia\s*<\/h[1-6]>\s*<p[^>]*>[\s\S]*?<\/p>/gi, '');
-                  return (
-                    <div
-                      className="news-content"
-                      style={{
-                        color: '#2d3748 !important',
-                        fontSize: '18px !important',
-                        lineHeight: '1.7 !important',
-                      }}
-                      dangerouslySetInnerHTML={{ __html: sanitized }}
-                    />
-                  );
-                })()}
+                {/* Conteúdo (HTML ou Markdown) */}
+                <ContentRenderer
+                  content={noticia.conteudo || ''}
+                  className="news-content"
+                />
 
                 {/* Botão Compartilhar */}
                 <div className="bg-gray-50 p-6 rounded-xl mt-8">
