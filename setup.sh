@@ -301,9 +301,9 @@ else
 fi
 
 # =====================================================
-# 5. COMPILAR EXTENSÕES DO TERMINAL
+# 5. COMPILAR EXTENSÕES DO DIRECTUS
 # =====================================================
-log "🔧 Compilando extensões do terminal..."
+log "🔧 Compilando extensões do Directus..."
 
 compile_extension() {
     local ext_dir=$1
@@ -313,33 +313,52 @@ compile_extension() {
         log "Compilando extensão $ext_name..."
         cd "$ext_dir"
 
+        # Verificar se package.json existe
+        if [ ! -f "package.json" ]; then
+            warning "package.json não encontrado em $ext_dir, pulando..."
+            cd - > /dev/null
+            return
+        fi
+
         # Instalar dependências se necessário
         if [ ! -d "node_modules" ]; then
             log "Instalando dependências da extensão $ext_name..."
             if [ "$PKG_MANAGER" = "pnpm" ]; then
-                pnpm install --no-frozen-lockfile 2>/dev/null || npm install --legacy-peer-deps 2>/dev/null || true
+                pnpm install --no-frozen-lockfile --legacy-peer-deps 2>/dev/null || npm install --legacy-peer-deps 2>/dev/null || true
             else
                 npm install --legacy-peer-deps 2>/dev/null || true
             fi
         fi
 
-        # Compilar a extensão
-        if [ "$PKG_MANAGER" = "pnpm" ]; then
-            pnpm run build 2>/dev/null || npm run build 2>/dev/null || {
-                warning "Falha ao compilar $ext_name, mas continuando..."
-            }
+        # Verificar se script build existe
+        if grep -q '"build"' package.json; then
+            # Compilar a extensão
+            if [ "$PKG_MANAGER" = "pnpm" ]; then
+                log "Executando build com pnpm..."
+                pnpm run build 2>/dev/null || npm run build 2>/dev/null || {
+                    warning "Falha ao compilar $ext_name com pnpm, tentando npm..."
+                    npm run build 2>/dev/null || {
+                        warning "Falha ao compilar $ext_name, mas continuando..."
+                    }
+                }
+            else
+                log "Executando build com npm..."
+                npm run build 2>/dev/null || {
+                    warning "Falha ao compilar $ext_name, mas continuando..."
+                }
+            fi
         else
-            npm run build 2>/dev/null || {
-                warning "Falha ao compilar $ext_name, mas continuando..."
-            }
+            warning "Script 'build' não encontrado em $ext_name, pulando compilação..."
         fi
 
         cd - > /dev/null
 
+        # Verificar se compilação foi bem-sucedida
         if [ -f "$ext_dir/dist/index.js" ]; then
             success "Extensão $ext_name compilada com sucesso"
         else
             warning "Extensão $ext_name pode não ter compilado corretamente"
+            info "Verifique se há erros de dependências ou configuração"
         fi
     else
         info "Diretório $ext_dir não encontrado, pulando..."
@@ -349,6 +368,25 @@ compile_extension() {
 # Compilar extensões do terminal
 compile_extension "extensions/terminal" "Terminal Module"
 compile_extension "extensions/terminal-endpoint" "Terminal Endpoint"
+
+# Compilar extensões de notificações push (se existirem)
+compile_extension "extensions/push-notifications" "Push Notifications Endpoint"
+
+# Verificar se todas as extensões foram compiladas
+log "Verificando extensões compiladas..."
+EXTENSIONS_COMPILED=0
+for ext_dir in extensions/*/; do
+    if [ -d "$ext_dir" ] && [ -f "$ext_dir/dist/index.js" ]; then
+        EXTENSIONS_COMPILED=$((EXTENSIONS_COMPILED + 1))
+        success "✅ $(basename "$ext_dir") compilada"
+    fi
+done
+
+if [ $EXTENSIONS_COMPILED -gt 0 ]; then
+    success "$EXTENSIONS_COMPILED extensão(ões) compilada(s) com sucesso"
+else
+    warning "Nenhuma extensão foi compilada. Verifique os logs acima."
+fi
 
 # =====================================================
 # 6. INSTALAR DEPENDÊNCIAS
@@ -941,6 +979,33 @@ if [ -n "$ACCESS_TOKEN" ] && [ "$ACCESS_TOKEN" != "null" ]; then
 
         success "Schema aplicado com sucesso"
 
+        # =====================================================
+        # 14.5. VERIFICAR E CONFIGURAR EXTENSÕES
+        # =====================================================
+        log "🔧 Verificando extensões do Directus..."
+
+        # Verificar se extensões foram carregadas
+        EXTENSIONS_RESPONSE=$(curl -s -H "Authorization: Bearer $STATIC_TOKEN" \
+            "http://localhost:8055/extensions" 2>/dev/null || echo '{}')
+
+        if echo "$EXTENSIONS_RESPONSE" | grep -q "terminal"; then
+            success "Extensão Terminal carregada com sucesso"
+        else
+            warning "Extensão Terminal não foi carregada automaticamente"
+            info "Reinicie o Directus para carregar as extensões: docker compose restart directus"
+        fi
+
+        # Verificar se o módulo Terminal está disponível
+        MODULES_RESPONSE=$(curl -s -H "Authorization: Bearer $STATIC_TOKEN" \
+            "http://localhost:8055/modules" 2>/dev/null || echo '{}')
+
+        if echo "$MODULES_RESPONSE" | grep -q "terminal"; then
+            success "Módulo Terminal disponível no admin"
+        else
+            warning "Módulo Terminal não está disponível no admin"
+            info "Verifique se a extensão foi compilada corretamente"
+        fi
+
     else
         warning "Não foi possível obter ID do usuário"
         info "Você precisará gerar um token manualmente no Directus Admin"
@@ -1201,6 +1266,12 @@ echo -e "   2. Faça login com as credenciais acima"
 echo -e "   3. Configure permissões se necessário"
 echo -e "   4. Acesse o frontend em ${GREEN}http://localhost:3000${NC}"
 echo -e "   5. Use o terminal em ${GREEN}http://localhost:8055/admin/terminal${NC}"
+echo ""
+echo -e "${BLUE}🖥️  Terminal do Directus:${NC}"
+echo -e "   • Acesse: ${GREEN}http://localhost:8055/admin/terminal${NC}"
+echo -e "   • Login: admin@example.com / admin123"
+echo -e "   • Execute comandos reais do sistema"
+echo -e "   • Se não aparecer, reinicie: ${YELLOW}docker compose restart directus${NC}"
 echo ""
 echo -e "${BLUE}🕷️  Webscrapers Disponíveis:${NC}"
 echo -e "   • G1:            ${GREEN}webscraper-service/g1.js${NC}"
