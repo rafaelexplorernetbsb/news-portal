@@ -250,8 +250,8 @@ export default function NoticiaPage() {
                   Notícias Relacionadas
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {noticiasRelacionadas.map((noticiaRelacionada) => (
-                    <NoticiaCard key={noticiaRelacionada.id} noticia={noticiaRelacionada} featured />
+                  {noticiasRelacionadas.map((noticiaRelacionada, index) => (
+                    <NoticiaCard key={`${noticiaRelacionada.id}-${index}`} noticia={noticiaRelacionada} featured />
                   ))}
                 </div>
               </div>
@@ -267,8 +267,8 @@ export default function NoticiaPage() {
                 Últimas Notícias
               </h3>
               <div className="space-y-4">
-                {ultimasNoticias.map((noticia) => (
-                  <NoticiaCard key={noticia.id} noticia={noticia} compact />
+                {ultimasNoticias.map((noticia, index) => (
+                  <NoticiaCard key={`${noticia.id}-${index}`} noticia={noticia} compact />
                 ))}
               </div>
             </div>

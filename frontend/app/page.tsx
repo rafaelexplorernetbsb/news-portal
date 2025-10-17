@@ -12,6 +12,7 @@ export default function Home() {
   const [noticiasDestaque, setNoticiasDestaque] = useState<Noticia[]>([]);
   const [ultimasNoticias, setUltimasNoticias] = useState<Noticia[]>([]);
   const [maisLidas, setMaisLidas] = useState<Noticia[]>([]);
+  const [categoriasComNoticias, setCategoriasComNoticias] = useState<Array<{categoria: any, noticias: Noticia[]}>>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -21,12 +22,49 @@ export default function Home() {
         setLoading(true);
         const [destaque, ultimas] = await Promise.all([
           getNoticiasDestaque(),
-          getUltimasNoticias(20),
+          getUltimasNoticias(50), // Aumentar para ter mais notícias para filtrar
         ]);
         setNoticiasDestaque(destaque);
         setUltimasNoticias(ultimas);
         // Simular "mais lidas" pegando as primeiras notícias
         setMaisLidas(ultimas.slice(0, 5));
+
+        // Criar categorias baseadas nas notícias disponíveis
+        const categoriasUnicas = new Set<string>();
+        ultimas.forEach(noticia => {
+          if (typeof noticia.categoria === 'string') {
+            categoriasUnicas.add(noticia.categoria);
+          } else if (typeof noticia.categoria === 'object' && noticia.categoria?.nome) {
+            categoriasUnicas.add(noticia.categoria.nome);
+          }
+        });
+
+        // Criar seções por categoria
+        const categoriasComNoticiasData = Array.from(categoriasUnicas)
+          .slice(0, 6) // Limitar a 6 categorias
+          .map(categoriaNome => {
+            const noticiasCategoria = ultimas.filter(noticia => {
+              if (typeof noticia.categoria === 'string') {
+                return noticia.categoria.toLowerCase() === categoriaNome.toLowerCase();
+              } else if (typeof noticia.categoria === 'object' && noticia.categoria?.nome) {
+                return noticia.categoria.nome.toLowerCase() === categoriaNome.toLowerCase();
+              }
+              return false;
+            }).slice(0, 12); // Limitar a 12 notícias por categoria
+
+            return {
+              categoria: {
+                id: categoriaNome.toLowerCase().replace(/\s+/g, '-'),
+                nome: categoriaNome,
+                slug: categoriaNome.toLowerCase().replace(/\s+/g, '-'),
+                contagem: noticiasCategoria.length
+              },
+              noticias: noticiasCategoria
+            };
+          })
+          .filter(item => item.noticias.length > 0);
+
+        setCategoriasComNoticias(categoriasComNoticiasData);
       } catch (err) {
         console.error('Erro ao carregar notícias:', err);
         setError('Erro ao carregar notícias. Tente novamente mais tarde.');
@@ -42,7 +80,7 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600"></div>
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-[#1c99da]"></div>
           <p className="mt-4 text-gray-600 text-lg font-medium">Carregando notícias...</p>
         </div>
       </div>
@@ -54,164 +92,137 @@ export default function Home() {
       <Header />
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-6">
         {error ? (
           <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-xl">
             {error}
           </div>
         ) : (
           <>
-            {/* Seção de Destaques - 3 colunas ocupando toda a largura */}
-            {noticiasDestaque && noticiasDestaque.length >= 5 && (
-              <section className="mb-10">
+            {/* Seção Principal - Destaque */}
+            {noticiasDestaque && noticiasDestaque.length > 0 && (
+              <section className="mb-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Coluna 1: Notícia Principal Grande */}
-                    <div className="lg:col-span-1">
-                      <Link
-                        href={`/noticia/${noticiasDestaque[0].slug}`}
-                        className="block group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden h-full"
-                      >
-                        <div className="relative h-[500px] lg:h-[640px]">
-                          <Image
-                            src={getImageUrl(noticiasDestaque[0].imagem, noticiasDestaque[0].url_imagem)}
-                            alt={noticiasDestaque[0].titulo}
-                            fill
-                            sizes="(max-width: 1024px) 100vw, 33vw"
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                            unoptimized
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                          <div className="absolute bottom-0 left-0 p-6 text-white">
-                            <span className="bg-blue-600 text-xs font-semibold px-3 py-1 rounded-full mb-3 inline-block">
-                              {capitalizarCategoria(typeof noticiasDestaque[0].categoria === 'string' ? noticiasDestaque[0].categoria : typeof noticiasDestaque[0].categoria === 'object' && noticiasDestaque[0].categoria?.nome ? noticiasDestaque[0].categoria.nome : 'tecnologia')}
-                            </span>
-                            <h2 className="text-2xl font-bold leading-tight group-hover:text-blue-200 transition-colors mb-2">
-                              {noticiasDestaque[0].titulo}
-                            </h2>
-                          </div>
+                  {/* Notícia Principal */}
+                  <div className="lg:col-span-2">
+                    <Link
+                      href={`/noticia/${noticiasDestaque[0].slug}`}
+                      className="block group bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden"
+                    >
+                      <div className="relative h-80 lg:h-96">
+                        <Image
+                          src={getImageUrl(noticiasDestaque[0].imagem, noticiasDestaque[0].url_imagem)}
+                          alt={noticiasDestaque[0].titulo}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          unoptimized
+                        />
+                        <div className="absolute top-4 left-4">
+                          <span className="bg-[#db0202] text-white text-xs font-bold px-2 py-1 rounded uppercase tracking-wide">
+                            {capitalizarCategoria(typeof noticiasDestaque[0].categoria === 'string' ? noticiasDestaque[0].categoria : typeof noticiasDestaque[0].categoria === 'object' && noticiasDestaque[0].categoria?.nome ? noticiasDestaque[0].categoria.nome : 'tecnologia')}
+                          </span>
                         </div>
-                      </Link>
-                    </div>
+                      </div>
+                      <div className="p-6">
+                        <h1 className="text-2xl lg:text-3xl font-bold text-[#333333] mb-3 group-hover:text-[#1c99da] transition-colors leading-tight">
+                          {noticiasDestaque[0].titulo}
+                        </h1>
+                        <p className="text-gray-600 mb-4 line-clamp-3 leading-relaxed">
+                          {noticiasDestaque[0].resumo}
+                        </p>
+                        <div className="flex items-center justify-between text-sm text-gray-500">
+                          <span>{formatarData(noticiasDestaque[0].data_publicacao)}</span>
+                        </div>
+                      </div>
+                    </Link>
 
-                    {/* Coluna 2: 2 Notícias Menores */}
-                    <div className="lg:col-span-1 flex flex-col gap-6">
-                      {noticiasDestaque.slice(1, 3).map((noticia) => (
-                        <Link
-                          key={noticia.id}
-                          href={`/noticia/${noticia.slug}`}
-                          className="block group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden flex-1"
-                        >
-                          <div className="relative h-[240px] lg:h-[308px]">
-                            <Image
-                              src={getImageUrl(noticia.imagem, noticia.url_imagem)}
-                              alt={noticia.titulo}
-                              fill
-                              sizes="(max-width: 1024px) 100vw, 33vw"
-                              className="object-cover group-hover:scale-105 transition-transform duration-500"
-                              unoptimized
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                            <div className="absolute bottom-0 left-0 p-4 text-white w-full">
-                              <span className="bg-blue-600 text-xs font-semibold px-2 py-1 rounded-full mb-2 inline-block">
-                                {capitalizarCategoria(typeof noticia.categoria === 'string' ? noticia.categoria : typeof noticia.categoria === 'object' && noticia.categoria?.nome ? noticia.categoria.nome : 'tecnologia')}
-                              </span>
-                              <h3 className="text-base font-bold leading-tight group-hover:text-blue-200 transition-colors line-clamp-2">
-                                {noticia.titulo}
-                              </h3>
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-
-                    {/* Coluna 3: 2 Notícias Menores */}
-                    <div className="lg:col-span-1 flex flex-col gap-6">
-                      {noticiasDestaque.slice(3, 5).map((noticia) => (
-                        <Link
-                          key={noticia.id}
-                          href={`/noticia/${noticia.slug}`}
-                          className="block group bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden flex-1"
-                        >
-                          <div className="relative h-[240px] lg:h-[308px]">
-                            <Image
-                              src={getImageUrl(noticia.imagem, noticia.url_imagem)}
-                              alt={noticia.titulo}
-                              fill
-                              sizes="(max-width: 1024px) 100vw, 33vw"
-                              className="object-cover group-hover:scale-105 transition-transform duration-500"
-                              unoptimized
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                            <div className="absolute bottom-0 left-0 p-4 text-white w-full">
-                              <span className="bg-blue-600 text-xs font-semibold px-2 py-1 rounded-full mb-2 inline-block">
-                                {capitalizarCategoria(typeof noticia.categoria === 'string' ? noticia.categoria : typeof noticia.categoria === 'object' && noticia.categoria?.nome ? noticia.categoria.nome : 'tecnologia')}
-                              </span>
-                              <h3 className="text-base font-bold leading-tight group-hover:text-blue-200 transition-colors line-clamp-2">
-                                {noticia.titulo}
-                              </h3>
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
+                    {/* Notícias Adicionais abaixo da principal */}
+                    {noticiasDestaque.length > 4 && (
+                      <div className="mt-6">
+                        <h2 className="text-lg font-bold text-[#333333] mb-4 pb-2 border-b-2 border-[#1c99da]">
+                          Mais Destaques
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {noticiasDestaque.slice(4, 8).map((noticia, index) => (
+                            <NoticiaCard key={`${noticia.id}-${index}`} noticia={noticia} featured />
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                </section>
-              )}
 
-            {/* Grid com Conteúdo Principal + Sidebar */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              {/* Coluna Principal */}
-              <div className="lg:col-span-2 space-y-10">
-                {/* Mais Destaques */}
-              {noticiasDestaque && noticiasDestaque.length > 5 && (
-                <section>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-5 pb-3 border-b-2 border-blue-600 flex items-center gap-2">
-                    <span className="text-yellow-500">⭐</span>
-                    Mais Destaques
-                  </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {noticiasDestaque.slice(5, 9).map((noticia) => (
-                      <NoticiaCard key={noticia.id} noticia={noticia} featured />
+                  {/* Sidebar com outras notícias */}
+                  <div className="space-y-4">
+                    {noticiasDestaque.slice(1, 4).map((noticia, index) => (
+                      <NoticiaCard key={`${noticia.id}-${index}`} noticia={noticia} featured />
                     ))}
                   </div>
-                </section>
-              )}
-
-              {/* Todas as Notícias */}
-              <section>
-                <h2 className="text-2xl font-bold text-gray-900 mb-5 pb-3 border-b-2 border-blue-600 flex items-center gap-2">
-                  <span className="text-blue-600">📰</span>
-                  Todas as Notícias
-                </h2>
-                <div className="space-y-4">
-                  {ultimasNoticias && ultimasNoticias.length > 0 ? (
-                    ultimasNoticias.map((noticia) => (
-                      <NoticiaCard key={noticia.id} noticia={noticia} />
-                    ))
-                  ) : (
-                    <p className="text-gray-600">Nenhuma notícia encontrada.</p>
-                  )}
                 </div>
               </section>
-            </div>
+            )}
 
-            {/* Sidebar */}
-            <aside className="space-y-6">
-              {/* Mais Lidas */}
-              <div className="bg-white rounded-xl shadow-md p-6 sticky top-32">
-                <h3 className="text-xl font-bold text-gray-900 mb-4 pb-3 border-b-2 border-red-500 flex items-center gap-2">
-                  <span className="text-red-500">🔥</span>
-                  Mais Lidas
-                </h3>
-                <div className="space-y-4">
-                  {maisLidas.map((noticia) => (
-                    <div key={noticia.id}>
-                      <NoticiaCard noticia={noticia} compact />
+            {/* Grid Principal */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+              {/* Coluna Principal */}
+              <div className="lg:col-span-3">
+                {/* Últimas Notícias - Grid 4x3 */}
+                <section className="mb-8">
+                  <h2 className="text-xl font-bold text-[#333333] mb-4 pb-2 border-b-2 border-[#1c99da]">
+                    Últimas Notícias
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {ultimasNoticias && ultimasNoticias.length > 0 ? (
+                      ultimasNoticias.slice(0, 12).map((noticia, index) => (
+                        <NoticiaCard key={`${noticia.id}-${index}`} noticia={noticia} featured />
+                      ))
+                    ) : (
+                      <div className="col-span-full p-8 text-center text-gray-600">
+                        <p>Nenhuma notícia encontrada.</p>
+                      </div>
+                    )}
+                  </div>
+                </section>
+
+                {/* Seções por Categoria */}
+                {categoriasComNoticias.map(({ categoria, noticias }, categoriaIndex) => (
+                  <section key={categoria.id} className="mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-xl font-bold text-[#333333] pb-2 border-b-2 border-[#1c99da]">
+                        {categoria.nome}
+                      </h2>
+                      <Link
+                        href={`/categoria/${categoria.slug}`}
+                        className="text-[#1c99da] hover:text-[#1a8bc7] font-medium text-sm transition-colors"
+                      >
+                        Ver todas →
+                      </Link>
                     </div>
-                  ))}
-                </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                      {noticias.slice(0, 12).map((noticia, index) => (
+                        <NoticiaCard key={`${categoria.id}-${noticia.id}-${index}`} noticia={noticia} featured />
+                      ))}
+                    </div>
+                  </section>
+                ))}
               </div>
-            </aside>
+
+              {/* Sidebar */}
+              <aside className="space-y-6">
+                {/* Mais Lidas */}
+                <div className="bg-white rounded-lg shadow-sm p-4 sticky top-32">
+                  <h3 className="text-lg font-bold text-[#333333] mb-4 pb-2 border-b-2 border-[#db0202]">
+                    Mais Lidas
+                  </h3>
+                  <div className="space-y-2">
+                    {maisLidas.map((noticia, index) => (
+                      <div key={noticia.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded">
+                        <span className="text-[#db0202] font-bold text-sm w-6">{index + 1}</span>
+                        <NoticiaCard noticia={noticia} compact />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </aside>
             </div>
           </>
         )}

@@ -1,5 +1,8 @@
 import fetch from 'node-fetch';
 import * as cheerio from 'cheerio';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const DIRECTUS_URL = process.env.DIRECTUS_URL || 'http://localhost:8055';
 const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN || '';
@@ -8,11 +11,7 @@ const BASE_DOMAIN = 'https://www.tecmundo.com.br/';
 
 
 const CATEGORIAS_MAP = {
-  'tecnologia': 1,
-  'politica': 2,
-  'economia': 3,
-  'esportes': 4,
-  'cultura': 5
+  'tecnologia': 1
 };
 
 
@@ -100,7 +99,7 @@ export function extractContent($, html) {
       '.text',
       'article.content'
     ];
-  
+
     let conteudo = '';
     for (const selector of selectors) {
       const element = $(selector);
@@ -167,7 +166,7 @@ function removeJupiterSummaryElements(contentHtml) {
     contentHtml = contentHtml.replace( /<footer[^>]*>[\s\S]*?(logo-voxel-header\.svg|logo-tecmundo-main\.svg)[\s\S]*?<\/footer>/gi,'');
     contentHtml = contentHtml.replace(/<footer[^>]*class="[^"]*(bg-theme-brand-voxel|styles_copy_content__|styles_verticals__)[^"]*"[^>]*>[\s\S]*?<\/footer>/gi,'');
     contentHtml = contentHtml.replace(/<footer[^>]*>[\s\S]*?(Voxel|Nossa rede|COPYRIGHT\s+20\d{2}|Opções de privacidade)[\s\S]*?<\/footer>/gi,'');
-  
+
     console.log('[UOL Webscraper] Removidos headers (Voxel/TecMundo) e elementos Jupiter via regex');
     return contentHtml;
   }
@@ -193,7 +192,7 @@ function removeSummaryContainers($contentClean) {
         text.includes('Esse resumo foi útil?') ||
         text.includes('Ler resumo da notícia') ||
         text.includes('Malware') && text.includes('detectado') && text.includes('preocupa usuários') ||
-        classes.includes('resumo') || 
+        classes.includes('resumo') ||
         classes.includes('summary') ||
         classes.includes('jupiter-summary')) {
       console.log('[UOL Webscraper] Removendo container de resumo automático');
@@ -648,7 +647,7 @@ async function createNoticia(item, url, data_publicacao) {
     resumo: item.resumo,
     conteudo: item.conteudo,
     link_original: url,
-    categoria: 'tecnologia',
+    categoria: CATEGORIAS_MAP.tecnologia,
     autor: autorId,
     status: 'published',
     destaque: false,

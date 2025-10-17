@@ -301,7 +301,57 @@ else
 fi
 
 # =====================================================
-# 5. INSTALAR DEPENDÊNCIAS
+# 5. COMPILAR EXTENSÕES DO TERMINAL
+# =====================================================
+log "🔧 Compilando extensões do terminal..."
+
+compile_extension() {
+    local ext_dir=$1
+    local ext_name=$2
+
+    if [ -d "$ext_dir" ]; then
+        log "Compilando extensão $ext_name..."
+        cd "$ext_dir"
+
+        # Instalar dependências se necessário
+        if [ ! -d "node_modules" ]; then
+            log "Instalando dependências da extensão $ext_name..."
+            if [ "$PKG_MANAGER" = "pnpm" ]; then
+                pnpm install --no-frozen-lockfile 2>/dev/null || npm install --legacy-peer-deps 2>/dev/null || true
+            else
+                npm install --legacy-peer-deps 2>/dev/null || true
+            fi
+        fi
+
+        # Compilar a extensão
+        if [ "$PKG_MANAGER" = "pnpm" ]; then
+            pnpm run build 2>/dev/null || npm run build 2>/dev/null || {
+                warning "Falha ao compilar $ext_name, mas continuando..."
+            }
+        else
+            npm run build 2>/dev/null || {
+                warning "Falha ao compilar $ext_name, mas continuando..."
+            }
+        fi
+
+        cd - > /dev/null
+
+        if [ -f "$ext_dir/dist/index.js" ]; then
+            success "Extensão $ext_name compilada com sucesso"
+        else
+            warning "Extensão $ext_name pode não ter compilado corretamente"
+        fi
+    else
+        info "Diretório $ext_dir não encontrado, pulando..."
+    fi
+}
+
+# Compilar extensões do terminal
+compile_extension "extensions/terminal" "Terminal Module"
+compile_extension "extensions/terminal-endpoint" "Terminal Endpoint"
+
+# =====================================================
+# 6. INSTALAR DEPENDÊNCIAS
 # =====================================================
 log "📦 Instalando dependências..."
 
@@ -429,7 +479,7 @@ fi
 cd - > /dev/null
 
 # =====================================================
-# 6. PARAR CONTAINERS ANTIGOS
+# 7. PARAR CONTAINERS ANTIGOS
 # =====================================================
 log "🛑 Parando containers antigos..."
 $DOCKER_COMPOSE_CMD down -v 2>/dev/null || true
@@ -439,7 +489,7 @@ fi
 success "Containers antigos parados"
 
 # =====================================================
-# 7. INICIAR CONTAINERS DOCKER
+# 8. INICIAR CONTAINERS DOCKER
 # =====================================================
 log "🐳 Iniciando containers Docker..."
 
@@ -473,7 +523,7 @@ fi
 success "Containers Docker iniciados"
 
 # =====================================================
-# 8. CRIAR DIRETÓRIOS NECESSÁRIOS
+# 9. CRIAR DIRETÓRIOS NECESSÁRIOS
 # =====================================================
 log "📁 Criando diretórios necessários..."
 
@@ -481,7 +531,7 @@ mkdir -p database/migrations database/seeds 2>/dev/null || true
 success "Diretórios database/ criados"
 
 # =====================================================
-# 9. AGUARDAR SERVIÇOS FICAREM PRONTOS
+# 10. AGUARDAR SERVIÇOS FICAREM PRONTOS
 # =====================================================
 log "⏳ Aguardando serviços ficarem prontos..."
 
@@ -517,7 +567,7 @@ wait_for_service "http://localhost:8055/server/health" "Directus API" || {
 }
 
 # =====================================================
-# 10. CRIAR USUÁRIO ADMIN NO DIRECTUS
+# 11. CRIAR USUÁRIO ADMIN NO DIRECTUS
 # =====================================================
 log "👤 Criando usuário administrador..."
 
@@ -542,7 +592,7 @@ else
 fi
 
 # =====================================================
-# 13. GERAR TOKEN ESTÁTICO E ATUALIZAR .env
+# 14. GERAR TOKEN ESTÁTICO E ATUALIZAR .env
 # =====================================================
 log "🔑 Gerando token estático válido e atualizando arquivos .env..."
 
@@ -647,7 +697,7 @@ if [ -n "$ACCESS_TOKEN" ] && [ "$ACCESS_TOKEN" != "null" ]; then
         info "Token completo salvo em: .directus-token (use cat .directus-token para ver)"
 
         # =====================================================
-        # 13.1. CRIAR COLLECTIONS E SCHEMA
+        # 14.1. CRIAR COLLECTIONS E SCHEMA
         # =====================================================
         log "🗄️  Criando collections e schema do banco de dados..."
 
@@ -699,7 +749,7 @@ if [ -n "$ACCESS_TOKEN" ] && [ "$ACCESS_TOKEN" != "null" ]; then
         create_collection "noticias" "Notícias do portal" "article"
 
         # =====================================================
-        # 13.2. CRIAR CAMPOS DAS COLLECTIONS
+        # 14.2. CRIAR CAMPOS DAS COLLECTIONS
         # =====================================================
         log "🌱 Criando campos das collections..."
 
@@ -759,7 +809,7 @@ if [ -n "$ACCESS_TOKEN" ] && [ "$ACCESS_TOKEN" != "null" ]; then
         success "Campos criados com sucesso"
 
         # =====================================================
-        # 13.2.5. CRIAR RELAÇÕES M2O
+        # 14.2.5. CRIAR RELAÇÕES M2O
         # =====================================================
         log "🔗 Criando relações M2O..."
 
@@ -794,7 +844,7 @@ if [ -n "$ACCESS_TOKEN" ] && [ "$ACCESS_TOKEN" != "null" ]; then
         success "Relações M2O criadas com sucesso"
 
         # =====================================================
-        # 13.3. CRIAR DADOS INICIAIS (SEEDS)
+        # 14.3. CRIAR DADOS INICIAIS (SEEDS)
         # =====================================================
         log "🌱 Populando banco com dados iniciais..."
 
@@ -824,7 +874,7 @@ if [ -n "$ACCESS_TOKEN" ] && [ "$ACCESS_TOKEN" != "null" ]; then
         success "Dados iniciais criados com sucesso"
 
         # =====================================================
-        # 13.4. APLICAR SCHEMA COMPLETO
+        # 14.4. APLICAR SCHEMA COMPLETO
         # =====================================================
         log "📋 Aplicando schema completo do banco de dados..."
 
@@ -905,7 +955,7 @@ else
 fi
 
 # =====================================================
-# 14. INICIAR FRONTEND
+# 15. INICIAR FRONTEND
 # =====================================================
 log "🎨 Iniciando frontend..."
 
@@ -1091,7 +1141,7 @@ else
 fi
 
 # =====================================================
-# 15. VERIFICAR SAÚDE DOS SERVIÇOS
+# 16. VERIFICAR SAÚDE DOS SERVIÇOS
 # =====================================================
 log "🏥 Verificando saúde dos serviços..."
 
@@ -1117,7 +1167,7 @@ if [ "$SERVICES_OK" = false ]; then
 fi
 
 # =====================================================
-# 16. RESUMO FINAL
+# 17. RESUMO FINAL
 # =====================================================
 echo ""
 echo -e "${GREEN}"
@@ -1143,12 +1193,14 @@ echo -e "${BLUE}📊 Dados Iniciais:${NC}"
 echo -e "   • ✅ 5 categorias criadas"
 echo -e "   • ✅ 1 autor padrão criado"
 echo -e "   • ✅ Schema do banco aplicado"
+echo -e "   • ✅ Extensões do terminal compiladas"
 echo ""
 echo -e "${BLUE}🚀 Próximos Passos:${NC}"
 echo -e "   1. Acesse ${GREEN}http://localhost:8055/admin${NC}"
 echo -e "   2. Faça login com as credenciais acima"
 echo -e "   3. Configure permissões se necessário"
 echo -e "   4. Acesse o frontend em ${GREEN}http://localhost:3000${NC}"
+echo -e "   5. Use o terminal em ${GREEN}http://localhost:8055/admin/terminal${NC}"
 echo ""
 echo -e "${BLUE}🕷️  Webscrapers Disponíveis:${NC}"
 echo -e "   • G1:            ${GREEN}webscraper-service/g1.js${NC}"
@@ -1179,6 +1231,7 @@ echo -e "   • Ver logs:       ${YELLOW}tail -f frontend.log${NC}"
 echo -e "   • Health check:   ${YELLOW}./health-check.sh${NC}"
 echo -e "   • Diagnóstico:    ${YELLOW}./diagnose.sh${NC}"
 echo -e "   • Renovar token:  ${YELLOW}./refresh-token.sh${NC}"
+echo -e "   • Terminal:       ${YELLOW}http://localhost:8055/admin/terminal${NC}"
 echo ""
 
 # Mostrar aviso sobre Node.js se necessário

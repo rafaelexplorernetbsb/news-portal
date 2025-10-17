@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import iconv from 'iconv-lite';
 
 // Carregar variáveis de ambiente
-dotenv.config({ path: './env.local' });
+dotenv.config();
 
 const DIRECTUS_URL = process.env.DIRECTUS_URL || 'http://localhost:8055';
 const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN || '';
@@ -28,8 +28,9 @@ const CATEGORIAS_MAP = {
 async function fetchRSS(feedUrl, categoria) {
   console.log(`[Webscraper] Buscando RSS de ${categoria}: ${feedUrl}...`);
   const response = await fetch(feedUrl);
-  const buffer = await response.buffer();
-  
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
   // RSS feeds geralmente são UTF-8, mas vamos verificar
   const contentType = response.headers.get('content-type') || '';
   let charset = 'utf-8';
@@ -37,7 +38,7 @@ async function fetchRSS(feedUrl, categoria) {
   if (charsetMatch) {
     charset = charsetMatch[1].trim().toLowerCase();
   }
-  
+
   const xml = iconv.decode(buffer, charset);
 
   // Extrair URLs dos itens
@@ -76,9 +77,10 @@ async function scrapePage(url) {
   });
 
   // Pegar o buffer e detectar encoding correto
-  const buffer = await response.buffer();
+  const arrayBuffer = await response.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
   const contentType = response.headers.get('content-type') || '';
-  
+
   // Detectar charset do Content-Type ou do HTML
   let charset = 'utf-8';
   const charsetMatch = contentType.match(/charset=([^;]+)/i);
@@ -94,7 +96,7 @@ async function scrapePage(url) {
       console.log(`[Webscraper] Charset detectado no HTML: ${charset}`);
     }
   }
-  
+
   // Decodificar com o charset correto
   let html;
   if (iconv.encodingExists(charset)) {
@@ -103,18 +105,18 @@ async function scrapePage(url) {
     console.log(`[Webscraper] Charset desconhecido (${charset}), usando UTF-8`);
     html = iconv.decode(buffer, 'utf-8');
   }
-  
+
   const $ = cheerio.load(html, { decodeEntities: true });
-  
+
 
   // Metadados
-  const titulo = 
+  const titulo =
     $('meta[property="og:title"]').attr('content') ||
     $('h1.c-content-head__title').first().text().trim() ||
     $('h1').first().text();
   const resumo = $('meta[property="og:description"]').attr('content') || '';
   const ogImage = $('meta[property="og:image"]').attr('content') || '';
-  
+
   // Debug: mostrar preview do título para verificar encoding
   console.log(`[Webscraper] Preview título: ${titulo.substring(0, 100)}...`);
 
@@ -686,7 +688,7 @@ async function runImport() {
      console.log(`[Olhar Digital Test] Processando feed: ${feed.categoria.toUpperCase()}`);
      console.log(`[Olhar Digital Test] URL: ${feed.url}`);
      console.log(`[Olhar Digital Test] ========================================\n`);
-     
+
      const urls = await fetchRSS(feed.url, feed.categoria);
 
      for (let i = 0; i < urls.length; i++) {

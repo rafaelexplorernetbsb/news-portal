@@ -3,7 +3,7 @@ import * as cheerio from 'cheerio';
 import dotenv from 'dotenv';
 
 // Carregar variáveis de ambiente
-dotenv.config({ path: './env.local' });
+dotenv.config();
 
 const DIRECTUS_URL = process.env.DIRECTUS_URL || 'http://localhost:8055';
 const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN || '';
@@ -214,7 +214,7 @@ function removeSummaryContainers($contentClean) {
         text.includes('Esse resumo foi útil?') ||
         text.includes('Ler resumo da notícia') ||
         text.includes('Malware') && text.includes('detectado') && text.includes('preocupa usuários') ||
-        classes.includes('resumo') || 
+        classes.includes('resumo') ||
         classes.includes('summary') ||
         classes.includes('jupiter-summary')) {
       console.log('[UOL Webscraper] Removendo container de resumo automático');
@@ -517,7 +517,7 @@ async function scrapePage(url) {
   const { titulo, resumo, ogImage } = extractMetadata($);
 
 
-  
+
 
 
 
@@ -719,7 +719,7 @@ async function runImport() {
      console.log(`[Olhar Digital Test] Processando feed: ${feed.categoria.toUpperCase()}`);
      console.log(`[Olhar Digital Test] URL: ${feed.url}`);
      console.log(`[Olhar Digital Test] ========================================\n`);
-     
+
      const urls = await fetchRSS(feed.url, feed.categoria);
 
      for (let i = 0; i < urls.length; i++) {

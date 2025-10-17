@@ -3,7 +3,7 @@ import * as cheerio from 'cheerio';
 import dotenv from 'dotenv';
 
 // Carregar variáveis de ambiente
-dotenv.config({ path: './env.local' });
+dotenv.config();
 
 const DIRECTUS_URL = process.env.DIRECTUS_URL || 'http://localhost:8055';
 const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN || '';
@@ -595,7 +595,7 @@ async function runImport() {
      console.log(`[Olhar Digital Test] Processando feed: ${feed.categoria.toUpperCase()}`);
      console.log(`[Olhar Digital Test] URL: ${feed.url}`);
      console.log(`[Olhar Digital Test] ========================================\n`);
-     
+
      const urls = await fetchRSS(feed.url, feed.categoria);
 
      for (let i = 0; i < urls.length; i++) {

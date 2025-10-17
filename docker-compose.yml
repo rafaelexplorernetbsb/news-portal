@@ -86,6 +86,8 @@ services:
 
     volumes:
       - directus_uploads:/directus/uploads
+      - ./extensions:/directus/extensions
+      - .:/directus/project  # Montar projeto completo
     ports:
       - "8055:8055"
     depends_on:

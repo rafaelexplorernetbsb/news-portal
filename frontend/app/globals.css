@@ -3,6 +3,12 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Cores da identidade visual CrônicaDigital */
+  --color-primary-blue: #1c99da;
+  --color-primary-red: #db0202;
+  --color-dark-gray: #333333;
+  --color-white: #ffffff;
 }
 
 @theme inline {
@@ -726,3 +732,163 @@ body {
 /* Forçar remoção do padding-top inline nos wrappers de mídia do CMS */
 /* stylelint-disable-next-line csstools/use-logical */
 .news-content .content-media-container.glb-skeleton-box { padding-top: 0 !important; }
+
+/* ===== CLASSES DA IDENTIDADE VISUAL CRÔNICADIGITAL ===== */
+
+/* Classes utilitárias para cores */
+.text-primary-blue {
+  color: var(--color-primary-blue) !important;
+}
+
+.text-primary-red {
+  color: var(--color-primary-red) !important;
+}
+
+.text-dark-gray {
+  color: var(--color-dark-gray) !important;
+}
+
+.bg-primary-blue {
+  background-color: var(--color-primary-blue) !important;
+}
+
+.bg-primary-red {
+  background-color: var(--color-primary-red) !important;
+}
+
+.bg-dark-gray {
+  background-color: var(--color-dark-gray) !important;
+}
+
+.border-primary-blue {
+  border-color: var(--color-primary-blue) !important;
+}
+
+.border-primary-red {
+  border-color: var(--color-primary-red) !important;
+}
+
+/* Hover states */
+.hover-primary-blue:hover {
+  color: var(--color-primary-blue) !important;
+}
+
+.hover-bg-primary-blue:hover {
+  background-color: var(--color-primary-blue) !important;
+}
+
+/* Gradiente da logo */
+.bg-logo-gradient {
+  background: linear-gradient(135deg, var(--color-primary-blue) 0%, var(--color-primary-red) 100%);
+}
+
+/* Transições suaves */
+.transition-brand {
+  transition: all 0.3s ease;
+}
+
+/* Botões com identidade visual */
+.btn-primary {
+  background-color: var(--color-primary-blue);
+  color: var(--color-white);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: #1a8bc7;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(28, 153, 218, 0.3);
+}
+
+.btn-secondary {
+  background-color: var(--color-primary-red);
+  color: var(--color-white);
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background-color: #c40202;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(219, 2, 2, 0.3);
+}
+
+/* Cards com identidade visual */
+.card-brand {
+  background: var(--color-white);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.card-brand:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+/* Badges com identidade visual */
+.badge-primary {
+  background-color: var(--color-primary-blue);
+  color: var(--color-white);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badge-secondary {
+  background-color: var(--color-primary-red);
+  color: var(--color-white);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Links com identidade visual */
+.link-brand {
+  color: var(--color-primary-blue);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.link-brand:hover {
+  color: #1a8bc7;
+  text-decoration: underline;
+}
+
+/* Títulos com identidade visual */
+.title-brand {
+  color: var(--color-dark-gray);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.title-brand-primary {
+  color: var(--color-primary-blue);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* Bordas com identidade visual */
+.border-brand {
+  border-bottom: 2px solid var(--color-primary-blue);
+}
+
+.border-brand-red {
+  border-bottom: 2px solid var(--color-primary-red);
+}

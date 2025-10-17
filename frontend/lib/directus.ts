@@ -154,15 +154,16 @@ export function getAutorNome(autor: Noticia['autor']): string {
   return 'Autor não informado';
 }
 
-export async function getNoticiasPorCategoria(categoria: string, limit: number = 10): Promise<Noticia[]> {
+export async function getNoticiasPorCategoria(categoria: string, limit: number = 10, offset: number = 0): Promise<{ noticias: Noticia[], hasMore: boolean }> {
   try {
-    // Buscar todas as notícias
+    // Buscar mais notícias para compensar a filtragem no frontend
+    const fetchLimit = Math.max(limit * 3, 50); // Buscar pelo menos 3x o limite para compensar filtros
     const data: NoticiaResponse = await fetchAPI(
-      `/items/noticias?limit=50&fields=*,imagem.*,autor.*,categoria.*,url_imagem&t=${Date.now()}`
+      `/items/noticias?limit=${fetchLimit}&fields=*,imagem.*,autor.*,categoria.*,url_imagem&t=${Date.now()}`
     );
 
     if (!data.data || data.data.length === 0) {
-      return [];
+      return { noticias: [], hasMore: false };
     }
 
     // Filtrar por categoria no frontend
@@ -173,10 +174,20 @@ export async function getNoticiasPorCategoria(categoria: string, limit: number =
       return false;
     });
 
-    return noticiasFiltradas.slice(0, limit);
+    // Aplicar paginação no resultado filtrado
+    const startIndex = offset;
+    const endIndex = startIndex + limit;
+    const paginatedNoticias = noticiasFiltradas.slice(startIndex, endIndex);
+
+    // Verificar se há mais notícias disponíveis
+    const hasMore = endIndex < noticiasFiltradas.length;
+
+    return {
+      noticias: paginatedNoticias,
+      hasMore
+    };
   } catch (error) {
-    console.error('Erro ao buscar notícias:', error);
-    return [];
+    return { noticias: [], hasMore: false };
   }
 }
 

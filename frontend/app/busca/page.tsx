@@ -82,8 +82,8 @@ function BuscaContent() {
             {resultados.length} {resultados.length === 1 ? 'resultado encontrado' : 'resultados encontrados'}
           </p>
           <div className="space-y-4">
-            {resultados.map((noticia) => (
-              <NoticiaCard key={noticia.id} noticia={noticia} />
+            {resultados.map((noticia, index) => (
+              <NoticiaCard key={`${noticia.id}-${index}`} noticia={noticia} />
             ))}
           </div>
         </div>

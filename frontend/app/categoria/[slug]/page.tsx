@@ -26,23 +26,31 @@ export default function CategoriaPage() {
 
   const loadNoticias = async (currentOffset: number, append: boolean = false) => {
     try {
+
       if (append) {
         setLoadingMore(true);
       } else {
         setLoading(true);
       }
 
-      // Usar a função getNoticiasPorCategoria que já corrigimos
-      const novasNoticias = await getNoticiasPorCategoria(slug, NOTICIAS_POR_PAGINA);
+      // Usar a função getNoticiasPorCategoria com offset
+      const result = await getNoticiasPorCategoria(slug, NOTICIAS_POR_PAGINA, currentOffset);
+      const novasNoticias = result.noticias;
+
 
       if (append) {
-        setNoticias((prev) => [...prev, ...novasNoticias]);
+        setNoticias((prev) => {
+          // Criar um Map para evitar duplicatas baseado no ID
+          const existingIds = new Set(prev.map(n => n.id));
+          const uniqueNovasNoticias = novasNoticias.filter(n => !existingIds.has(n.id));
+          return [...prev, ...uniqueNovasNoticias];
+        });
       } else {
         setNoticias(novasNoticias);
       }
 
-      // Verifica se há mais notícias
-      setHasMore(novasNoticias.length === NOTICIAS_POR_PAGINA);
+      // Usar o hasMore retornado pela função
+      setHasMore(result.hasMore);
     } catch (err) {
       console.error('Erro ao carregar notícias:', err);
       setError('Erro ao carregar notícias da categoria.');
@@ -73,17 +81,17 @@ export default function CategoriaPage() {
       <Header />
 
       {/* Banner da Categoria */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-12">
+      <div className="bg-[#333333] text-white py-8">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl lg:text-5xl font-extrabold mb-2">{categoriaNome}</h1>
-          <p className="text-blue-100 text-lg">Todas as notícias sobre {categoriaNome.toLowerCase()}</p>
+          <h1 className="text-3xl lg:text-4xl font-bold mb-2">{categoriaNome}</h1>
+          <p className="text-gray-300">Todas as notícias sobre {categoriaNome.toLowerCase()}</p>
         </div>
       </div>
 
       <main className="container mx-auto px-4 py-8">
         {loading ? (
           <div className="text-center py-20">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-4 border-[#1c99da]"></div>
             <p className="mt-4 text-gray-600">Carregando notícias...</p>
           </div>
         ) : error ? (
@@ -94,10 +102,10 @@ export default function CategoriaPage() {
             <div className="lg:col-span-3">
               {noticias.length > 0 ? (
                 <>
-                  {/* Grid de Notícias em 3 colunas */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                    {noticias.map((noticia) => (
-                      <NoticiaCard key={noticia.id} noticia={noticia} featured />
+                  {/* Grid de Notícias */}
+                  <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
+                    {noticias.map((noticia, index) => (
+                      <NoticiaCard key={`${noticia.id}-${index}`} noticia={noticia} />
                     ))}
                   </div>
 
@@ -107,7 +115,7 @@ export default function CategoriaPage() {
                       <button
                         onClick={handleLoadMore}
                         disabled={loadingMore}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3 rounded-lg transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="bg-[#1c99da] hover:bg-[#1a8bc7] text-white font-bold px-8 py-3 rounded-lg transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {loadingMore ? (
                           <span className="flex items-center gap-2">

@@ -3,7 +3,7 @@ import * as cheerio from 'cheerio';
 import dotenv from 'dotenv';
 
 // Carregar variáveis de ambiente
-dotenv.config({ path: './env.local' });
+dotenv.config();
 const DIRECTUS_URL = process.env.DIRECTUS_URL || 'http://localhost:8055';
 const DIRECTUS_TOKEN = process.env.DIRECTUS_TOKEN || '';
 
@@ -104,7 +104,7 @@ export function extractContent($) {
     const selectors = [
       '#main-content',
       '.ConteudoNoticiaWrapper-sc-19fsm27-0.hIDPRr.m-content [class^="ConteudoNoticiaWrapper__Artigo-"]',
-      '.ConteudoNoticiaWrapper-sc-19fsm27-0.hIDPRr.m-content',  
+      '.ConteudoNoticiaWrapper-sc-19fsm27-0.hIDPRr.m-content',
       '.ConteudoNoticiaWrapper__Artigo-sc-19fsm27-1.dbCenN',
       '[class*="styles_main_text__"]',
       'div[itemprop="articleBody"]',
@@ -137,12 +137,12 @@ export function extractContent($) {
         if ($scope.length) {
             const allowed = $scope.find('p, h2, h3, h4, ul, ol, blockquote, strong, em, span').toArray();
             conteudo = allowed.map((el) => $.html(el)).join('\n');
-      
+
             console.log(`[Metropoles] Fallback content extracted: ${conteudo.length} chars`);
         }
     }
 
-    
+
     return conteudo || 'DEU RUIM';
 }
 // ============================================
@@ -233,7 +233,7 @@ function removeSummaryContainers($contentClean) {
         text.includes('Esse resumo foi útil?') ||
         text.includes('Ler resumo da notícia') ||
         text.includes('Malware') && text.includes('detectado') && text.includes('preocupa usuários') ||
-        classes.includes('resumo') || 
+        classes.includes('resumo') ||
         classes.includes('summary') ||
         classes.includes('jupiter-summary')) {
       console.log('[UOL Webscraper] Removendo container de resumo automático');
@@ -726,7 +726,7 @@ async function createNoticia(item, url, data_publicacao, categoria) {
 async function runImport() {
   try {
     console.log('[Metropoles Webscraper] Iniciando importação...');
-    
+
     let criadas = 0;
     let puladas = 0;
     let erros = 0;
@@ -737,7 +737,7 @@ async function runImport() {
       console.log(`\n[Metropoles Webscraper] ========================================`);
       console.log(`[Metropoles Webscraper] Processando categoria: ${feed.categoria.toUpperCase()}`);
       console.log(`[Metropoles Webscraper] ========================================\n`);
-      
+
       try {
         const urls = await fetchRSS(feed.url, feed.categoria);
         totalProcessado += urls.length;
