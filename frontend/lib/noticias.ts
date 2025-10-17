@@ -171,7 +171,11 @@ export async function getNoticiaPorSlug(slug: string): Promise<Noticia | null> {
         id: categoriaData[0].id,
         nome: categoriaData[0].nome,
         slug: categoriaData[0].slug
-      } : null
+      } : {
+        id: 0,
+        nome: 'Sem Categoria',
+        slug: 'sem-categoria'
+      }
     };
 
     return noticiaComCategoria;

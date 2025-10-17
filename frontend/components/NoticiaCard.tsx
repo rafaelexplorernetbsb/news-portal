@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Noticia, getImageUrl, formatarData, capitalizarCategoria, getAutorNome } from '@/lib/directus';
+import { Noticia, getImageUrl, formatarData, capitalizarCategoria, getCategoriaNome } from '@/lib/directus';
+import { useState, useEffect } from 'react';
 
 interface NoticiaCardProps {
   noticia: Noticia;
@@ -10,6 +11,15 @@ interface NoticiaCardProps {
 
 export default function NoticiaCard({ noticia, featured = false, compact = false }: NoticiaCardProps) {
   const imagemUrl = getImageUrl(noticia.imagem, noticia.url_imagem);
+  const [categoriaNome, setCategoriaNome] = useState<string>('Categoria');
+
+  useEffect(() => {
+    const loadCategoria = async () => {
+      const nome = await getCategoriaNome(noticia.categoria);
+      setCategoriaNome(nome);
+    };
+    loadCategoria();
+  }, [noticia.categoria]);
 
   // Card compacto para sidebar
   if (compact) {
@@ -58,7 +68,7 @@ export default function NoticiaCard({ noticia, featured = false, compact = false
           {noticia.categoria && (
             <div className="absolute top-3 left-3">
               <span className="inline-block px-2 py-1 bg-[#db0202] text-white text-xs font-bold uppercase tracking-wide rounded">
-                {capitalizarCategoria(typeof noticia.categoria === 'string' ? noticia.categoria : 'tecnologia')}
+                {capitalizarCategoria(categoriaNome)}
               </span>
             </div>
           )}
@@ -73,11 +83,6 @@ export default function NoticiaCard({ noticia, featured = false, compact = false
           </p>
           <div className="flex items-center justify-between text-xs text-gray-500">
             <span>{formatarData(noticia.data_publicacao)}</span>
-            {noticia.autor && (
-              <span className="text-[#1c99da] font-medium">
-                {getAutorNome(noticia.autor)}
-              </span>
-            )}
           </div>
         </div>
       </Link>

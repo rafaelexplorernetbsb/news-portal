@@ -9,7 +9,7 @@ import {
   formatarData,
   capitalizarCategoria,
   getUltimasNoticias,
-  getAutorNome,
+  getCategoriaNome,
 } from '@/lib/directus';
 import Link from 'next/link';
 import Header from '@/components/Header';
@@ -32,6 +32,7 @@ export default function NoticiaPage() {
   const [noticiasRelacionadas, setNoticiasRelacionadas] = useState<Noticia[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [categoriaNome, setCategoriaNome] = useState<string>('Categoria');
 
   useEffect(() => {
     async function loadNoticia() {
@@ -39,6 +40,12 @@ export default function NoticiaPage() {
         setLoading(true);
         const data = await getNoticiaPorSlug(slug);
         setNoticia(data);
+
+        // Carregar nome da categoria
+        if (data && data.categoria) {
+          const nome = await getCategoriaNome(data.categoria);
+          setCategoriaNome(nome);
+        }
 
         // Carregar últimas notícias (excluindo a atual)
         const ultimas = await getUltimasNoticias(6);
@@ -119,12 +126,10 @@ export default function NoticiaPage() {
             {noticia.categoria && (
               <>
                 <Link
-                  href={`/categoria/${typeof noticia.categoria === 'string' ? noticia.categoria : noticia.categoria.slug}`}
+                  href={`/categoria/${typeof noticia.categoria === 'string' ? noticia.categoria : typeof noticia.categoria === 'object' ? noticia.categoria.slug : 'categoria'}`}
                   className="hover:text-blue-600"
                 >
-                  {capitalizarCategoria(
-                    typeof noticia.categoria === 'string' ? noticia.categoria : noticia.categoria.nome,
-                  )}
+                  {capitalizarCategoria(categoriaNome)}
                 </Link>
                 <span>/</span>
               </>
@@ -156,15 +161,7 @@ export default function NoticiaPage() {
                 <div className="flex flex-wrap gap-4 mb-6">
                   {noticia.categoria && (
                     <span className="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold bg-blue-600 text-white uppercase tracking-wide">
-                      {capitalizarCategoria(
-                        typeof noticia.categoria === 'string' ? noticia.categoria : noticia.categoria.nome,
-                      )}
-                    </span>
-                  )}
-                  {noticia.autor && (
-                    <span className="flex items-center gap-2 text-gray-600 font-medium">
-                      <span className="text-lg">👤</span>
-                      {getAutorNome(noticia.autor)}
+                      {capitalizarCategoria(categoriaNome)}
                     </span>
                   )}
                   {noticia.data_publicacao && (

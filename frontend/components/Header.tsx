@@ -41,7 +41,7 @@ export default function Header() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Digite sua busca"
-                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1c99da] focus:border-transparent"
+                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1c99da] focus:border-transparent text-gray-900 placeholder-gray-500"
               />
               <button
                 type="submit"
@@ -117,7 +117,7 @@ export default function Header() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Digite sua busca"
-                  className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1c99da] focus:border-transparent"
+                  className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1c99da] focus:border-transparent text-gray-900 placeholder-gray-500"
                 />
                 <button
                   type="submit"

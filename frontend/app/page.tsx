@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Noticia, getNoticiasDestaque, getUltimasNoticias, getImageUrl, formatarData, capitalizarCategoria } from '@/lib/directus';
+import { Noticia, getNoticiasDestaque, getUltimasNoticias, getImageUrl, formatarData, capitalizarCategoria, getNoticiasPorCategoriaEspecifica } from '@/lib/directus';
 import NoticiaCard from '@/components/NoticiaCard';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import NotificationPopup from '@/components/NotificationPopup';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -22,7 +23,7 @@ export default function Home() {
         setLoading(true);
         const [destaque, ultimas] = await Promise.all([
           getNoticiasDestaque(),
-          getUltimasNoticias(50), // Aumentar para ter mais notícias para filtrar
+          getUltimasNoticias(200), // Aumentar para ter mais notícias para filtrar
         ]);
         setNoticiasDestaque(destaque);
         setUltimasNoticias(ultimas);
@@ -40,31 +41,42 @@ export default function Home() {
         });
 
         // Criar seções por categoria
-        const categoriasComNoticiasData = Array.from(categoriasUnicas)
-          .slice(0, 6) // Limitar a 6 categorias
-          .map(categoriaNome => {
-            const noticiasCategoria = ultimas.filter(noticia => {
-              if (typeof noticia.categoria === 'string') {
-                return noticia.categoria.toLowerCase() === categoriaNome.toLowerCase();
-              } else if (typeof noticia.categoria === 'object' && noticia.categoria?.nome) {
-                return noticia.categoria.nome.toLowerCase() === categoriaNome.toLowerCase();
+        const categoriasComNoticiasData = await Promise.all(
+          Array.from(categoriasUnicas)
+            .slice(0, 6) // Limitar a 6 categorias
+            .map(async (categoriaNome) => {
+              let noticiasCategoria;
+
+              // Para categoria Cultura, buscar diretamente da API
+              if (categoriaNome.toLowerCase().includes('cultura')) {
+                noticiasCategoria = await getNoticiasPorCategoriaEspecifica('Cultura', 12);
+              } else {
+                // Para outras categorias, usar filtro local
+                noticiasCategoria = ultimas.filter(noticia => {
+                  if (typeof noticia.categoria === 'string') {
+                    return noticia.categoria.toLowerCase() === categoriaNome.toLowerCase();
+                  } else if (typeof noticia.categoria === 'object' && noticia.categoria?.nome) {
+                    return noticia.categoria.nome.toLowerCase() === categoriaNome.toLowerCase();
+                  }
+                  return false;
+                }).slice(0, 12);
               }
-              return false;
-            }).slice(0, 12); // Limitar a 12 notícias por categoria
 
-            return {
-              categoria: {
-                id: categoriaNome.toLowerCase().replace(/\s+/g, '-'),
-                nome: categoriaNome,
-                slug: categoriaNome.toLowerCase().replace(/\s+/g, '-'),
-                contagem: noticiasCategoria.length
-              },
-              noticias: noticiasCategoria
-            };
-          })
-          .filter(item => item.noticias.length > 0);
+              return {
+                categoria: {
+                  id: categoriaNome.toLowerCase().replace(/\s+/g, '-'),
+                  nome: categoriaNome,
+                  slug: categoriaNome.toLowerCase().replace(/\s+/g, '-'),
+                  contagem: noticiasCategoria.length
+                },
+                noticias: noticiasCategoria
+              };
+            })
+        );
 
-        setCategoriasComNoticias(categoriasComNoticiasData);
+        const categoriasComNoticiasFiltradas = categoriasComNoticiasData.filter(item => item.noticias.length > 0);
+
+        setCategoriasComNoticias(categoriasComNoticiasFiltradas);
       } catch (err) {
         console.error('Erro ao carregar notícias:', err);
         setError('Erro ao carregar notícias. Tente novamente mais tarde.');
@@ -153,7 +165,7 @@ export default function Home() {
 
                   {/* Sidebar com outras notícias */}
                   <div className="space-y-4">
-                    {noticiasDestaque.slice(1, 4).map((noticia, index) => (
+                    {noticiasDestaque.slice(1, 5).map((noticia, index) => (
                       <NoticiaCard key={`${noticia.id}-${index}`} noticia={noticia} featured />
                     ))}
                   </div>
@@ -216,7 +228,6 @@ export default function Home() {
                   <div className="space-y-2">
                     {maisLidas.map((noticia, index) => (
                       <div key={noticia.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded">
-                        <span className="text-[#db0202] font-bold text-sm w-6">{index + 1}</span>
                         <NoticiaCard noticia={noticia} compact />
                       </div>
                     ))}
@@ -229,6 +240,9 @@ export default function Home() {
       </main>
 
       <Footer />
+
+      {/* Popup de Notificações */}
+      <NotificationPopup />
     </div>
   );
 }

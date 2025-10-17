@@ -18,7 +18,11 @@ export interface Noticia {
   embed_html?: string; // ← HTML do player embed
   data_publicacao: string;
   destaque: boolean;
-  categoria: string;
+  categoria: string | number | {
+    id: number;
+    nome: string;
+    slug: string;
+  };
   autor: {
     id: number;
     nome: string;
@@ -53,7 +57,7 @@ async function fetchAPI(endpoint: string) {
 
 export async function getNoticiasDestaque(): Promise<Noticia[]> {
   const data: NoticiaResponse = await fetchAPI(
-    `/items/noticias?limit=15&sort=-data_publicacao&fields=*,imagem.*,autor.*,url_imagem&t=${Date.now()}`
+    `/items/noticias?limit=50&sort=-data_publicacao&fields=*,imagem.*,autor.*,categoria.*,url_imagem&filter[destaque][_eq]=true&t=${Date.now()}`
   );
 
   return data.data || [];
@@ -61,7 +65,7 @@ export async function getNoticiasDestaque(): Promise<Noticia[]> {
 
 export async function getUltimasNoticias(limit: number = 10): Promise<Noticia[]> {
   const data: NoticiaResponse = await fetchAPI(
-    `/items/noticias?limit=${limit}&sort=-data_publicacao&fields=*,imagem.*,autor.*,url_imagem&t=${Date.now()}`
+    `/items/noticias?limit=${Math.max(limit, 100)}&sort=-data_publicacao&fields=*,imagem.*,autor.*,categoria.*,url_imagem&t=${Date.now()}`
   );
 
   return data.data || [];
@@ -123,6 +127,34 @@ export function formatarData(dataString: string): string {
   });
 }
 
+export async function getCategoriaNome(categoria: Noticia['categoria']): Promise<string> {
+  if (!categoria) {
+    return 'Categoria';
+  }
+
+  if (typeof categoria === 'string') {
+    return categoria;
+  }
+
+  if (typeof categoria === 'object' && categoria.nome) {
+    return categoria.nome;
+  }
+
+  // Se categoria é um número (ID), buscar o nome
+  if (typeof categoria === 'number') {
+    try {
+      const categoriasData = await fetchAPI(`/items/categorias?filter[id][_eq]=${categoria}&limit=1`);
+      if (categoriasData.data && categoriasData.data.length > 0) {
+        return categoriasData.data[0].nome;
+      }
+    } catch (error) {
+      console.error(`Erro ao buscar categoria com ID ${categoria}:`, error);
+    }
+  }
+
+  return 'Categoria';
+}
+
 export function capitalizarCategoria(categoria: string): string {
   // Verificar se categoria é válida
   if (!categoria || typeof categoria !== 'string') {
@@ -154,40 +186,117 @@ export function getAutorNome(autor: Noticia['autor']): string {
   return 'Autor não informado';
 }
 
+export async function getNoticiasPorCategoriaEspecifica(categoriaNome: string, limit: number = 12): Promise<Noticia[]> {
+  try {
+    // Buscar mais notícias para garantir que temos o suficiente para filtrar
+    const data: NoticiaResponse = await fetchAPI(
+      `/items/noticias?limit=100&sort=-data_publicacao&fields=*,imagem.*,autor.*,categoria.*,url_imagem&t=${Date.now()}`
+    );
+
+    console.log(`Debug - Total de notícias buscadas: ${data.data?.length || 0}`);
+    console.log(`Debug - Primeiras 5 datas:`, data.data?.slice(0, 5).map(n => n.data_publicacao));
+
+    // Filtrar localmente por categoria
+    const noticiasFiltradas = data.data?.filter(noticia => {
+      if (typeof noticia.categoria === 'string') {
+        return noticia.categoria.toLowerCase().includes(categoriaNome.toLowerCase());
+      } else if (typeof noticia.categoria === 'object' && noticia.categoria?.nome) {
+        return noticia.categoria.nome.toLowerCase().includes(categoriaNome.toLowerCase());
+      }
+      return false;
+    }).slice(0, limit) || [];
+
+    console.log(`Debug - Notícias filtradas para "${categoriaNome}": ${noticiasFiltradas.length}`);
+    console.log(`Debug - Datas das notícias filtradas:`, noticiasFiltradas.map(n => n.data_publicacao));
+
+    return noticiasFiltradas;
+  } catch (error) {
+    console.error(`Erro ao buscar notícias da categoria ${categoriaNome}:`, error);
+    return [];
+  }
+}
+
 export async function getNoticiasPorCategoria(categoria: string, limit: number = 10, offset: number = 0): Promise<{ noticias: Noticia[], hasMore: boolean }> {
   try {
-    // Buscar mais notícias para compensar a filtragem no frontend
-    const fetchLimit = Math.max(limit * 3, 50); // Buscar pelo menos 3x o limite para compensar filtros
+    // Primeiro, buscar o ID da categoria pelo nome (capitalizado)
+    const categoriaNome = capitalizarCategoria(categoria);
+    const categoriasData = await fetchAPI(`/items/categorias?filter[nome][_eq]=${encodeURIComponent(categoriaNome)}&limit=1`);
+
+    if (!categoriasData.data || categoriasData.data.length === 0) {
+      console.warn(`Categoria "${categoriaNome}" não encontrada`);
+      return { noticias: [], hasMore: false };
+    }
+
+    const categoriaId = categoriasData.data[0].id;
+
+    // Buscar mais notícias para compensar a paginação
+    const fetchLimit = Math.max(limit * 2, 30);
+
+    // Buscar as notícias por ID da categoria diretamente da API
     const data: NoticiaResponse = await fetchAPI(
-      `/items/noticias?limit=${fetchLimit}&fields=*,imagem.*,autor.*,categoria.*,url_imagem&t=${Date.now()}`
+      `/items/noticias?limit=${fetchLimit}&sort=-data_publicacao&fields=*,imagem.*,autor.*,categoria,url_imagem&filter[categoria][_eq]=${categoriaId}&t=${Date.now()}`
     );
 
     if (!data.data || data.data.length === 0) {
       return { noticias: [], hasMore: false };
     }
 
-    // Filtrar por categoria no frontend
-    const noticiasFiltradas = data.data.filter(noticia => {
-      if (typeof noticia.categoria === 'object' && noticia.categoria?.slug) {
-        return noticia.categoria.slug === categoria;
-      }
-      return false;
-    });
-
-    // Aplicar paginação no resultado filtrado
+    // Aplicar paginação no resultado
     const startIndex = offset;
     const endIndex = startIndex + limit;
-    const paginatedNoticias = noticiasFiltradas.slice(startIndex, endIndex);
+    const paginatedNoticias = data.data.slice(startIndex, endIndex);
 
     // Verificar se há mais notícias disponíveis
-    const hasMore = endIndex < noticiasFiltradas.length;
+    const hasMore = endIndex < data.data.length;
 
     return {
       noticias: paginatedNoticias,
       hasMore
     };
   } catch (error) {
+    console.error(`Erro ao buscar notícias da categoria ${categoria}:`, error);
     return { noticias: [], hasMore: false };
+  }
+}
+
+export async function getUltimasNoticiasPorCategoria(categoriaNome: string, limit: number = 12): Promise<Noticia[]> {
+  try {
+    // Primeiro, buscar o ID da categoria pelo nome
+    const categoriasData = await fetchAPI(`/items/categorias?filter[nome][_eq]=${encodeURIComponent(categoriaNome)}&limit=1`);
+
+    if (!categoriasData.data || categoriasData.data.length === 0) {
+      console.warn(`Categoria "${categoriaNome}" não encontrada`);
+      return [];
+    }
+
+    const categoriaId = categoriasData.data[0].id;
+
+    // Agora buscar as notícias por ID da categoria
+    const data: NoticiaResponse = await fetchAPI(
+      `/items/noticias?limit=${limit}&sort=-data_publicacao&fields=*,imagem.*,autor.*,categoria,url_imagem&filter[categoria][_eq]=${categoriaId}&t=${Date.now()}`
+    );
+
+    return data.data || [];
+  } catch (error) {
+    console.error(`Erro ao buscar notícias da categoria ${categoriaNome}:`, error);
+    return [];
+  }
+}
+
+export async function buscarNoticias(termo: string, limit: number = 50): Promise<Noticia[]> {
+  try {
+    if (!termo || termo.trim().length === 0) {
+      return [];
+    }
+
+    const data: NoticiaResponse = await fetchAPI(
+      `/items/noticias?search=${encodeURIComponent(termo.trim())}&filter[status][_eq]=published&fields=*,imagem.*,autor.*,categoria,url_imagem&limit=${limit}&sort=-data_publicacao&t=${Date.now()}`
+    );
+
+    return data.data || [];
+  } catch (error) {
+    console.error(`Erro ao buscar notícias com termo "${termo}":`, error);
+    return [];
   }
 }
 

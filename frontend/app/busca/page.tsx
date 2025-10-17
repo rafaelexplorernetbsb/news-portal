@@ -2,13 +2,10 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Noticia } from '@/lib/directus';
+import { Noticia, buscarNoticias } from '@/lib/directus';
 import NoticiaCard from '@/components/NoticiaCard';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-
-const API_URL = 'http://localhost:8055';
-const API_TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjM5ZjZjMDVlLWNmZmMtNGNlYi04NmU0LWJmYmM0N2VmY2ZkZSIsInJvbGUiOiI3MWYxYzIyZi1jOGMyLTRjYjctOGMzNS1jNDA1MDY4M2UwYmEiLCJhcHBfYWNjZXNzIjp0cnVlLCJhZG1pbl9hY2Nlc3MiOnRydWUsImlhdCI6MTc1OTMyNzQ4NCwiZXhwIjoxNzkwODYzNDg0LCJpc3MiOiJkaXJlY3R1cyJ9.-Vs4DXspNGEjFZZGM6YmDmyh43hcFuzgaLVMCFILScU';
 
 function BuscaContent() {
   const searchParams = useSearchParams();
@@ -19,7 +16,7 @@ function BuscaContent() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function buscarNoticias() {
+    async function buscarNoticiasHandler() {
       if (!query) {
         setLoading(false);
         return;
@@ -27,22 +24,10 @@ function BuscaContent() {
 
       try {
         setLoading(true);
-        const response = await fetch(
-          `${API_URL}/items/noticias?search=${encodeURIComponent(query)}&filter[status][_eq]=published&fields=*,imagem.*,autor.*&limit=50`,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${API_TOKEN}`,
-            },
-          }
-        );
+        setError(null);
 
-        if (!response.ok) {
-          throw new Error('Erro ao buscar notícias');
-        }
-
-        const data = await response.json();
-        setResultados(data.data || []);
+        const noticias = await buscarNoticias(query, 50);
+        setResultados(noticias);
       } catch (err) {
         console.error('Erro na busca:', err);
         setError('Erro ao realizar a busca. Tente novamente.');
@@ -51,7 +36,7 @@ function BuscaContent() {
       }
     }
 
-    buscarNoticias();
+    buscarNoticiasHandler();
   }, [query]);
 
   return (
@@ -69,7 +54,7 @@ function BuscaContent() {
 
       {loading ? (
         <div className="text-center py-20">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-4 border-[#1c99da]"></div>
           <p className="mt-4 text-gray-600">Buscando...</p>
         </div>
       ) : error ? (
@@ -94,7 +79,7 @@ function BuscaContent() {
             Nenhum resultado encontrado
           </h2>
           <p className="text-gray-600 mb-6">
-            Tente usar palavras-chave diferentes
+            Tente usar palavras-chave diferentes ou verifique a ortografia
           </p>
         </div>
       )}
@@ -109,7 +94,7 @@ export default function BuscaPage() {
       <Suspense fallback={
         <main className="container mx-auto px-4 py-8">
           <div className="text-center py-20">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600"></div>
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-4 border-[#1c99da]"></div>
             <p className="mt-4 text-gray-600">Carregando...</p>
           </div>
         </main>
