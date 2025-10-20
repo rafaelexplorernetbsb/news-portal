@@ -65,7 +65,7 @@ const props = withDefaults(
 		toolbar: () => toolbarDefault,
 		font: 'sans-serif',
 		customFormats: () => [],
-	},
+	}
 );
 
 const emit = defineEmits(['input']);
@@ -94,7 +94,7 @@ const { imageDrawerOpen, imageSelection, closeImageDrawer, onImageSelect, saveIm
 	{
 		storageAssetTransform,
 		storageAssetPresets,
-	},
+	}
 );
 
 const {
@@ -147,7 +147,7 @@ watch(
 				editorRef.value.editorCommands?.commands?.exec?.mcedirectionltr();
 			}
 		}
-	},
+	}
 );
 
 watch(
@@ -158,7 +158,7 @@ watch(
 		editorRef.value.remove();
 		editorInitialized.value = false;
 		editorKey.value++;
-	},
+	}
 );
 
 const editorOptions = computed(() => {
@@ -173,7 +173,7 @@ const editorOptions = computed(() => {
 				.replace(/^code$/g, 'customCode')
 				.replace(/^image$/g, 'customImage')
 				.replace(/^pre$/g, 'customPre')
-				.replace(/^inlinecode$/g, 'customInlineCode'),
+				.replace(/^inlinecode$/g, 'customInlineCode')
 		)
 		.join(' ');
 

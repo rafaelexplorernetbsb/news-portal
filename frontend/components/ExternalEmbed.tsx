@@ -44,23 +44,17 @@ export default function ExternalEmbed({
         <h3 className="text-lg font-semibold text-gray-800 mb-2">
           {isVideo ? 'Vídeo do G1' : isAudio ? 'Áudio' : 'Conteúdo Externo'}
         </h3>
-        <p className="text-gray-600 mb-4">
-          Este conteúdo não pode ser exibido diretamente nesta página.
-        </p>
+        <p className="text-gray-600 mb-4">Este conteúdo não pode ser exibido diretamente nesta página.</p>
         <a
           href={src}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 font-medium"
         >
-          <span className="mr-2">
-            {isVideo ? '▶' : isAudio ? '🎵' : '🔗'}
-          </span>
+          <span className="mr-2">{isVideo ? '▶' : isAudio ? '🎵' : '🔗'}</span>
           {isVideo ? 'Assistir no G1' : isAudio ? 'Ouvir Áudio' : 'Abrir no Site Original'}
         </a>
-        <p className="text-xs text-gray-500 mt-2">
-          {domain}
-        </p>
+        <p className="text-xs text-gray-500 mt-2">{domain}</p>
       </div>
     );
   }
@@ -93,23 +87,10 @@ export default function ExternalEmbed({
 
 // Componente específico para vídeos com proporção 16:9
 export function VideoEmbed(props: Omit<ExternalEmbedProps, 'height'>) {
-  return (
-    <ExternalEmbed
-      {...props}
-      height="400"
-      className={`aspect-video ${props.className || ''}`}
-    />
-  );
+  return <ExternalEmbed {...props} height="400" className={`aspect-video ${props.className || ''}`} />;
 }
 
 // Componente específico para áudio com altura reduzida
 export function AudioEmbed(props: Omit<ExternalEmbedProps, 'height'>) {
-  return (
-    <ExternalEmbed
-      {...props}
-      height="80"
-      className={`h-20 ${props.className || ''}`}
-    />
-  );
+  return <ExternalEmbed {...props} height="80" className={`h-20 ${props.className || ''}`} />;
 }
-

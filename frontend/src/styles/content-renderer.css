@@ -80,14 +80,7 @@
 }
 
 /* Images */
-.news-content img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 1em auto;
-  border-radius: 0.5rem; /* rounded-lg */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* shadow-md */
-}
+
 
 /* Code blocks */
 .news-content pre {
