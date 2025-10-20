@@ -1,0 +1,24 @@
+{
+  "name": "directus-push-notifications",
+  "version": "1.0.0",
+  "description": "Push notifications endpoint for Directus",
+  "type": "module",
+  "directus:extension": {
+    "type": "endpoint",
+    "path": "dist/index.js",
+    "source": "src/index.ts",
+    "host": "^11.12.0"
+  },
+  "scripts": {
+    "build": "directus-extension build",
+    "dev": "directus-extension build --watch"
+  },
+  "devDependencies": {
+    "@directus/extensions-sdk": "^11.0.0",
+    "typescript": "^5.0.0",
+    "web-push": "^3.6.7"
+  },
+  "keywords": ["directus", "extension", "push", "notifications"],
+  "author": "Directus Push Notifications Extension",
+  "license": "MIT"
+}
