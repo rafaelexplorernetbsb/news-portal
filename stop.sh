@@ -35,7 +35,6 @@ log "🛑 Parando todos os serviços do Portal de Notícias..."
 # Parar containers Docker
 log "🐳 Parando containers Docker..."
 docker-compose down 2>/dev/null || docker compose down 2>/dev/null || true
-docker-compose -f docker-compose.prod.yml down 2>/dev/null || docker compose -f docker-compose.prod.yml down 2>/dev/null || true
 
 # Parar processos Node.js
 log "🕷️  Parando webscrapers..."

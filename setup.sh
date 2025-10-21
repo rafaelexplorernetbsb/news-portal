@@ -300,6 +300,68 @@ else
     info "webscraper-service/.env já existe"
 fi
 
+# .env.prod (para produção)
+if [ ! -f ".env.prod" ]; then
+    log "Criando .env.prod..."
+    cat > .env.prod << EOF
+# ========================================
+# CONFIGURAÇÃO PARA PRODUÇÃO
+# ========================================
+
+# Ambiente
+ENV=prod
+COMPOSE_PROJECT_NAME=news-portal
+
+# Database
+DIRECTUS_DB_DATABASE=directus_prod
+DIRECTUS_DB_USER=directus_prod
+DIRECTUS_DB_PASSWORD=senha_super_segura_aqui
+POSTGRES_PORT=5432
+
+# Redis
+REDIS_PASSWORD=senha_redis_segura
+REDIS_PORT=6379
+
+# Directus
+DIRECTUS_KEY=chave_super_segura_producao
+DIRECTUS_SECRET=secret_super_seguro_producao
+DIRECTUS_ADMIN_EMAIL=admin@seudominio.com
+DIRECTUS_ADMIN_PASSWORD=senha_admin_super_segura
+DIRECTUS_URL=https://api.seudominio.com
+DIRECTUS_PORT=8055
+
+# Cache (habilitado em produção)
+CACHE_ENABLED=true
+CACHE_STORE=redis
+CACHE_REDIS=redis://redis:6379
+
+# Logging (mais restritivo em produção)
+LOG_LEVEL=warn
+LOG_STYLE=json
+
+# Frontend
+NEXT_PUBLIC_DIRECTUS_URL=https://api.seudominio.com
+NEXT_PUBLIC_API_TOKEN=token_estatico_producao
+NEXT_PUBLIC_SITE_URL=https://seudominio.com
+NEXT_PUBLIC_SITE_NAME=Portal de Notícias
+FRONTEND_PORT=3000
+
+# Webscraper
+WEBSCRAPER_DIRECTUS_URL=http://directus:8055
+WEBSCRAPER_DIRECTUS_TOKEN=token_webscraper_producao
+WEBSCRAPER_INTERVAL_MINUTES=10
+WEBSCRAPER_MAX_ARTICLES=20
+
+# Nginx
+NGINX_HTTP_PORT=80
+NGINX_HTTPS_PORT=443
+EOF
+    success ".env.prod criado"
+    warning "IMPORTANTE: Ajuste as configurações em .env.prod antes de usar em produção!"
+else
+    info ".env.prod já existe"
+fi
+
 # =====================================================
 # 5. COMPILAR EXTENSÕES DO DIRECTUS
 # =====================================================
@@ -521,9 +583,6 @@ cd - > /dev/null
 # =====================================================
 log "🛑 Parando containers antigos..."
 $DOCKER_COMPOSE_CMD down -v 2>/dev/null || true
-if [ -f "docker-compose.prod.yml" ]; then
-    $DOCKER_COMPOSE_CMD -f docker-compose.prod.yml down -v 2>/dev/null || true
-fi
 success "Containers antigos parados"
 
 # =====================================================
@@ -531,30 +590,46 @@ success "Containers antigos parados"
 # =====================================================
 log "🐳 Iniciando containers Docker..."
 
+# Configurar variáveis de ambiente baseadas no modo
 if [ "$MODE" = "prod" ]; then
-    COMPOSE_FILE="docker-compose.prod.yml"
+    log "Configurando para produção..."
+    export ENV=prod
+    export COMPOSE_PROJECT_NAME=news-portal
+    # Carregar arquivo de ambiente de produção se existir
+    if [ -f ".env.prod" ]; then
+        log "Carregando configurações de produção..."
+        set -a
+        source .env.prod
+        set +a
+    fi
 else
-    COMPOSE_FILE="docker-compose.yml"
+    log "Configurando para desenvolvimento..."
+    export ENV=dev
+    export COMPOSE_PROJECT_NAME=news-portal
 fi
 
-if [ ! -f "$COMPOSE_FILE" ]; then
-    error "Arquivo $COMPOSE_FILE não encontrado"
-    exit 1
-fi
+log "Usando arquivo: docker-compose.yml"
+log "Modo: $MODE"
+log "Ambiente: $ENV"
 
-log "Usando arquivo: $COMPOSE_FILE"
-log "Iniciando containers (apenas imagens oficiais, sem build)..."
-$DOCKER_COMPOSE_CMD -f $COMPOSE_FILE up -d --pull always
+# Iniciar containers
+if [ "$MODE" = "prod" ]; then
+    log "Iniciando containers de produção..."
+    $DOCKER_COMPOSE_CMD --profile production up -d --pull always
+else
+    log "Iniciando containers de desenvolvimento..."
+    $DOCKER_COMPOSE_CMD up -d --pull always
+fi
 
 # Aguardar containers iniciarem
 log "Aguardando containers iniciarem..."
 sleep 15
 
 # Verificar se containers estão rodando
-if ! $DOCKER_COMPOSE_CMD -f $COMPOSE_FILE ps | grep -q "Up"; then
+if ! $DOCKER_COMPOSE_CMD ps | grep -q "Up"; then
     error "Containers não iniciaram corretamente"
     log "Status dos containers:"
-    $DOCKER_COMPOSE_CMD -f $COMPOSE_FILE ps
+    $DOCKER_COMPOSE_CMD ps
     exit 1
 fi
 
@@ -600,7 +675,7 @@ wait_for_service() {
 wait_for_service "http://localhost:8055/server/health" "Directus API" || {
     error "Directus API não iniciou corretamente"
     log "Logs do Directus:"
-    $DOCKER_COMPOSE_CMD -f $COMPOSE_FILE logs directus | tail -50
+    $DOCKER_COMPOSE_CMD logs directus | tail -50
     exit 1
 }
 

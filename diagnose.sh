@@ -176,8 +176,8 @@ config_files=(
     ".env:Configuração principal"
     "frontend/.env.local:Configuração do frontend"
     "webscraper-service/.env:Configuração do webscraper"
-    "docker-compose.yml:Docker Compose desenvolvimento"
-    "docker-compose.prod.yml:Docker Compose produção"
+    "docker-compose.yml:Docker Compose unificado"
+    ".env.prod:Configuração de produção"
     ".nvmrc:Versão do Node.js"
 )
 
