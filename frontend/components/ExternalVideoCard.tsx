@@ -10,19 +10,16 @@ type ExternalVideoCardProps = {
   className?: string;
 };
 
-export default function ExternalVideoCard({ url, imageUrl, title = 'Vídeo externo', className = '' }: ExternalVideoCardProps) {
+export default function ExternalVideoCard({
+  url,
+  imageUrl,
+  title = 'Vídeo externo',
+  className = '',
+}: ExternalVideoCardProps) {
   return (
     <div className={`relative rounded-xl overflow-hidden bg-gray-100 ${className}`}>
       {imageUrl ? (
-        <Image
-          src={imageUrl}
-          alt={title}
-          width={1280}
-          height={720}
-          className="w-full h-full object-cover"
-          priority={false}
-          unoptimized
-        />
+        <Image src={imageUrl} alt={title} fill className="object-cover" priority={false} unoptimized />
       ) : (
         <div className="w-full aspect-video flex items-center justify-center text-5xl">🎥</div>
       )}
@@ -45,5 +42,3 @@ export default function ExternalVideoCard({ url, imageUrl, title = 'Vídeo exter
     </div>
   );
 }
-
-

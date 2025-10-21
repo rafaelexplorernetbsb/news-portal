@@ -26,7 +26,6 @@ export default function CategoriaPage() {
 
   const loadNoticias = async (currentOffset: number, append: boolean = false) => {
     try {
-
       if (append) {
         setLoadingMore(true);
       } else {
@@ -37,12 +36,11 @@ export default function CategoriaPage() {
       const result = await getNoticiasPorCategoria(slug, NOTICIAS_POR_PAGINA, currentOffset);
       const novasNoticias = result.noticias;
 
-
       if (append) {
         setNoticias((prev) => {
           // Criar um Map para evitar duplicatas baseado no ID
-          const existingIds = new Set(prev.map(n => n.id));
-          const uniqueNovasNoticias = novasNoticias.filter(n => !existingIds.has(n.id));
+          const existingIds = new Set(prev.map((n) => n.id));
+          const uniqueNovasNoticias = novasNoticias.filter((n) => !existingIds.has(n.id));
           return [...prev, ...uniqueNovasNoticias];
         });
       } else {
@@ -103,9 +101,9 @@ export default function CategoriaPage() {
               {noticias.length > 0 ? (
                 <>
                   {/* Grid de Notícias */}
-                  <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-8">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {noticias.map((noticia, index) => (
-                      <NoticiaCard key={`${noticia.id}-${index}`} noticia={noticia} />
+                      <NoticiaCard key={`${noticia.id}-${index}`} noticia={noticia} category />
                     ))}
                   </div>
 
@@ -137,33 +135,16 @@ export default function CategoriaPage() {
                 </div>
               )}
             </div>
-
-            {/* Sidebar - Outras Categorias */}
             <aside className="space-y-6">
               <div className="bg-white rounded-xl shadow-md p-6 sticky top-32">
                 <h3 className="text-xl font-bold text-gray-900 mb-5 pb-3 border-b-2 border-blue-600">
-                  📂 Outras Categorias
+                  Espaço para anúncio
                 </h3>
-                <ul className="space-y-3">
-                  {['politica', 'economia', 'tecnologia', 'esportes', 'cultura', 'saude', 'educacao']
-                    .filter((cat) => cat !== slug)
-                    .map((categoria) => (
-                      <li key={categoria}>
-                        <a
-                          href={`/categoria/${categoria}`}
-                          className="block px-4 py-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 transition-colors font-medium text-gray-700"
-                        >
-                          {capitalizarCategoria(categoria)}
-                        </a>
-                      </li>
-                    ))}
-                </ul>
               </div>
             </aside>
           </div>
         )}
       </main>
-
       <Footer />
     </div>
   );

@@ -31,13 +31,7 @@ function renderIframe(url: string) {
     const u = new URL(url);
 
     return (
-      <iframe
-        src={u.toString()}
-        loading="lazy"
-        allowFullScreen
-        className="w-full h-full border-0"
-        title="Vídeo"
-      />
+      <iframe src={u.toString()} loading="lazy" allowFullScreen className="w-full h-full border-0" title="Vídeo" />
     );
   } catch {
     return null;
@@ -54,24 +48,20 @@ export default function ArticleMedia({
 }: ArticleMediaProps) {
   const hasVideo = Boolean(embedHtml || videoUrl);
 
-  // Determinar URL candidata ao embed
   const candidateUrl = videoUrl || extractSrcFromEmbedHtml(embedHtml);
   const canEmbedHere = isEmbeddable(candidateUrl || undefined);
 
-  // Prioridade: vídeo primeiro, imagem depois
   if (hasVideo) {
-    // Se não puder embutir, renderiza apenas o fallback elegante
     if (!canEmbedHere) {
-      return (
-        <ExternalVideoCard url={candidateUrl || '#'} imageUrl={imageUrl} title={title} className={`aspect-video ${className}`} />
-      );
+      return <ExternalVideoCard url={candidateUrl || '#'} imageUrl={imageUrl} title={title} className={className} />;
     }
 
-    // Pode embutir: renderiza somente o player (sem miniatura por cima)
     if (embedHtml && candidateUrl && isEmbeddable(candidateUrl)) {
       return (
-        <div className={`w-full aspect-video rounded-xl overflow-hidden bg-gray-100 ${className}`}>
-          <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: embedHtml }} />
+        <div className={`w-full rounded-xl overflow-hidden bg-gray-100 ${className}`} style={{ aspectRatio: '16/9' }}>
+          <div className="w-full h-full">
+            <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: embedHtml }} />
+          </div>
         </div>
       );
     }
@@ -85,7 +75,6 @@ export default function ArticleMedia({
     }
   }
 
-  // Se não há vídeo, mostrar apenas a imagem
   if (imageUrl) {
     return (
       <div className={`relative w-full rounded-xl overflow-hidden ${className}`}>
@@ -101,26 +90,13 @@ export default function ArticleMedia({
     );
   }
 
-  // Se não há nem vídeo nem imagem, não renderizar nada
   return null;
 }
 
-// Componente específico para vídeos com proporção 16:9
 export function VideoEmbed(props: Omit<ArticleMediaProps, 'height'>) {
-  return (
-    <ArticleMedia
-      {...props}
-      className={`aspect-video ${props.className || ''}`}
-    />
-  );
+  return <ArticleMedia {...props} className={`aspect-video ${props.className || ''}`} />;
 }
 
-// Componente específico para áudio com altura reduzida
 export function AudioEmbed(props: Omit<ArticleMediaProps, 'height'>) {
-  return (
-    <ArticleMedia
-      {...props}
-      className={`h-20 ${props.className || ''}`}
-    />
-  );
+  return <ArticleMedia {...props} className={`h-20 ${props.className || ''}`} />;
 }

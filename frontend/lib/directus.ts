@@ -40,6 +40,18 @@ export interface SingleNoticiaResponse {
   data: Noticia;
 }
 
+export interface DirectusSettings {
+  id: number;
+  project_name: string;
+  project_url?: string;
+  project_color?: string;
+  project_logo?: string | {
+    id: string;
+    filename_download: string;
+  };
+  project_descriptor?: string;
+}
+
 async function fetchAPI(endpoint: string) {
   const response = await fetch(`${API_URL}${endpoint}`, {
     headers: {
@@ -62,6 +74,66 @@ export async function getNoticiasDestaque(): Promise<Noticia[]> {
 
   return data.data || [];
 }
+
+export async function getProjectSettings(): Promise<DirectusSettings | null> {
+  try {
+    const API_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'http://localhost:8055';
+    const API_TOKEN = process.env.NEXT_PUBLIC_API_TOKEN || '';
+    
+    const response = await fetch(`${API_URL}/settings`, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${API_TOKEN}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result.data;
+  } catch (error) {
+    console.error('Erro ao buscar configurações do projeto:', error);
+    return null;
+  }
+
+}
+
+export function getLogoUrl(project_logo: DirectusSettings['project_logo']): string | null {
+  if (!project_logo) {
+    return null;
+  }
+
+  const assetUrl = 'http://localhost:8055';
+
+  if (typeof project_logo === 'object' && project_logo.id) {
+    return `${assetUrl}/assets/${project_logo.id}`;
+  }
+
+  if (typeof project_logo === 'string') {
+    return `${assetUrl}/assets/${project_logo}`;
+  }
+
+  return null;
+}
+
+  export function getProjectName(project_name: DirectusSettings['project_name'] | null): string | null {
+    if (!project_name) {
+      return null;
+    }
+
+    return project_name;
+  }
+
+export function getProjectDescriptor(project_descriptor: DirectusSettings['project_descriptor'] | null): string | null {
+  if (!project_descriptor) {
+    return null;
+  }
+
+  return project_descriptor;
+}
+
 
 export async function getUltimasNoticias(limit: number = 10): Promise<Noticia[]> {
   const data: NoticiaResponse = await fetchAPI(

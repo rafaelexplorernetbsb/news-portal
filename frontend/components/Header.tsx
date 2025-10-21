@@ -1,14 +1,38 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { FaSearch, FaBars, FaTimes } from 'react-icons/fa';
+import {
+  getProjectSettings,
+  getLogoUrl,
+  type DirectusSettings,
+  getProjectName,
+  getProjectDescriptor,
+} from '@/lib/directus';
+import { usePathname } from 'next/navigation';
 
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [projectSettings, setProjectSettings] = useState<DirectusSettings | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    async function fetchSettings() {
+      const settings = await getProjectSettings();
+      if (settings) {
+        setProjectSettings(settings);
+        const logo = getLogoUrl(settings.project_logo);
+        setLogoUrl(logo);
+      }
+    }
+
+    fetchSettings();
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,18 +42,32 @@ export default function Header() {
   };
 
   return (
-    <header className="bg-white shadow-md sticky top-0 z-50">
+    <header className="bg-white shadow-md sticky  border-b-3 border-[#1c99da]   top-0 z-50">
       <div className="container mx-auto px-4">
         {/* Top Bar - Logo e Busca */}
         <div className="flex items-center justify-between py-4 border-b border-gray-200">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 flex-shrink-0">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#1c99da] to-[#db0202] rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-lg">CD</span>
-            </div>
+            {logoUrl ? (
+              <div className="w-12 h-12 flex items-center justify-center">
+                <img
+                  src={logoUrl}
+                  alt={projectSettings?.project_name || 'Logo'}
+                  className="w-full h-full object-contain"
+                />
+              </div>
+            ) : (
+              <div className="w-12 h-12 bg-gradient-to-br from-[#1c99da] to-[#db0202] rounded-full flex items-center justify-center">
+                <span className="text-white font-bold text-lg">CD</span>
+              </div>
+            )}
             <div className="flex flex-col">
-              <span className="text-xl font-bold text-[#333333]">CrônicaDigital</span>
-              <span className="text-xs text-gray-500 uppercase tracking-wider">INFORMAÇÃO QUE CONECTA VOCÊ AO MUNDO</span>
+              <span className="text-xl font-bold text-[#333333]">
+                {getProjectName(projectSettings?.project_name || null)}
+              </span>
+              <span className="text-xs text-gray-500 uppercase tracking-wider">
+                {getProjectDescriptor(projectSettings?.project_descriptor || null)}
+              </span>
             </div>
           </Link>
 
@@ -65,42 +103,82 @@ export default function Header() {
         <nav className={`py-4 ${isMobileMenuOpen ? 'block' : 'hidden md:block'}`}>
           <ul className="flex flex-wrap gap-6 text-sm font-medium">
             <li>
-              <Link href="/" className="text-[#333333] hover:text-[#1c99da] transition-colors font-semibold">
+              <Link
+                href="/"
+                className={`text-[#333333] hover:text-[#1c99da] transition-colors font-semibold ${
+                  pathname === '/' ? 'underline decoration-2 underline-offset-4' : ''
+                }`}
+              >
                 Últimas notícias
               </Link>
             </li>
             <li>
-              <Link href="/categoria/politica" className="text-[#333333] hover:text-[#1c99da] transition-colors">
+              <Link
+                href="/categoria/politica"
+                className={`text-[#333333] hover:text-[#1c99da] transition-colors ${
+                  pathname === '/categoria/politica' ? 'underline decoration-2 underline-offset-4' : ''
+                }`}
+              >
                 Brasil/Política/Economia
               </Link>
             </li>
             <li>
-              <Link href="/categoria/tecnologia" className="text-[#333333] hover:text-[#1c99da] transition-colors">
+              <Link
+                href="/categoria/tecnologia"
+                className={`text-[#333333] hover:text-[#1c99da] transition-colors ${
+                  pathname === '/categoria/tecnologia' ? 'underline decoration-2 underline-offset-4' : ''
+                }`}
+              >
                 Tecnologia
               </Link>
             </li>
             <li>
-              <Link href="/categoria/esportes" className="text-[#333333] hover:text-[#1c99da] transition-colors">
+              <Link
+                href="/categoria/esportes"
+                className={`text-[#333333] hover:text-[#1c99da] transition-colors ${
+                  pathname === '/categoria/esportes' ? 'underline decoration-2 underline-offset-4' : ''
+                }`}
+              >
                 Esportes
               </Link>
             </li>
             <li>
-              <Link href="/categoria/cultura" className="text-[#333333] hover:text-[#1c99da] transition-colors">
+              <Link
+                href="/categoria/cultura"
+                className={`text-[#333333] hover:text-[#1c99da] transition-colors ${
+                  pathname === '/categoria/cultura' ? 'underline decoration-2 underline-offset-4' : ''
+                }`}
+              >
                 Entretenimento
               </Link>
             </li>
             <li>
-              <Link href="/categoria/saude" className="text-[#333333] hover:text-[#1c99da] transition-colors">
+              <Link
+                href="/categoria/saude"
+                className={`text-[#333333] hover:text-[#1c99da] transition-colors ${
+                  pathname === '/categoria/saude' ? 'underline decoration-2 underline-offset-4' : ''
+                }`}
+              >
                 Saúde
               </Link>
             </li>
             <li>
-              <Link href="/categoria/mundo" className="text-[#333333] hover:text-[#1c99da] transition-colors">
+              <Link
+                href="/categoria/mundo"
+                className={`text-[#333333] hover:text-[#1c99da] transition-colors ${
+                  pathname === '/categoria/mundo' ? 'underline decoration-2 underline-offset-4' : ''
+                }`}
+              >
                 Mundo
               </Link>
             </li>
             <li>
-              <Link href="/categoria/negocios" className="text-[#333333] hover:text-[#1c99da] transition-colors">
+              <Link
+                href="/categoria/negocios"
+                className={`text-[#333333] hover:text-[#1c99da] transition-colors ${
+                  pathname === '/categoria/negocios' ? 'underline decoration-2 underline-offset-4' : ''
+                }`}
+              >
                 Negócios
               </Link>
             </li>

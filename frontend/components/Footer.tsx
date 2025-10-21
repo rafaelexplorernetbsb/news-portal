@@ -1,6 +1,30 @@
 import Link from 'next/link';
+import {
+  getProjectSettings,
+  getLogoUrl,
+  type DirectusSettings,
+  getProjectName,
+  getProjectDescriptor,
+} from '@/lib/directus';
+import { useEffect, useState } from 'react';
 
 export default function Footer() {
+  const [projectSettings, setProjectSettings] = useState<DirectusSettings | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchSettings() {
+      const settings = await getProjectSettings();
+      if (settings) {
+        setProjectSettings(settings);
+        const logo = getLogoUrl(settings.project_logo);
+        setLogoUrl(logo);
+      }
+    }
+
+    fetchSettings();
+  }, []);
+
   return (
     <footer className="bg-[#333333] text-white mt-16">
       <div className="container mx-auto px-4 py-12">
@@ -8,14 +32,24 @@ export default function Footer() {
           {/* Sobre */}
           <div>
             <h3 className="text-xl font-bold mb-4 flex items-center gap-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-[#1c99da] to-[#db0202] rounded-full flex items-center justify-center">
-                <span className="text-white font-bold text-sm">CD</span>
-              </div>
-              CrônicaDigital
+              {logoUrl ? (
+                <div className="w-8 h-8 flex items-center justify-center">
+                  <img
+                    src={logoUrl}
+                    alt={projectSettings?.project_name || 'Logo'}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              ) : (
+                <div className="w-8 h-8 bg-gradient-to-br from-[#1c99da] to-[#db0202] rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">CD</span>
+                </div>
+              )}
+              {getProjectName(projectSettings?.project_name || null)}
             </h3>
             <p className="text-gray-300 leading-relaxed mb-4">
-              Informação que conecta você ao mundo. Seu portal de notícias confiável,
-              trazendo as informações mais relevantes e atualizadas do Brasil e do mundo.
+              Informação que conecta você ao mundo. Seu portal de notícias confiável, trazendo as informações mais
+              relevantes e atualizadas do Brasil e do mundo.
             </p>
           </div>
 
