@@ -185,7 +185,8 @@
 		"wellknown": "catalog:",
 		"ws": "catalog:",
 		"zod": "catalog:",
-		"zod-validation-error": "catalog:"
+		"zod-validation-error": "catalog:",
+		"web-push": "^3.6.7"
 	},
 	"devDependencies": {
 		"@directus/schema-builder": "workspace:*",

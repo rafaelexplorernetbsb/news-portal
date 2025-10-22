@@ -480,7 +480,7 @@ async function createNoticia(item, url, data_publicacao, categoria) {
     categoria: categoriaId,
     autor: 1,
     status: 'published',
-    destaque: false,
+    destaque: true,
     fonte_rss: 'G1 Tecnologia',
     url_imagem: item.imagem,     // agora SEMPRE vem com og:image
     video_url: item.video_url || null,
@@ -521,7 +521,7 @@ async function runImport() {
      console.log(`[Olhar Digital Test] Processando feed: ${feed.categoria.toUpperCase()}`);
      console.log(`[Olhar Digital Test] URL: ${feed.url}`);
      console.log(`[Olhar Digital Test] ========================================\n`);
-     
+
      const urls = await fetchRSS(feed.url, feed.categoria);
 
      for (let i = 0; i < urls.length; i++) {

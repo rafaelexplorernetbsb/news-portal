@@ -120,17 +120,44 @@ fi
 # =====================================================
 log "🐳 Verificando Docker..."
 
-if ! docker info &> /dev/null; then
-    warning "Docker não está rodando. Tentando iniciar..."
+# Verificar Docker daemon mais robustamente
+log "Verificando Docker daemon..."
 
+if ! docker info &> /dev/null; then
+    warning "Docker daemon não está rodando. Tentando iniciar..."
+
+    # Tentar iniciar Docker Desktop no macOS
     if [[ "$OSTYPE" == "darwin"* ]]; then
         if [ -d "/Applications/Docker.app" ]; then
             log "Iniciando Docker Desktop no macOS..."
             open -a Docker
-            log "Aguardando Docker iniciar..."
-            sleep 30
+            log "Aguardando Docker iniciar (pode levar até 2 minutos)..."
+
+            # Aguardar mais tempo para Docker Desktop inicializar
+            max_attempts=30
+            attempt=1
+            while [ $attempt -le $max_attempts ]; do
+                if docker info &> /dev/null; then
+                    success "Docker iniciado com sucesso!"
+                    break
+                else
+                    log "Tentativa $attempt/$max_attempts - Aguardando Docker..."
+                    sleep 10
+                    ((attempt++))
+                fi
+            done
+
+            if ! docker info &> /dev/null; then
+                error "Docker não iniciou após várias tentativas"
+                error "Por favor, inicie o Docker Desktop manualmente e execute o script novamente"
+                error "1. Abra o Docker Desktop"
+                error "2. Aguarde até aparecer 'Docker Desktop is running'"
+                error "3. Execute o script novamente: ./setup.sh dev"
+                exit 1
+            fi
         else
             error "Docker Desktop não encontrado em /Applications/Docker.app"
+            error "Por favor, instale o Docker Desktop: https://docs.docker.com/desktop/mac/install/"
             exit 1
         fi
     elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
@@ -143,26 +170,6 @@ if ! docker info &> /dev/null; then
     else
         error "Sistema operacional não suportado para inicialização automática do Docker"
         error "Por favor, inicie o Docker manualmente e execute o script novamente"
-        exit 1
-    fi
-
-    # Verificar novamente
-    max_attempts=15
-    attempt=1
-    while [ $attempt -le $max_attempts ]; do
-        if docker info &> /dev/null; then
-            success "Docker iniciado com sucesso!"
-            break
-        else
-            log "Tentativa $attempt/$max_attempts - Aguardando Docker..."
-            sleep 10
-            ((attempt++))
-        fi
-    done
-
-    if ! docker info &> /dev/null; then
-        error "Docker não iniciou após várias tentativas"
-        error "Por favor, inicie o Docker manualmente"
         exit 1
     fi
 else
@@ -427,12 +434,11 @@ compile_extension() {
     fi
 }
 
-# Compilar extensões do terminal
-compile_extension "extensions/terminal" "Terminal Module"
-compile_extension "extensions/terminal-endpoint" "Terminal Endpoint"
-
 # Compilar extensões de notificações push (se existirem)
 compile_extension "extensions/push-notifications" "Push Notifications Endpoint"
+
+# Nota: Extensões do terminal foram removidas conforme solicitado
+info "Extensões do terminal foram removidas do projeto"
 
 # Verificar se todas as extensões foram compiladas
 log "Verificando extensões compiladas..."
@@ -524,14 +530,32 @@ fi
 # Instalar dependências de cada projeto
 # Nota: Pode haver erro com isolated-vm, mas isso não afeta o funcionamento
 log "Instalando dependências do projeto principal (workspace)..."
+
+# Configurar variáveis de ambiente para evitar problemas com isolated-vm
+export SKIP_ENGINES_CHECK=1
+export SKIP_PREBUILT_BINARIES=1
+
 if [ "$PKG_MANAGER" = "pnpm" ]; then
-    pnpm install --no-frozen-lockfile 2>&1 | grep -v "WARN" || \
-    warning "Erro na instalação do workspace (provavelmente isolated-vm), mas continuando..."
+    log "Usando pnpm com flags para evitar problemas com isolated-vm..."
+    pnpm install --no-frozen-lockfile --ignore-scripts 2>&1 | grep -v "WARN" || {
+        warning "Erro na instalação do workspace (provavelmente isolated-vm)"
+        info "Tentando instalação sem scripts..."
+        pnpm install --no-frozen-lockfile --ignore-scripts --force 2>&1 | grep -v "WARN" || {
+            warning "Instalação com problemas, mas continuando..."
+        }
+    }
 else
-    npm install --legacy-peer-deps 2>&1 | grep -v "WARN" || \
-    warning "Erro na instalação do workspace, mas continuando..."
+    npm install --legacy-peer-deps --ignore-scripts 2>&1 | grep -v "WARN" || {
+        warning "Erro na instalação do workspace"
+        info "Tentando instalação sem scripts..."
+        npm install --legacy-peer-deps --ignore-scripts --force 2>&1 | grep -v "WARN" || {
+            warning "Instalação com problemas, mas continuando..."
+        }
+    }
 fi
-info "Nota: Erros com isolated-vm não afetam o funcionamento do sistema"
+
+info "Nota: Erros com isolated-vm são esperados no Node.js 24+ e não afetam o funcionamento"
+info "O pacote isolated-vm é usado apenas pelo Directus para extensões avançadas"
 
 # Frontend - usar pnpm com --ignore-workspace para evitar problemas com isolated-vm
 if [ -d "frontend" ]; then
@@ -552,14 +576,22 @@ EOF
         # IMPORTANTE: --ignore-workspace evita erro de compilação do isolated-vm (pacote do Directus)
         # que requer C++20 e pode falhar em algumas versões do Node.js
         log "Usando --ignore-workspace para evitar problemas com isolated-vm..."
-        pnpm install --no-frozen-lockfile --ignore-workspace 2>&1 | grep -v "WARN" || \
-        pnpm install --ignore-workspace --force 2>&1 | grep -v "WARN" || \
-        warning "Instalação do frontend pode ter problemas, mas continuando..."
+        pnpm install --no-frozen-lockfile --ignore-workspace --ignore-scripts 2>&1 | grep -v "WARN" || {
+            warning "Erro na instalação do frontend"
+            info "Tentando instalação forçada..."
+            pnpm install --ignore-workspace --ignore-scripts --force 2>&1 | grep -v "WARN" || {
+                warning "Instalação do frontend com problemas, mas continuando..."
+            }
+        }
     else
         # Fallback para npm se pnpm não estiver disponível
-        npm install --legacy-peer-deps 2>&1 | grep -v "WARN" || \
-        npm install --force 2>&1 | grep -v "WARN" || \
-        warning "Instalação do frontend pode ter problemas, mas continuando..."
+        npm install --legacy-peer-deps --ignore-scripts 2>&1 | grep -v "WARN" || {
+            warning "Erro na instalação do frontend"
+            info "Tentando instalação forçada..."
+            npm install --legacy-peer-deps --ignore-scripts --force 2>&1 | grep -v "WARN" || {
+                warning "Instalação do frontend com problemas, mas continuando..."
+            }
+        }
     fi
 
     cd - > /dev/null
@@ -679,6 +711,27 @@ wait_for_service "http://localhost:8055/server/health" "Directus API" || {
     exit 1
 }
 
+# Verificar Redis separadamente
+log "Verificando Redis..."
+REDIS_READY=false
+for i in {1..15}; do
+    if docker exec news-portal_redis_dev redis-cli ping 2>/dev/null | grep -q "PONG"; then
+        REDIS_READY=true
+        break
+    fi
+    echo -n "."
+    sleep 2
+done
+echo ""
+
+if [ "$REDIS_READY" = true ]; then
+    success "Redis está funcionando"
+else
+    warning "Redis pode não estar funcionando corretamente"
+    info "Verificando configuração do Redis..."
+    docker exec news-portal_redis_dev redis-cli info server 2>/dev/null || warning "Redis não está respondendo"
+fi
+
 # =====================================================
 # 11. CRIAR USUÁRIO ADMIN NO DIRECTUS
 # =====================================================
@@ -687,25 +740,95 @@ log "👤 Criando usuário administrador..."
 # Aguardar um pouco mais para garantir que o Directus está pronto
 sleep 5
 
-# Criar admin via API (caso não exista)
-ADMIN_RESPONSE=$(curl -s -X POST "http://localhost:8055/users" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@example.com",
-    "password": "admin123",
-    "role": "a052c9fd-3d42-421e-962c-0c52ddf8b29a",
-    "first_name": "Admin",
-    "last_name": "Sistema"
-  }' 2>/dev/null || echo '{"errors":[]}')
+# Criar admin via CLI do Directus (mais confiável)
+log "Criando usuário administrador via CLI..."
 
-if echo "$ADMIN_RESPONSE" | grep -q "errors"; then
-    info "Usuário admin já existe ou Directus ainda está inicializando"
+# Primeiro, obter o UUID correto da role Administrator
+ADMIN_ROLE_UUID=$(docker exec news-portal_db_dev psql -U directus -d directus -t -c "SELECT id FROM directus_roles WHERE name = 'Administrator';" 2>/dev/null | tr -d ' \n' || echo "")
+
+if [ -z "$ADMIN_ROLE_UUID" ]; then
+    warning "Não foi possível obter UUID da role Administrator"
+    info "Tentando criar usuário via API..."
+
+    # Fallback: criar via API
+    ADMIN_RESPONSE=$(curl -s -X POST "http://localhost:8055/users" \
+      -H "Content-Type: application/json" \
+      -d '{
+        "email": "admin@example.com",
+        "password": "admin123",
+        "role": "a399502c-4ac6-4327-a9cf-6f8f40b8ada9",
+        "first_name": "Admin",
+        "last_name": "Sistema"
+      }' 2>/dev/null || echo '{"errors":[]}')
+
+    if echo "$ADMIN_RESPONSE" | grep -q "errors"; then
+        info "Usuário admin já existe ou erro na criação"
+    else
+        success "Usuário administrador criado via API"
+    fi
 else
-    success "Usuário administrador criado"
+    success "UUID da role Administrator: $ADMIN_ROLE_UUID"
+
+    # Criar usuário via CLI do Directus
+    CREATE_USER_RESPONSE=$(docker exec news-portal_api_dev npx directus users create \
+        --email admin@example.com \
+        --password admin123 \
+        --role "$ADMIN_ROLE_UUID" 2>/dev/null || echo "ERROR")
+
+    if [ "$CREATE_USER_RESPONSE" != "ERROR" ] && [ -n "$CREATE_USER_RESPONSE" ]; then
+        success "Usuário administrador criado via CLI (ID: $CREATE_USER_RESPONSE)"
+    else
+        warning "Falha ao criar usuário via CLI, tentando via API..."
+
+        # Fallback: criar via API
+        ADMIN_RESPONSE=$(curl -s -X POST "http://localhost:8055/users" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "email": "admin@example.com",
+            "password": "admin123",
+            "role": "'"$ADMIN_ROLE_UUID"'",
+            "first_name": "Admin",
+            "last_name": "Sistema"
+          }' 2>/dev/null || echo '{"errors":[]}')
+
+        if echo "$ADMIN_RESPONSE" | grep -q "errors"; then
+            info "Usuário admin já existe ou erro na criação"
+        else
+            success "Usuário administrador criado via API"
+        fi
+    fi
 fi
 
 # =====================================================
-# 14. GERAR TOKEN ESTÁTICO E ATUALIZAR .env
+# 12. EXECUTAR MIGRATIONS E SEEDS
+# =====================================================
+log "🗄️  Executando migrations e seeds..."
+
+# Aguardar Directus estar completamente pronto
+sleep 10
+
+# Executar migrations via CLI
+log "Executando migrations via CLI..."
+MIGRATION_RESPONSE=$(docker exec news-portal_api_dev npx directus database migrate:latest 2>/dev/null || echo "ERROR")
+
+if [ "$MIGRATION_RESPONSE" != "ERROR" ]; then
+    success "Migrations executadas com sucesso"
+else
+    warning "Falha ao executar migrations via CLI, mas continuando..."
+fi
+
+# Executar seeds via CLI
+log "Executando seeds via CLI..."
+SEED_RESPONSE=$(docker exec news-portal_api_dev npx directus database seed 2>/dev/null || echo "ERROR")
+
+if [ "$SEED_RESPONSE" != "ERROR" ]; then
+    success "Seeds executados com sucesso"
+else
+    warning "Falha ao executar seeds via CLI, mas continuando..."
+fi
+
+# =====================================================
+# 13. GERAR TOKEN ESTÁTICO E ATUALIZAR .env
 # =====================================================
 log "🔑 Gerando token estático válido e atualizando arquivos .env..."
 
@@ -1063,23 +1186,15 @@ if [ -n "$ACCESS_TOKEN" ] && [ "$ACCESS_TOKEN" != "null" ]; then
         EXTENSIONS_RESPONSE=$(curl -s -H "Authorization: Bearer $STATIC_TOKEN" \
             "http://localhost:8055/extensions" 2>/dev/null || echo '{}')
 
-        if echo "$EXTENSIONS_RESPONSE" | grep -q "terminal"; then
-            success "Extensão Terminal carregada com sucesso"
+        if echo "$EXTENSIONS_RESPONSE" | grep -q "push-notifications"; then
+            success "Extensão Push Notifications carregada com sucesso"
         else
-            warning "Extensão Terminal não foi carregada automaticamente"
+            info "Extensão Push Notifications não foi carregada automaticamente"
             info "Reinicie o Directus para carregar as extensões: docker compose restart directus"
         fi
 
-        # Verificar se o módulo Terminal está disponível
-        MODULES_RESPONSE=$(curl -s -H "Authorization: Bearer $STATIC_TOKEN" \
-            "http://localhost:8055/modules" 2>/dev/null || echo '{}')
-
-        if echo "$MODULES_RESPONSE" | grep -q "terminal"; then
-            success "Módulo Terminal disponível no admin"
-        else
-            warning "Módulo Terminal não está disponível no admin"
-            info "Verifique se a extensão foi compilada corretamente"
-        fi
+        # Nota sobre terminal removido
+        info "Extensões do terminal foram removidas conforme solicitado"
 
     else
         warning "Não foi possível obter ID do usuário"
@@ -1333,20 +1448,17 @@ echo -e "${BLUE}📊 Dados Iniciais:${NC}"
 echo -e "   • ✅ 5 categorias criadas"
 echo -e "   • ✅ 1 autor padrão criado"
 echo -e "   • ✅ Schema do banco aplicado"
-echo -e "   • ✅ Extensões do terminal compiladas"
+echo -e "   • ✅ Extensões compiladas (terminal removido)"
 echo ""
 echo -e "${BLUE}🚀 Próximos Passos:${NC}"
 echo -e "   1. Acesse ${GREEN}http://localhost:8055/admin${NC}"
 echo -e "   2. Faça login com as credenciais acima"
 echo -e "   3. Configure permissões se necessário"
 echo -e "   4. Acesse o frontend em ${GREEN}http://localhost:3000${NC}"
-echo -e "   5. Use o terminal em ${GREEN}http://localhost:8055/admin/terminal${NC}"
 echo ""
-echo -e "${BLUE}🖥️  Terminal do Directus:${NC}"
-echo -e "   • Acesse: ${GREEN}http://localhost:8055/admin/terminal${NC}"
-echo -e "   • Login: admin@example.com / admin123"
-echo -e "   • Execute comandos reais do sistema"
-echo -e "   • Se não aparecer, reinicie: ${YELLOW}docker compose restart directus${NC}"
+echo -e "${BLUE}🔧 Extensões Disponíveis:${NC}"
+echo -e "   • Push Notifications: ${GREEN}extensions/push-notifications${NC}"
+echo -e "   • Terminal removido conforme solicitado"
 echo ""
 echo -e "${BLUE}🕷️  Webscrapers Disponíveis:${NC}"
 echo -e "   • G1:            ${GREEN}webscraper-service/g1.js${NC}"
@@ -1377,7 +1489,6 @@ echo -e "   • Ver logs:       ${YELLOW}tail -f frontend.log${NC}"
 echo -e "   • Health check:   ${YELLOW}./health-check.sh${NC}"
 echo -e "   • Diagnóstico:    ${YELLOW}./diagnose.sh${NC}"
 echo -e "   • Renovar token:  ${YELLOW}./refresh-token.sh${NC}"
-echo -e "   • Terminal:       ${YELLOW}http://localhost:8055/admin/terminal${NC}"
 echo ""
 
 # Mostrar aviso sobre Node.js se necessário

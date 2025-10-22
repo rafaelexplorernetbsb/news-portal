@@ -647,7 +647,7 @@ async function createNoticia(item, url, data_publicacao, categoria) {
     categoria: categoriaId,
     autor: 1,
     status: 'published',
-    destaque: false,
+    destaque: true,
     fonte_rss: 'Folha - Tec',
     url_imagem: item.imagem,     // agora SEMPRE vem com og:image
     video_url: item.video_url || null,

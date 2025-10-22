@@ -3,6 +3,9 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import "../src/styles/content-renderer.css";
 import Script from "next/script";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import CookieCleaner from "@/components/CookieCleaner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,8 +21,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
+      <head>
+        <Script src="/clear-directus-cookies.js" strategy="beforeInteractive" />
+      </head>
       <body className={inter.className}>
-        {children}
+        <div className="min-h-screen bg-gray-50 flex flex-col">
+          <CookieCleaner />
+          <Header />
+          <main className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </div>
 
         {/* Registrar Service Worker para notificações */}
         <Script id="sw-register" strategy="afterInteractive">

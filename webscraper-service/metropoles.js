@@ -694,7 +694,7 @@ async function createNoticia(item, url, data_publicacao, categoria) {
     categoria: categoriaId,  // Usa o ID numérico da categoria
     autor: autorId,
     status: 'published',
-    destaque: false,
+    destaque: true,
     fonte_rss: 'Metropoles',
     url_imagem: item.imagem,
     data_publicacao: dataFinal

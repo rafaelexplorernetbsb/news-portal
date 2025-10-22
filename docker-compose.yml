@@ -29,7 +29,7 @@ services:
     image: redis:7-alpine
     container_name: ${COMPOSE_PROJECT_NAME:-news-portal}_redis_${ENV:-dev}
     restart: unless-stopped
-    command: redis-server --requirepass ${REDIS_PASSWORD:-}
+    command: redis-server
     volumes:
       - redis_data:/data
     ports:
@@ -70,10 +70,8 @@ services:
       CORS_ENABLED: ${CORS_ENABLED:-true}
       CORS_ORIGIN: ${CORS_ORIGIN:-true}
 
-      # Cache
-      CACHE_ENABLED: ${CACHE_ENABLED:-false}
-      CACHE_STORE: ${CACHE_STORE:-redis}
-      CACHE_REDIS: ${CACHE_REDIS:-redis://redis:6379}
+      # Cache - Desabilitado temporariamente
+      CACHE_ENABLED: false
 
       # Storage
       STORAGE_LOCATIONS: ${STORAGE_LOCATIONS:-local}

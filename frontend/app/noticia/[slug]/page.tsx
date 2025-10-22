@@ -11,17 +11,13 @@ import {
   getUltimasNoticias,
   getCategoriaNome,
 } from '@/lib/directus';
+import { NoticiaPageSkeleton } from '@/components/NoticiaPageSkeleton';
 import Link from 'next/link';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import NoticiaCard from '@/components/NoticiaCard';
 import ArticleMedia from '@/components/ArticleMedia';
 import ContentRenderer from '@/components/ContentRenderer';
 import { FaFacebook, FaWhatsapp } from 'react-icons/fa';
 import { FaXTwitter } from 'react-icons/fa6';
-
-const API_URL = 'http://localhost:8055';
-const API_TOKEN = '094d174e18964f1fbd01a13a8a96870e517e629de8c2c9884760864153d2281c';
 
 export default function NoticiaPage() {
   const params = useParams();
@@ -50,14 +46,29 @@ export default function NoticiaPage() {
         setUltimasNoticias(ultimas.filter((n) => n.slug !== slug).slice(0, 5));
 
         if (data && data.categoria) {
+          // Extrair o ID da categoria corretamente
+          let categoriaId: string | number;
+          if (typeof data.categoria === 'string') {
+            categoriaId = data.categoria;
+          } else if (typeof data.categoria === 'number') {
+            categoriaId = data.categoria;
+          } else if (typeof data.categoria === 'object' && data.categoria.id) {
+            categoriaId = data.categoria.id;
+          } else {
+            categoriaId = String(data.categoria);
+          }
+
+          const params = new URLSearchParams({
+            'filter[categoria][_eq]': String(categoriaId),
+            'filter[slug][_neq]': slug,
+            'filter[status][_eq]': 'published',
+            'sort': '-data_publicacao',
+            'fields': '*,imagem.*,autor.*',
+            'limit': '6'
+          });
+
           const response = await fetch(
-            `${API_URL}/items/noticias?filter[categoria][_eq]=${data.categoria}&filter[slug][_neq]=${slug}&filter[status][_eq]=published&sort=-data_publicacao&fields=*,imagem.*,autor.*&limit=6`,
-            {
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${API_TOKEN}`,
-              },
-            }
+            `/api/directus/items/noticias?${params.toString()}`
           );
           const relacionadas = await response.json();
           setNoticiasRelacionadas(relacionadas.data || []);
@@ -76,32 +87,18 @@ export default function NoticiaPage() {
   }, [slug]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <div className="flex items-center justify-center py-32">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600"></div>
-            <p className="mt-4 text-gray-600 text-lg font-medium">Carregando notícia...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <NoticiaPageSkeleton />;
   }
 
   if (error || !noticia) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Header />
-        <main className="container mx-auto px-4 py-8">
-          <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-xl">
-            {error || 'Notícia não encontrada'}
-          </div>
-          <Link href="/" className="inline-block mt-6 text-blue-600 hover:text-blue-800 font-medium">
-            ← Voltar para Home
-          </Link>
-        </main>
-        <Footer />
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-xl">
+          {error || 'Notícia não encontrada'}
+        </div>
+        <Link href="/" className="inline-block mt-6 text-blue-600 hover:text-blue-800 font-medium">
+          ← Voltar para Home
+        </Link>
       </div>
     );
   }
@@ -109,35 +106,32 @@ export default function NoticiaPage() {
   const imagemUrl = getImageUrl(noticia.imagem, noticia.url_imagem);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-3">
-          <nav className="flex items-center gap-2 text-sm text-gray-600">
-            <Link href="/" className="hover:text-blue-600">
-              Home
-            </Link>
-            <span>/</span>
-            {noticia.categoria && (
-              <>
-                <Link
-                  href={`/categoria/${
-                    typeof noticia.categoria === 'string'
-                      ? noticia.categoria
-                      : typeof noticia.categoria === 'object'
-                      ? noticia.categoria.slug
-                      : 'categoria'
-                  }`}
-                  className="hover:text-blue-600"
-                >
-                  {capitalizarCategoria(categoriaNome)}
-                </Link>
-              </>
-            )}
-            <span className="text-gray-900 font-medium truncate">{noticia.titulo}</span>
-          </nav>
-        </div>
+    <div className="bg-white border-b">
+      <div className="container mx-auto px-4 py-3">
+        <nav className="flex items-center gap-2 text-sm text-gray-600">
+          <Link href="/" className="hover:text-blue-600">
+            Home
+          </Link>
+          <span>/</span>
+          {noticia.categoria && (
+            <>
+              <Link
+                href={`/categoria/${
+                  typeof noticia.categoria === 'string'
+                    ? noticia.categoria
+                    : typeof noticia.categoria === 'object'
+                    ? noticia.categoria.slug
+                    : 'categoria'
+                }`}
+                className="hover:text-blue-600"
+              >
+                {capitalizarCategoria(categoriaNome)}
+              </Link>
+              <span>/</span>
+            </>
+          )}
+          <span className="text-gray-900 font-medium truncate">{noticia.titulo}</span>
+        </nav>
       </div>
 
       <main className="container mx-auto px-2 py-8">
@@ -257,8 +251,6 @@ export default function NoticiaPage() {
           </aside>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

@@ -650,7 +650,7 @@ async function createNoticia(item, url, data_publicacao) {
     categoria: CATEGORIAS_MAP.tecnologia,
     autor: autorId,
     status: 'published',
-    destaque: false,
+    destaque: true,
     fonte_rss: 'Tecmundo',
     url_imagem: item.imagem,
     data_publicacao: dataFinal

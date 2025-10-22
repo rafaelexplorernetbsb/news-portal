@@ -4,8 +4,6 @@ import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Noticia, buscarNoticias } from '@/lib/directus';
 import NoticiaCard from '@/components/NoticiaCard';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 
 function BuscaContent() {
   const searchParams = useSearchParams();
@@ -89,19 +87,15 @@ function BuscaContent() {
 
 export default function BuscaPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <Suspense fallback={
-        <main className="container mx-auto px-4 py-8">
-          <div className="text-center py-20">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-4 border-[#1c99da]"></div>
-            <p className="mt-4 text-gray-600">Carregando...</p>
-          </div>
-        </main>
-      }>
-        <BuscaContent />
-      </Suspense>
-      <Footer />
-    </div>
+    <Suspense fallback={
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-20">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-4 border-[#1c99da]"></div>
+          <p className="mt-4 text-gray-600">Carregando...</p>
+        </div>
+      </div>
+    }>
+      <BuscaContent />
+    </Suspense>
   );
 }

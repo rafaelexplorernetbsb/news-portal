@@ -10,6 +10,8 @@ import {
   type DirectusSettings,
   getProjectName,
   getProjectDescriptor,
+  getCategorias,
+  type Categoria,
 } from '@/lib/directus';
 import { usePathname } from 'next/navigation';
 
@@ -18,20 +20,30 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [projectSettings, setProjectSettings] = useState<DirectusSettings | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    async function fetchSettings() {
-      const settings = await getProjectSettings();
-      if (settings) {
-        setProjectSettings(settings);
-        const logo = getLogoUrl(settings.project_logo);
-        setLogoUrl(logo);
+    async function fetchData() {
+      try {
+        // Buscar configurações do projeto
+        const settings = await getProjectSettings();
+        if (settings) {
+          setProjectSettings(settings);
+          const logo = getLogoUrl(settings.project_logo);
+          setLogoUrl(logo);
+        }
+
+        // Buscar categorias
+        const categoriasData = await getCategorias();
+        setCategorias(categoriasData);
+      } catch (error) {
+        console.error('Erro ao carregar dados do header:', error);
       }
     }
 
-    fetchSettings();
+    fetchData();
   }, []);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -112,76 +124,22 @@ export default function Header() {
                 Últimas notícias
               </Link>
             </li>
-            <li>
-              <Link
-                href="/categoria/politica"
-                className={`text-[#333333] hover:text-[#1c99da] transition-colors ${
-                  pathname === '/categoria/politica' ? 'underline decoration-2 underline-offset-4' : ''
-                }`}
-              >
-                Brasil/Política/Economia
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/categoria/tecnologia"
-                className={`text-[#333333] hover:text-[#1c99da] transition-colors ${
-                  pathname === '/categoria/tecnologia' ? 'underline decoration-2 underline-offset-4' : ''
-                }`}
-              >
-                Tecnologia
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/categoria/esportes"
-                className={`text-[#333333] hover:text-[#1c99da] transition-colors ${
-                  pathname === '/categoria/esportes' ? 'underline decoration-2 underline-offset-4' : ''
-                }`}
-              >
-                Esportes
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/categoria/cultura"
-                className={`text-[#333333] hover:text-[#1c99da] transition-colors ${
-                  pathname === '/categoria/cultura' ? 'underline decoration-2 underline-offset-4' : ''
-                }`}
-              >
-                Entretenimento
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/categoria/saude"
-                className={`text-[#333333] hover:text-[#1c99da] transition-colors ${
-                  pathname === '/categoria/saude' ? 'underline decoration-2 underline-offset-4' : ''
-                }`}
-              >
-                Saúde
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/categoria/mundo"
-                className={`text-[#333333] hover:text-[#1c99da] transition-colors ${
-                  pathname === '/categoria/mundo' ? 'underline decoration-2 underline-offset-4' : ''
-                }`}
-              >
-                Mundo
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/categoria/negocios"
-                className={`text-[#333333] hover:text-[#1c99da] transition-colors ${
-                  pathname === '/categoria/negocios' ? 'underline decoration-2 underline-offset-4' : ''
-                }`}
-              >
-                Negócios
-              </Link>
-            </li>
+            {categorias.length === 0 ? (
+              <li className="text-gray-400">Carregando categorias...</li>
+            ) : (
+              categorias.map((categoria) => (
+                <li key={categoria.id}>
+                  <Link
+                    href={`/categoria/${categoria.slug}`}
+                    className={`text-[#333333] hover:text-[#1c99da] transition-colors ${
+                      pathname === `/categoria/${categoria.slug}` ? 'underline decoration-2 underline-offset-4' : ''
+                    }`}
+                  >
+                    {categoria.nome}
+                  </Link>
+                </li>
+              ))
+            )}
           </ul>
         </nav>
 

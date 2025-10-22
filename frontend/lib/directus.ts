@@ -1,7 +1,48 @@
-// URL da API - sempre usa localhost pois agora é Client-Side Rendering
-const API_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'http://localhost:8055';
-// Token de autenticação do Directus - obtido das variáveis de ambiente
-const API_TOKEN = process.env.NEXT_PUBLIC_API_TOKEN || '';
+// URL da API - detecta automaticamente se está sendo acessado via ngrok
+const getAPIUrl = () => {
+  if (typeof window !== 'undefined') {
+    // Se estamos no cliente e a URL contém ngrok, usar URL absoluta
+    if (window.location.hostname.includes('ngrok')) {
+      return `${window.location.protocol}//${window.location.host}/api/directus`;
+    }
+  }
+  return '/api/directus';
+};
+
+const API_URL = getAPIUrl();
+
+// Removemos todas as credenciais e tokens do client-side
+// O proxy server-side gerencia a autenticação internamente
+
+async function fetchAPI(endpoint: string) {
+  try {
+    const url = `${API_URL}${endpoint}`;
+    console.log('Fazendo requisição para:', url); // Debug
+
+    const response = await fetch(url, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'ngrok-skip-browser-warning': 'true', // Bypass do aviso do ngrok
+      },
+      credentials: 'omit', // Não enviar cookies
+      mode: 'cors', // Permitir CORS
+    });
+
+    console.log('Resposta da API:', response.status, response.statusText); // Debug
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Erro da API:', response.status, errorText);
+      throw new Error(`API Error: ${response.status} - ${errorText}`);
+    }
+
+    return response.json();
+  } catch (error) {
+    console.error('Erro na fetchAPI:', error);
+    throw error;
+  }
+}
 
 export interface Noticia {
   id: number;
@@ -52,20 +93,6 @@ export interface DirectusSettings {
   project_descriptor?: string;
 }
 
-async function fetchAPI(endpoint: string) {
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${API_TOKEN}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error(`API Error: ${response.status}`);
-  }
-
-  return response.json();
-}
 
 export async function getNoticiasDestaque(): Promise<Noticia[]> {
   const data: NoticiaResponse = await fetchAPI(
@@ -77,27 +104,12 @@ export async function getNoticiasDestaque(): Promise<Noticia[]> {
 
 export async function getProjectSettings(): Promise<DirectusSettings | null> {
   try {
-    const API_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'http://localhost:8055';
-    const API_TOKEN = process.env.NEXT_PUBLIC_API_TOKEN || '';
-    
-    const response = await fetch(`${API_URL}/settings`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${API_TOKEN}`,
-      },
-    });
-
-    if (!response.ok) {
-      throw new Error(`API Error: ${response.status}`);
-    }
-
-    const result = await response.json();
-    return result.data;
+    const result = await fetchAPI('/settings');
+    return result.data || result;
   } catch (error) {
     console.error('Erro ao buscar configurações do projeto:', error);
     return null;
   }
-
 }
 
 export function getLogoUrl(project_logo: DirectusSettings['project_logo']): string | null {
@@ -105,7 +117,12 @@ export function getLogoUrl(project_logo: DirectusSettings['project_logo']): stri
     return null;
   }
 
-  const assetUrl = 'http://localhost:8055';
+  // Usar o proxy da API para acessar assets
+  let assetUrl = '/api/directus';
+  if (typeof window !== 'undefined' && window.location.hostname.includes('ngrok')) {
+    // Se estamos no cliente e a URL contém ngrok, usar URL absoluta
+    assetUrl = `${window.location.protocol}//${window.location.host}/api/directus`;
+  }
 
   if (typeof project_logo === 'object' && project_logo.id) {
     return `${assetUrl}/assets/${project_logo.id}`;
@@ -386,5 +403,25 @@ export async function getNoticiaPorSlug(slug: string): Promise<Noticia | null> {
   } catch (error) {
     console.error('Erro ao buscar notícia por slug:', error);
     return null;
+  }
+}
+
+// Interface para Categoria
+export interface Categoria {
+  id: number;
+  nome: string;
+  slug: string;
+  descricao?: string;
+  icone?: string;
+}
+
+// Função para buscar todas as categorias
+export async function getCategorias(): Promise<Categoria[]> {
+  try {
+    const data = await fetchAPI('/items/categorias?sort=nome&fields=id,nome,slug,descricao,icone');
+    return data.data || [];
+  } catch (error) {
+    console.error('Erro ao buscar categorias:', error);
+    return [];
   }
 }

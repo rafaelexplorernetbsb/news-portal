@@ -556,7 +556,7 @@ async function createNoticia(item, url, data_publicacao, categoria) {
       fonte_rss: item.fonte_rss,
       categoria: categoriaId,
       autor: item.autor,
-      destaque: false
+      destaque: true
     };
 
     const response = await fetch(`${DIRECTUS_URL}/items/noticias`, {
@@ -626,7 +626,7 @@ async function runImport() {
           }
         }
         item.categoria = feed.categoria;
-        item.destaque = i === 0 && criadas === 0; // Primeira notícia em destaque (apenas a primeira de todos os feeds)
+        item.destaque = true; // Todas as notícias em destaque
         const resultado = await createNoticia(item, url, data_publicacao, feed.categoria);
 
         if (resultado === true) criadas++;

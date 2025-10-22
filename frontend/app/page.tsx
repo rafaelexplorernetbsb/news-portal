@@ -10,9 +10,8 @@ import {
   capitalizarCategoria,
   getNoticiasPorCategoriaEspecifica,
 } from '@/lib/directus';
+import { HomePageSkeleton } from '@/components/HomePageSkeleton';
 import NoticiaCard from '@/components/NoticiaCard';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import NotificationPopup from '@/components/NotificationPopup';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -93,25 +92,15 @@ export default function Home() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-b-4 border-[#1c99da]"></div>
-          <p className="mt-4 text-gray-600 text-lg font-medium">Carregando notícias...</p>
-        </div>
-      </div>
-    );
+    return <HomePageSkeleton />;
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-
-      <main className="container mx-auto px-4 py-6">
-        {error ? (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-xl">{error}</div>
-        ) : (
-          <>
+    <div className="container mx-auto px-4 py-6">
+      {error ? (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-xl">{error}</div>
+      ) : (
+        <>
             {noticiasDestaque && noticiasDestaque.length > 0 && (
               <section className="mb-8">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -248,11 +237,8 @@ export default function Home() {
                 </div>
               </aside>
             </div>
-          </>
-        )}
-      </main>
-
-      <Footer />
+        </>
+      )}
 
       <NotificationPopup />
     </div>

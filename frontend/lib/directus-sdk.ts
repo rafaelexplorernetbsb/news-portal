@@ -2,7 +2,7 @@ import { createDirectus, rest, readItems, readItem, readSingleton } from '@direc
 
 // Configuração do Directus
 const DIRECTUS_URL = 'http://localhost:8055';
-const API_TOKEN = '094d174e18964f1fbd01a13a8a96870e517e629de8c2c9884760864153d2281c';
+const API_TOKEN = process.env.NEXT_PUBLIC_API_TOKEN || '';
 
 // Tipos TypeScript para o SDK
 export interface Noticia {

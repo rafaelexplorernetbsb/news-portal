@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Noticia, capitalizarCategoria, getNoticiasPorCategoria } from '@/lib/directus';
 import NoticiaCard from '@/components/NoticiaCard';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
+import { CategoriaPageSkeleton } from '@/components/CategoriaPageSkeleton';
 
 // Usar as variáveis de ambiente do .env
 const API_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL || 'http://localhost:8055';
@@ -75,9 +74,7 @@ export default function CategoriaPage() {
   const categoriaNome = capitalizarCategoria(slug);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-
+    <div>
       {/* Banner da Categoria */}
       <div className="bg-[#333333] text-white py-8">
         <div className="container mx-auto px-4">
@@ -88,10 +85,7 @@ export default function CategoriaPage() {
 
       <main className="container mx-auto px-4 py-8">
         {loading ? (
-          <div className="text-center py-20">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-4 border-[#1c99da]"></div>
-            <p className="mt-4 text-gray-600">Carregando notícias...</p>
-          </div>
+          <CategoriaPageSkeleton />
         ) : error ? (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl">{error}</div>
         ) : (
@@ -135,17 +129,9 @@ export default function CategoriaPage() {
                 </div>
               )}
             </div>
-            <aside className="space-y-6">
-              <div className="bg-white rounded-xl shadow-md p-6 sticky top-32">
-                <h3 className="text-xl font-bold text-gray-900 mb-5 pb-3 border-b-2 border-blue-600">
-                  Espaço para anúncio
-                </h3>
-              </div>
-            </aside>
           </div>
         )}
       </main>
-      <Footer />
     </div>
   );
 }
