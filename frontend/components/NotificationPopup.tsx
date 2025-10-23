@@ -108,7 +108,7 @@ export default function NotificationPopup({
             });
 
             // Timeout para evitar travamento
-            const timeoutPromise = new Promise((_, reject) => 
+            const timeoutPromise = new Promise((_, reject) =>
               setTimeout(() => reject(new Error('Timeout')), 10000)
             );
 
@@ -121,7 +121,7 @@ export default function NotificationPopup({
             });
 
             try {
-              const response = await Promise.race([responsePromise, timeoutPromise]);
+              const response = await Promise.race([responsePromise, timeoutPromise]) as Response;
               if (!response.ok) {
                 console.warn('Falha ao registrar push subscription');
               }
