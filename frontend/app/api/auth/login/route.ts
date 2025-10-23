@@ -9,14 +9,20 @@ export async function POST(request: NextRequest) {
 
     if (!ADMIN_EMAIL) {
       return NextResponse.json(
-        { error: 'DIRECTUS_ADMIN_EMAIL não está definida nas variáveis de ambiente' },
+        {
+          error:
+            'DIRECTUS_ADMIN_EMAIL não está definida nas variáveis de ambiente',
+        },
         { status: 500 }
       );
     }
 
     if (!ADMIN_PASSWORD) {
       return NextResponse.json(
-        { error: 'DIRECTUS_ADMIN_PASSWORD não está definida nas variáveis de ambiente' },
+        {
+          error:
+            'DIRECTUS_ADMIN_PASSWORD não está definida nas variáveis de ambiente',
+        },
         { status: 500 }
       );
     }
