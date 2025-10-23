@@ -10,7 +10,13 @@ jest.mock('@/lib/directus', () => ({
   getProjectDescriptor: jest.fn(),
 }));
 
-import { getCategorias, getProjectSettings, getLogoUrl, getProjectName, getProjectDescriptor } from '@/lib/directus';
+import {
+  getCategorias,
+  getProjectSettings,
+  getLogoUrl,
+  getProjectName,
+  getProjectDescriptor,
+} from '@/lib/directus';
 
 const mockCategorias = [
   { id: '1', nome: 'Tecnologia', slug: 'tecnologia', cor: '#1c99da' },
@@ -28,8 +34,12 @@ describe('Header', () => {
     (getCategorias as jest.Mock).mockResolvedValue(mockCategorias);
     (getProjectSettings as jest.Mock).mockResolvedValue(mockProjectSettings);
     (getLogoUrl as jest.Mock).mockResolvedValue('https://example.com/logo.png');
-    (getProjectName as jest.Mock).mockImplementation((name) => name || 'Portal de Notícias');
-    (getProjectDescriptor as jest.Mock).mockImplementation((desc) => desc || 'Sua fonte de notícias');
+    (getProjectName as jest.Mock).mockImplementation(
+      (name) => name || 'Portal de Notícias'
+    );
+    (getProjectDescriptor as jest.Mock).mockImplementation(
+      (desc) => desc || 'Sua fonte de notícias'
+    );
   });
 
   afterEach(() => {

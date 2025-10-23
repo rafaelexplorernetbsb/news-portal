@@ -22,12 +22,18 @@ describe('News Article Page E2E Tests', () => {
 
   it('should display social sharing buttons', () => {
     cy.get('[data-testid="social-share"]').should('be.visible');
-    cy.get('[data-testid="social-share"] button').should('have.length.greaterThan', 0);
+    cy.get('[data-testid="social-share"] button').should(
+      'have.length.greaterThan',
+      0
+    );
   });
 
   it('should display related news section', () => {
     cy.get('[data-testid="related-news"]').should('be.visible');
-    cy.get('[data-testid="related-news"] .noticia-card').should('have.length.greaterThan', 0);
+    cy.get('[data-testid="related-news"] .noticia-card').should(
+      'have.length.greaterThan',
+      0
+    );
   });
 
   it('should navigate to related news', () => {

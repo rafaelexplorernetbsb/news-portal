@@ -8,7 +8,10 @@ interface MarkdownRendererProps {
   className?: string;
 }
 
-export default function MarkdownRenderer({ content, className = '' }: MarkdownRendererProps) {
+export default function MarkdownRenderer({
+  content,
+  className = '',
+}: MarkdownRendererProps) {
   return (
     <div className={`prose prose-lg max-w-none markdown-content ${className}`}>
       <ReactMarkdown
@@ -37,24 +40,16 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
             </h4>
           ),
           p: ({ children }) => (
-            <p className="mb-4 text-gray-800 leading-relaxed">
-              {children}
-            </p>
+            <p className="mb-4 text-gray-800 leading-relaxed">{children}</p>
           ),
           ul: ({ children }) => (
-            <ul className="mb-4 ml-6 list-disc">
-              {children}
-            </ul>
+            <ul className="mb-4 ml-6 list-disc">{children}</ul>
           ),
           ol: ({ children }) => (
-            <ol className="mb-4 ml-6 list-decimal">
-              {children}
-            </ol>
+            <ol className="mb-4 ml-6 list-decimal">{children}</ol>
           ),
           li: ({ children }) => (
-            <li className="mb-2 text-gray-800">
-              {children}
-            </li>
+            <li className="mb-2 text-gray-800">{children}</li>
           ),
           blockquote: ({ children }) => (
             <blockquote className="border-l-4 border-blue-500 pl-4 italic text-gray-700 my-6 bg-blue-50 py-3 rounded-r-lg">
@@ -87,11 +82,7 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
                 </code>
               );
             }
-            return (
-              <code className={className}>
-                {children}
-              </code>
-            );
+            return <code className={className}>{children}</code>;
           },
           pre: ({ children }) => (
             <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto my-6">
@@ -111,22 +102,14 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
             </th>
           ),
           td: ({ children }) => (
-            <td className="border border-gray-300 px-4 py-2">
-              {children}
-            </td>
+            <td className="border border-gray-300 px-4 py-2">{children}</td>
           ),
-          hr: () => (
-            <hr className="my-8 border-gray-300" />
-          ),
+          hr: () => <hr className="my-8 border-gray-300" />,
           strong: ({ children }) => (
-            <strong className="font-bold text-gray-900">
-              {children}
-            </strong>
+            <strong className="font-bold text-gray-900">{children}</strong>
           ),
           em: ({ children }) => (
-            <em className="italic text-gray-800">
-              {children}
-            </em>
+            <em className="italic text-gray-800">{children}</em>
           ),
         }}
       >

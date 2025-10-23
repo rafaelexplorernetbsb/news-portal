@@ -13,11 +13,11 @@ export default function CookieCleaner() {
         'directus_token',
         'directus_session',
         'directus_refresh',
-        'directus_access'
+        'directus_access',
       ];
 
       // Limpar cookies do navegador
-      directusCookies.forEach(cookieName => {
+      directusCookies.forEach((cookieName) => {
         // Remover cookie do domínio atual
         document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
 
@@ -29,7 +29,7 @@ export default function CookieCleaner() {
       });
 
       // Limpar localStorage e sessionStorage
-      directusCookies.forEach(cookieName => {
+      directusCookies.forEach((cookieName) => {
         localStorage.removeItem(cookieName);
         sessionStorage.removeItem(cookieName);
       });

@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const DIRECTUS_URL = process.env.DIRECTUS_URL;
-const ADMIN_EMAIL = process.env.DIRECTUS_PROXY_EMAIL || process.env.DIRECTUS_ADMIN_EMAIL;
-const ADMIN_PASSWORD = process.env.DIRECTUS_PROXY_PASSWORD || process.env.DIRECTUS_ADMIN_PASSWORD;
+const ADMIN_EMAIL =
+  process.env.DIRECTUS_PROXY_EMAIL || process.env.DIRECTUS_ADMIN_EMAIL;
+const ADMIN_PASSWORD =
+  process.env.DIRECTUS_PROXY_PASSWORD || process.env.DIRECTUS_ADMIN_PASSWORD;
 
 let serverToken: string | null = null;
 let tokenExpiry: number = 0;
@@ -13,11 +15,15 @@ async function getServerToken(): Promise<string> {
   }
 
   if (!ADMIN_EMAIL) {
-    throw new Error('DIRECTUS_PROXY_EMAIL ou DIRECTUS_ADMIN_EMAIL não está definida nas variáveis de ambiente');
+    throw new Error(
+      'DIRECTUS_PROXY_EMAIL ou DIRECTUS_ADMIN_EMAIL não está definida nas variáveis de ambiente'
+    );
   }
 
   if (!ADMIN_PASSWORD) {
-    throw new Error('DIRECTUS_PROXY_PASSWORD ou DIRECTUS_ADMIN_PASSWORD não está definida nas variáveis de ambiente');
+    throw new Error(
+      'DIRECTUS_PROXY_PASSWORD ou DIRECTUS_ADMIN_PASSWORD não está definida nas variáveis de ambiente'
+    );
   }
 
   if (!serverToken || Date.now() > tokenExpiry) {
@@ -83,7 +89,8 @@ export async function GET(
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-        'Content-Type': response.headers.get('Content-Type') || 'application/octet-stream',
+        'Content-Type':
+          response.headers.get('Content-Type') || 'application/octet-stream',
       };
 
       return new NextResponse(data, { headers: corsHeaders });
@@ -95,7 +102,7 @@ export async function GET(
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -137,7 +144,7 @@ export async function POST(
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(body),
     });

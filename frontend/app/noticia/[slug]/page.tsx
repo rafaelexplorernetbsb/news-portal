@@ -25,7 +25,9 @@ export default function NoticiaPage() {
 
   const [noticia, setNoticia] = useState<Noticia | null>(null);
   const [ultimasNoticias, setUltimasNoticias] = useState<Noticia[]>([]);
-  const [noticiasRelacionadas, setNoticiasRelacionadas] = useState<Noticia[]>([]);
+  const [noticiasRelacionadas, setNoticiasRelacionadas] = useState<Noticia[]>(
+    []
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [categoriaNome, setCategoriaNome] = useState<string>('Categoria');
@@ -62,9 +64,9 @@ export default function NoticiaPage() {
             'filter[categoria][_eq]': String(categoriaId),
             'filter[slug][_neq]': slug,
             'filter[status][_eq]': 'published',
-            'sort': '-data_publicacao',
-            'fields': '*,imagem.*,autor.*',
-            'limit': '6'
+            sort: '-data_publicacao',
+            fields: '*,imagem.*,autor.*',
+            limit: '6',
           });
 
           const response = await fetch(
@@ -95,7 +97,10 @@ export default function NoticiaPage() {
         <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded-xl">
           {error || 'Notícia não encontrada'}
         </div>
-        <Link href="/" className="inline-block mt-6 text-blue-600 hover:text-blue-800 font-medium">
+        <Link
+          href="/"
+          className="inline-block mt-6 text-blue-600 hover:text-blue-800 font-medium"
+        >
           ← Voltar para Home
         </Link>
       </div>
@@ -119,8 +124,8 @@ export default function NoticiaPage() {
                   typeof noticia.categoria === 'string'
                     ? noticia.categoria
                     : typeof noticia.categoria === 'object'
-                    ? noticia.categoria.slug
-                    : 'categoria'
+                      ? noticia.categoria.slug
+                      : 'categoria'
                 }`}
                 className="hover:text-blue-600"
               >
@@ -129,7 +134,9 @@ export default function NoticiaPage() {
               <span>/</span>
             </>
           )}
-          <span className="text-gray-900 font-medium truncate">{noticia.titulo}</span>
+          <span className="text-gray-900 font-medium truncate">
+            {noticia.titulo}
+          </span>
         </nav>
       </div>
 
@@ -167,14 +174,21 @@ export default function NoticiaPage() {
 
                 {noticia.resumo && (
                   <div className="bg-blue-50 border-l-4 border-blue-600 p-6 rounded-r-xl mb-8">
-                    <p className="text-xl text-gray-800 italic leading-relaxed font-medium">{noticia.resumo}</p>
+                    <p className="text-xl text-gray-800 italic leading-relaxed font-medium">
+                      {noticia.resumo}
+                    </p>
                   </div>
                 )}
 
-                <ContentRenderer content={noticia.conteudo || ''} className="news-content" />
+                <ContentRenderer
+                  content={noticia.conteudo || ''}
+                  className="news-content"
+                />
 
                 <div className="bg-gray-50 p-6 rounded-xl mt-8">
-                  <p className="text-sm text-gray-600 mb-3 font-medium">Compartilhe esta notícia:</p>
+                  <p className="text-sm text-gray-600 mb-3 font-medium">
+                    Compartilhe esta notícia:
+                  </p>
                   <div className="flex gap-3">
                     <button
                       onClick={() => {
@@ -209,7 +223,10 @@ export default function NoticiaPage() {
                       onClick={() => {
                         const url = window.location.href;
                         const text = `${noticia.titulo} - ${url}`;
-                        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+                        window.open(
+                          `https://wa.me/?text=${encodeURIComponent(text)}`,
+                          '_blank'
+                        );
                       }}
                       className="flex-1 bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg font-medium transition-colors text-sm flex items-center justify-center gap-2"
                     >
@@ -228,7 +245,11 @@ export default function NoticiaPage() {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {noticiasRelacionadas.map((noticiaRelacionada, index) => (
-                    <NoticiaCard key={`${noticiaRelacionada.id}-${index}`} noticia={noticiaRelacionada} featured />
+                    <NoticiaCard
+                      key={`${noticiaRelacionada.id}-${index}`}
+                      noticia={noticiaRelacionada}
+                      featured
+                    />
                   ))}
                 </div>
               </div>
@@ -243,7 +264,11 @@ export default function NoticiaPage() {
               </h3>
               <div className="space-y-4">
                 {ultimasNoticias.map((noticia, index) => (
-                  <NoticiaCard key={`${noticia.id}-${index}`} noticia={noticia} compact />
+                  <NoticiaCard
+                    key={`${noticia.id}-${index}`}
+                    noticia={noticia}
+                    compact
+                  />
                 ))}
               </div>
             </div>

@@ -6,18 +6,32 @@ export const dynamic = 'force-dynamic';
 export async function GET(req: NextRequest) {
   const url = req.nextUrl.searchParams.get('url');
   if (!url) {
-    return NextResponse.json({ embeddable: false, reason: 'missing_url' }, { status: 400 });
+    return NextResponse.json(
+      { embeddable: false, reason: 'missing_url' },
+      { status: 400 }
+    );
   }
 
   let host: string | null = null;
   try {
     host = new URL(url).hostname.toLowerCase();
   } catch {
-    return NextResponse.json({ embeddable: false, reason: 'invalid_url' }, { status: 400 });
+    return NextResponse.json(
+      { embeddable: false, reason: 'invalid_url' },
+      { status: 400 }
+    );
   }
 
-  if (NON_EMBED_HOSTS.some((blocked) => host === blocked || host.endsWith(`.${blocked}`))) {
-    return NextResponse.json({ embeddable: false, reason: 'blocked_by_policy', host });
+  if (
+    NON_EMBED_HOSTS.some(
+      (blocked) => host === blocked || host.endsWith(`.${blocked}`)
+    )
+  ) {
+    return NextResponse.json({
+      embeddable: false,
+      reason: 'blocked_by_policy',
+      host,
+    });
   }
 
   try {
@@ -33,16 +47,20 @@ export async function GET(req: NextRequest) {
     const deny = xfo.includes('deny');
 
     if (deny || sameorigin || frameAncestorsDenied) {
-      return NextResponse.json({ embeddable: false, reason: 'headers_block', xfo, csp, host });
+      return NextResponse.json({
+        embeddable: false,
+        reason: 'headers_block',
+        xfo,
+        csp,
+        host,
+      });
     }
 
     return NextResponse.json({ embeddable: true, reason: 'ok', host });
   } catch (e) {
-    return NextResponse.json({ embeddable: false, reason: 'network_error', host }, { status: 200 });
+    return NextResponse.json(
+      { embeddable: false, reason: 'network_error', host },
+      { status: 200 }
+    );
   }
 }
-
-
-
-
-

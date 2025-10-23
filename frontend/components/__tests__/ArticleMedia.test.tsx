@@ -3,7 +3,15 @@ import ArticleMedia from '@/components/ArticleMedia';
 
 // Mock do Next.js Image
 jest.mock('next/image', () => {
-  return function MockImage({ src, alt, ...props }: { src: string; alt: string; [key: string]: unknown }) {
+  return function MockImage({
+    src,
+    alt,
+    ...props
+  }: {
+    src: string;
+    alt: string;
+    [key: string]: unknown;
+  }) {
     return <img src={src} alt={alt} {...props} />;
   };
 });
@@ -62,9 +70,7 @@ describe('ArticleMedia', () => {
   });
 
   it('should render nothing when neither video nor image is provided', () => {
-    const { container } = render(
-      <ArticleMedia title="Test Article" />
-    );
+    const { container } = render(<ArticleMedia title="Test Article" />);
 
     expect(container.firstChild).toBeNull();
   });

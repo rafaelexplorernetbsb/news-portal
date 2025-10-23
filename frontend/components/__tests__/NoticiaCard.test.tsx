@@ -77,7 +77,11 @@ describe('NoticiaCard', () => {
   });
 
   it('displays fallback when image is not available', () => {
-    const noticiaWithoutImage = { ...mockNoticia, imagem: undefined, url_imagem: undefined };
+    const noticiaWithoutImage = {
+      ...mockNoticia,
+      imagem: undefined,
+      url_imagem: undefined,
+    };
     render(<NoticiaCard noticia={noticiaWithoutImage} />);
 
     const image = screen.getByRole('img');
@@ -85,7 +89,10 @@ describe('NoticiaCard', () => {
   });
 
   it('handles missing category gracefully', async () => {
-    const noticiaWithoutCategory = { ...mockNoticia, categoria: 'sem-categoria' };
+    const noticiaWithoutCategory = {
+      ...mockNoticia,
+      categoria: 'sem-categoria',
+    };
     render(<NoticiaCard noticia={noticiaWithoutCategory} />);
 
     // Verifica que a notícia ainda renderiza corretamente sem categoria
@@ -95,7 +102,10 @@ describe('NoticiaCard', () => {
   });
 
   it('handles missing author gracefully', async () => {
-    const noticiaWithoutAuthor = { ...mockNoticia, autor: { id: 0, nome: 'Autor Desconhecido' } };
+    const noticiaWithoutAuthor = {
+      ...mockNoticia,
+      autor: { id: 0, nome: 'Autor Desconhecido' },
+    };
     render(<NoticiaCard noticia={noticiaWithoutAuthor} />);
 
     // Verifica que a notícia ainda renderiza corretamente sem autor

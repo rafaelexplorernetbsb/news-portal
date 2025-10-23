@@ -18,7 +18,8 @@ import { usePathname } from 'next/navigation';
 export default function Header() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [projectSettings, setProjectSettings] = useState<DirectusSettings | null>(null);
+  const [projectSettings, setProjectSettings] =
+    useState<DirectusSettings | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const router = useRouter();
@@ -78,13 +79,18 @@ export default function Header() {
                 {getProjectName(projectSettings?.project_name || null)}
               </span>
               <span className="text-xs text-gray-500 uppercase tracking-wider">
-                {getProjectDescriptor(projectSettings?.project_descriptor || null)}
+                {getProjectDescriptor(
+                  projectSettings?.project_descriptor || null
+                )}
               </span>
             </div>
           </Link>
 
           {/* Campo de Busca */}
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-8">
+          <form
+            onSubmit={handleSearch}
+            className="hidden md:flex flex-1 max-w-md mx-8"
+          >
             <div className="relative w-full">
               <input
                 type="text"
@@ -112,13 +118,17 @@ export default function Header() {
         </div>
 
         {/* Navigation */}
-        <nav className={`py-4 ${isMobileMenuOpen ? 'block' : 'hidden md:block'}`}>
+        <nav
+          className={`py-4 ${isMobileMenuOpen ? 'block' : 'hidden md:block'}`}
+        >
           <ul className="flex flex-wrap gap-6 text-sm font-medium">
             <li>
               <Link
                 href="/"
                 className={`text-[#333333] hover:text-[#1c99da] transition-colors font-semibold ${
-                  pathname === '/' ? 'underline decoration-2 underline-offset-4' : ''
+                  pathname === '/'
+                    ? 'underline decoration-2 underline-offset-4'
+                    : ''
                 }`}
               >
                 Últimas notícias
@@ -132,7 +142,9 @@ export default function Header() {
                   <Link
                     href={`/categoria/${categoria.slug}`}
                     className={`text-[#333333] hover:text-[#1c99da] transition-colors ${
-                      pathname === `/categoria/${categoria.slug}` ? 'underline decoration-2 underline-offset-4' : ''
+                      pathname === `/categoria/${categoria.slug}`
+                        ? 'underline decoration-2 underline-offset-4'
+                        : ''
                     }`}
                   >
                     {categoria.nome}

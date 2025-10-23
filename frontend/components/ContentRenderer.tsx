@@ -6,7 +6,10 @@ interface ContentRendererProps {
   className?: string;
 }
 
-export default function ContentRenderer({ content, className = '' }: ContentRendererProps) {
+export default function ContentRenderer({
+  content,
+  className = '',
+}: ContentRendererProps) {
   const [isMarkdown, setIsMarkdown] = useState(false);
 
   useEffect(() => {
@@ -17,21 +20,21 @@ export default function ContentRenderer({ content, className = '' }: ContentRend
 
     // Detectar se o conteúdo é markdown ou HTML
     const markdownPatterns = [
-      /^#{1,6}\s+/m,                    // Títulos markdown (# ## ###)
-      /\*\*.*?\*\*/,                    // Negrito markdown (**texto**)
-      /\*[^*]+\*/,                      // Itálico markdown (*texto*)
-      /^\s*[-*+]\s+/m,                  // Listas não ordenadas markdown
-      /^\s*\d+\.\s+/m,                  // Listas ordenadas markdown
-      /^\s*>\s+/m,                      // Citações markdown
-      /\[.*?\]\(.*?\)/,                 // Links markdown [texto](url)
-      /```[\s\S]*?```/,                 // Blocos de código markdown
-      /^\s*\|.*\|.*\|/m,                // Tabelas markdown
-      /!\[.*?\]\(.*?\)/,                // Imagens markdown ![alt](url)
+      /^#{1,6}\s+/m, // Títulos markdown (# ## ###)
+      /\*\*.*?\*\*/, // Negrito markdown (**texto**)
+      /\*[^*]+\*/, // Itálico markdown (*texto*)
+      /^\s*[-*+]\s+/m, // Listas não ordenadas markdown
+      /^\s*\d+\.\s+/m, // Listas ordenadas markdown
+      /^\s*>\s+/m, // Citações markdown
+      /\[.*?\]\(.*?\)/, // Links markdown [texto](url)
+      /```[\s\S]*?```/, // Blocos de código markdown
+      /^\s*\|.*\|.*\|/m, // Tabelas markdown
+      /!\[.*?\]\(.*?\)/, // Imagens markdown ![alt](url)
     ];
 
     const htmlPatterns = [
-      /<[^>]+>/,                        // Qualquer tag HTML
-      /&[a-zA-Z]+;/,                    // Entidades HTML
+      /<[^>]+>/, // Qualquer tag HTML
+      /&[a-zA-Z]+;/, // Entidades HTML
     ];
 
     const markdownMatches = markdownPatterns.reduce((count, pattern) => {
@@ -47,7 +50,11 @@ export default function ContentRenderer({ content, className = '' }: ContentRend
   }, [content]);
 
   if (!content) {
-    return <div className={`text-gray-500 italic ${className}`}>Nenhum conteúdo disponível.</div>;
+    return (
+      <div className={`text-gray-500 italic ${className}`}>
+        Nenhum conteúdo disponível.
+      </div>
+    );
   }
 
   if (isMarkdown) {

@@ -1,4 +1,10 @@
-import { directus, readItems, readItem, Categoria, Noticia } from './directus-sdk';
+import {
+  directus,
+  readItems,
+  readItem,
+  Categoria,
+  Noticia,
+} from './directus-sdk';
 
 // Buscar todas as categorias
 export async function getCategorias(): Promise<Categoria[]> {
@@ -6,7 +12,7 @@ export async function getCategorias(): Promise<Categoria[]> {
     const categorias = await directus.request(
       readItems('categorias', {
         fields: ['*'],
-        sort: ['nome']
+        sort: ['nome'],
       })
     );
 
@@ -17,17 +23,19 @@ export async function getCategorias(): Promise<Categoria[]> {
 }
 
 // Buscar categoria por slug
-export async function getCategoriaPorSlug(slug: string): Promise<Categoria | null> {
+export async function getCategoriaPorSlug(
+  slug: string
+): Promise<Categoria | null> {
   try {
     const categorias = await directus.request(
       readItems('categorias', {
         fields: ['*'],
         filter: {
           slug: {
-            _eq: slug
-          }
+            _eq: slug,
+          },
         },
-        limit: 1
+        limit: 1,
       })
     );
 
@@ -40,9 +48,7 @@ export async function getCategoriaPorSlug(slug: string): Promise<Categoria | nul
 // Buscar categoria por ID
 export async function getCategoriaPorId(id: number): Promise<Categoria | null> {
   try {
-    const categoria = await directus.request(
-      readItem('categorias', id)
-    );
+    const categoria = await directus.request(readItem('categorias', id));
 
     return categoria || null;
   } catch (error) {
@@ -51,12 +57,14 @@ export async function getCategoriaPorId(id: number): Promise<Categoria | null> {
 }
 
 // Buscar categorias com contagem de notícias
-export async function getCategoriasComContagem(): Promise<Array<Categoria & { contagem: number }>> {
+export async function getCategoriasComContagem(): Promise<
+  Array<Categoria & { contagem: number }>
+> {
   try {
     const categorias = await directus.request(
       readItems('categorias', {
         fields: ['*'],
-        sort: ['nome']
+        sort: ['nome'],
       })
     );
 
@@ -69,20 +77,20 @@ export async function getCategoriasComContagem(): Promise<Array<Categoria & { co
               fields: ['id'],
               filter: {
                 categoria: {
-                  _eq: categoria.nome
-                }
-              }
+                  _eq: categoria.nome,
+                },
+              },
             })
           );
 
           return {
             ...categoria,
-            contagem: noticias.length
+            contagem: noticias.length,
           };
         } catch (error) {
           return {
             ...categoria,
-            contagem: 0
+            contagem: 0,
           };
         }
       })
@@ -95,7 +103,9 @@ export async function getCategoriasComContagem(): Promise<Array<Categoria & { co
 }
 
 // Buscar categorias mais populares (com mais notícias)
-export async function getCategoriasPopulares(limit: number = 5): Promise<Array<Categoria & { contagem: number }>> {
+export async function getCategoriasPopulares(
+  limit: number = 5
+): Promise<Array<Categoria & { contagem: number }>> {
   try {
     const categoriasComContagem = await getCategoriasComContagem();
 
@@ -129,12 +139,12 @@ export async function getNoticiasPorCategoriaPaginated(
         fields: ['*'],
         filter: {
           categoria: {
-            _eq: categoria
-          }
+            _eq: categoria,
+          },
         },
         limit,
         offset,
-        sort: ['-data_publicacao']
+        sort: ['-data_publicacao'],
       })
     );
 
@@ -144,14 +154,16 @@ export async function getNoticiasPorCategoriaPaginated(
         fields: ['id'],
         filter: {
           categoria: {
-            _eq: categoria
-          }
-        }
+            _eq: categoria,
+          },
+        },
       })
     );
 
     // Buscar dados da categoria
-    const categoriaData = await getCategoriaPorSlug(categoria.toLowerCase().replace(/\s+/g, '-'));
+    const categoriaData = await getCategoriaPorSlug(
+      categoria.toLowerCase().replace(/\s+/g, '-')
+    );
 
     const total = totalNoticias.length;
     const totalPages = Math.ceil(total / limit);
@@ -161,7 +173,7 @@ export async function getNoticiasPorCategoriaPaginated(
       total,
       page,
       totalPages,
-      categoria: categoriaData
+      categoria: categoriaData,
     };
   } catch (error) {
     return {
@@ -169,8 +181,7 @@ export async function getNoticiasPorCategoriaPaginated(
       total: 0,
       page,
       totalPages: 0,
-      categoria: null
+      categoria: null,
     };
   }
 }
-

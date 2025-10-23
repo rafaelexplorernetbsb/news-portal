@@ -13,16 +13,16 @@ export function Skeleton({
   width,
   height,
   rounded = 'md',
-  animate = true
+  animate = true,
 }: SkeletonProps) {
   const roundedClasses = {
-    'none': 'rounded-none',
-    'sm': 'rounded-sm',
-    'md': 'rounded-md',
-    'lg': 'rounded-lg',
-    'xl': 'rounded-xl',
+    none: 'rounded-none',
+    sm: 'rounded-sm',
+    md: 'rounded-md',
+    lg: 'rounded-lg',
+    xl: 'rounded-xl',
     '2xl': 'rounded-2xl',
-    'full': 'rounded-full',
+    full: 'rounded-full',
   };
 
   return (
@@ -40,7 +40,7 @@ export function Skeleton({
 export function SkeletonText({
   lines = 1,
   className = '',
-  lastLineWidth = '75%'
+  lastLineWidth = '75%',
 }: {
   lines?: number;
   className?: string;
@@ -62,22 +62,19 @@ export function SkeletonText({
 
 export function SkeletonImage({
   className = '',
-  aspectRatio = 'aspect-video'
+  aspectRatio = 'aspect-video',
 }: {
   className?: string;
   aspectRatio?: string;
 }) {
   return (
-    <Skeleton
-      className={`w-full ${aspectRatio} ${className}`}
-      rounded="lg"
-    />
+    <Skeleton className={`w-full ${aspectRatio} ${className}`} rounded="lg" />
   );
 }
 
 export function SkeletonAvatar({
   size = 'md',
-  className = ''
+  className = '',
 }: {
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
@@ -90,16 +87,13 @@ export function SkeletonAvatar({
   };
 
   return (
-    <Skeleton
-      className={`${sizeClasses[size]} ${className}`}
-      rounded="full"
-    />
+    <Skeleton className={`${sizeClasses[size]} ${className}`} rounded="full" />
   );
 }
 
 export function SkeletonButton({
   className = '',
-  size = 'md'
+  size = 'md',
 }: {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
@@ -111,9 +105,6 @@ export function SkeletonButton({
   };
 
   return (
-    <Skeleton
-      className={`${sizeClasses[size]} ${className}`}
-      rounded="md"
-    />
+    <Skeleton className={`${sizeClasses[size]} ${className}`} rounded="md" />
   );
 }

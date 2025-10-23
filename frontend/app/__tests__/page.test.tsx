@@ -42,12 +42,20 @@ const mockNoticias = [
 
 describe('Home Page Integration Tests', () => {
   beforeEach(() => {
-    (directus.getNoticiasDestaque as jest.Mock).mockResolvedValue([mockNoticias[0]]);
+    (directus.getNoticiasDestaque as jest.Mock).mockResolvedValue([
+      mockNoticias[0],
+    ]);
     (directus.getUltimasNoticias as jest.Mock).mockResolvedValue(mockNoticias);
-    (directus.getNoticiasPorCategoriaEspecifica as jest.Mock).mockResolvedValue([mockNoticias[0]]);
-    (directus.getImageUrl as jest.Mock).mockReturnValue('https://example.com/image.jpg');
+    (directus.getNoticiasPorCategoriaEspecifica as jest.Mock).mockResolvedValue(
+      [mockNoticias[0]]
+    );
+    (directus.getImageUrl as jest.Mock).mockReturnValue(
+      'https://example.com/image.jpg'
+    );
     (directus.formatarData as jest.Mock).mockReturnValue('01/01/2024');
-    (directus.capitalizarCategoria as jest.Mock).mockImplementation((cat) => cat);
+    (directus.capitalizarCategoria as jest.Mock).mockImplementation(
+      (cat) => cat
+    );
   });
 
   afterEach(() => {
@@ -88,8 +96,12 @@ describe('Home Page Integration Tests', () => {
   });
 
   it('handles API errors gracefully', async () => {
-    (directus.getNoticiasDestaque as jest.Mock).mockRejectedValue(new Error('API Error'));
-    (directus.getUltimasNoticias as jest.Mock).mockRejectedValue(new Error('API Error'));
+    (directus.getNoticiasDestaque as jest.Mock).mockRejectedValue(
+      new Error('API Error')
+    );
+    (directus.getUltimasNoticias as jest.Mock).mockRejectedValue(
+      new Error('API Error')
+    );
 
     render(<Home />);
 

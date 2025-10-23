@@ -6,11 +6,15 @@ const ADMIN_PASSWORD = process.env.DIRECTUS_ADMIN_PASSWORD;
 const DIRECTUS_URL = process.env.DIRECTUS_URL;
 
 if (!ADMIN_EMAIL) {
-  throw new Error('DIRECTUS_ADMIN_EMAIL não está definida nas variáveis de ambiente');
+  throw new Error(
+    'DIRECTUS_ADMIN_EMAIL não está definida nas variáveis de ambiente'
+  );
 }
 
 if (!ADMIN_PASSWORD) {
-  throw new Error('DIRECTUS_ADMIN_PASSWORD não está definida nas variáveis de ambiente');
+  throw new Error(
+    'DIRECTUS_ADMIN_PASSWORD não está definida nas variáveis de ambiente'
+  );
 }
 
 if (!DIRECTUS_URL) {

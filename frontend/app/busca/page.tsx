@@ -44,7 +44,10 @@ function BuscaContent() {
         </h1>
         {query && (
           <p className="text-gray-600">
-            Buscando por: <span className="font-semibold text-gray-900">&quot;{query}&quot;</span>
+            Buscando por:{' '}
+            <span className="font-semibold text-gray-900">
+              &quot;{query}&quot;
+            </span>
           </p>
         )}
       </div>
@@ -61,7 +64,10 @@ function BuscaContent() {
       ) : resultados.length > 0 ? (
         <div>
           <p className="text-gray-600 mb-6">
-            {resultados.length} {resultados.length === 1 ? 'resultado encontrado' : 'resultados encontrados'}
+            {resultados.length}{' '}
+            {resultados.length === 1
+              ? 'resultado encontrado'
+              : 'resultados encontrados'}
           </p>
           <div className="space-y-4">
             {resultados.map((noticia, index) => (
@@ -86,14 +92,16 @@ function BuscaContent() {
 
 export default function BuscaPage() {
   return (
-    <Suspense fallback={
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center py-20">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-4 border-[#1c99da]"></div>
-          <p className="mt-4 text-gray-600">Carregando...</p>
+    <Suspense
+      fallback={
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center py-20">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-4 border-[#1c99da]"></div>
+            <p className="mt-4 text-gray-600">Carregando...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <BuscaContent />
     </Suspense>
   );

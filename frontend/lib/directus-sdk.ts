@@ -1,11 +1,19 @@
-import { createDirectus, rest, readItems, readItem, readSingleton } from '@directus/sdk';
+import {
+  createDirectus,
+  rest,
+  readItems,
+  readItem,
+  readSingleton,
+} from '@directus/sdk';
 
 // Configuração do Directus
 const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL;
 const API_TOKEN = process.env.NEXT_PUBLIC_API_TOKEN || '';
 
 if (!DIRECTUS_URL) {
-  throw new Error('NEXT_PUBLIC_DIRECTUS_URL não está definida nas variáveis de ambiente');
+  throw new Error(
+    'NEXT_PUBLIC_DIRECTUS_URL não está definida nas variáveis de ambiente'
+  );
 }
 
 // Tipos TypeScript para o SDK
@@ -15,21 +23,25 @@ export interface Noticia {
   slug: string;
   resumo: string;
   conteudo: string;
-  imagem?: {
-    id: string;
-    filename_download: string;
-  } | string;
+  imagem?:
+    | {
+        id: string;
+        filename_download: string;
+      }
+    | string;
   url_imagem?: string;
   video_url?: string;
   embed_html?: string;
   audio_url?: string;
   data_publicacao: string;
   destaque: boolean;
-  categoria: {
-    id: number;
-    nome: string;
-    slug: string;
-  } | string;
+  categoria:
+    | {
+        id: number;
+        nome: string;
+        slug: string;
+      }
+    | string;
   autor: {
     id: number;
     nome: string;
@@ -66,17 +78,18 @@ export interface DirectusSchema {
 }
 
 // Criar instância do Directus com configuração otimizada
-export const directus = createDirectus<DirectusSchema>(DIRECTUS_URL)
-  .with(rest({
+export const directus = createDirectus<DirectusSchema>(DIRECTUS_URL).with(
+  rest({
     onRequest: (options) => ({
       ...options,
       cache: 'no-store', // Evita cache para dados sempre atualizados
       headers: {
         ...options.headers,
-        'Authorization': `Bearer ${API_TOKEN}`,
+        Authorization: `Bearer ${API_TOKEN}`,
       },
     }),
-  }));
+  })
+);
 
 // Funções auxiliares para URLs de imagem
 export function getImageUrl(imagem: any, urlImagem?: string): string {
@@ -110,7 +123,10 @@ export function formatarData(data: string): string {
 export function capitalizarCategoria(categoria: string): string {
   return categoria
     .split(' ')
-    .map(palavra => palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase())
+    .map(
+      (palavra) =>
+        palavra.charAt(0).toUpperCase() + palavra.slice(1).toLowerCase()
+    )
     .join(' ');
 }
 
@@ -130,4 +146,3 @@ export function getAutorNome(autor: any): string {
 }
 
 export { readItems, readItem, readSingleton };
-

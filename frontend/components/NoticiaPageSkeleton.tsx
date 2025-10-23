@@ -1,6 +1,11 @@
 'use client';
 
-import { Skeleton, SkeletonImage, SkeletonText, SkeletonAvatar } from './Skeleton';
+import {
+  Skeleton,
+  SkeletonImage,
+  SkeletonText,
+  SkeletonAvatar,
+} from './Skeleton';
 
 export function NoticiaPageSkeleton() {
   return (
@@ -11,18 +16,18 @@ export function NoticiaPageSkeleton() {
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             {/* Imagem principal skeleton */}
             <SkeletonImage className="w-full h-64 lg:h-80" />
-            
+
             <div className="p-6 lg:p-8">
               {/* Categoria skeleton */}
               <div className="mb-4">
                 <Skeleton width="100px" height="1.5rem" className="h-6" />
               </div>
-              
+
               {/* Título skeleton */}
               <div className="mb-6">
                 <SkeletonText lines={3} className="space-y-3" />
               </div>
-              
+
               {/* Meta informações skeleton */}
               <div className="flex items-center justify-between mb-6 pb-6 border-b border-gray-200">
                 <div className="flex items-center space-x-3">
@@ -34,7 +39,7 @@ export function NoticiaPageSkeleton() {
                 </div>
                 <Skeleton width="100px" height="0.75rem" />
               </div>
-              
+
               {/* Conteúdo skeleton */}
               <div className="prose max-w-none">
                 <SkeletonText lines={8} className="space-y-3 mb-6" />
@@ -44,7 +49,7 @@ export function NoticiaPageSkeleton() {
             </div>
           </div>
         </article>
-        
+
         {/* Sidebar */}
         <aside className="space-y-6">
           {/* Notícias relacionadas */}
@@ -52,7 +57,7 @@ export function NoticiaPageSkeleton() {
             <div className="mb-4">
               <Skeleton width="150px" height="1.25rem" className="h-5" />
             </div>
-            
+
             <div className="space-y-4">
               {Array.from({ length: 4 }).map((_, index) => (
                 <div key={index} className="flex space-x-3">
@@ -65,13 +70,13 @@ export function NoticiaPageSkeleton() {
               ))}
             </div>
           </div>
-          
+
           {/* Mais notícias */}
           <div className="bg-white rounded-xl shadow-lg p-6">
             <div className="mb-4">
               <Skeleton width="120px" height="1.25rem" className="h-5" />
             </div>
-            
+
             <div className="space-y-3">
               {Array.from({ length: 5 }).map((_, index) => (
                 <div key={index} className="space-y-2">

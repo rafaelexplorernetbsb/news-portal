@@ -34,17 +34,17 @@ export function canEmbed(url: string): boolean {
   try {
     const urlObj = new URL(url);
     const hostname = urlObj.hostname.toLowerCase();
-    
+
     // Verificar se está na lista de domínios bloqueados
-    if (BLOCKED_DOMAINS.some(domain => hostname.includes(domain))) {
+    if (BLOCKED_DOMAINS.some((domain) => hostname.includes(domain))) {
       return false;
     }
-    
+
     // Verificar se está na lista de domínios permitidos
-    if (ALLOWED_DOMAINS.some(domain => hostname.includes(domain))) {
+    if (ALLOWED_DOMAINS.some((domain) => hostname.includes(domain))) {
       return true;
     }
-    
+
     // Por padrão, assumir que pode ser exibido (mas pode falhar)
     return true;
   } catch {
@@ -71,9 +71,14 @@ export function getDomain(url: string): string {
  * @returns true se é uma URL de vídeo
  */
 export function isVideoUrl(url: string): boolean {
-  const videoDomains = ['youtube.com', 'youtu.be', 'vimeo.com', 'globoplay.globo.com'];
+  const videoDomains = [
+    'youtube.com',
+    'youtu.be',
+    'vimeo.com',
+    'globoplay.globo.com',
+  ];
   const domain = getDomain(url);
-  return videoDomains.some(videoDomain => domain.includes(videoDomain));
+  return videoDomains.some((videoDomain) => domain.includes(videoDomain));
 }
 
 /**
@@ -84,6 +89,5 @@ export function isVideoUrl(url: string): boolean {
 export function isAudioUrl(url: string): boolean {
   const audioDomains = ['soundcloud.com', 'spotify.com', 'open.spotify.com'];
   const domain = getDomain(url);
-  return audioDomains.some(audioDomain => domain.includes(audioDomain));
+  return audioDomains.some((audioDomain) => domain.includes(audioDomain));
 }
-

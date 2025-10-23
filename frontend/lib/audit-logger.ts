@@ -16,25 +16,40 @@ interface AuditLogEntry {
 }
 
 class AuditLogger {
-  private log(action: string, level: AuditLogEntry['level'], req: NextRequest, res: NextResponse, metadata?: Record<string, any>) {
+  private log(
+    action: string,
+    level: AuditLogEntry['level'],
+    req: NextRequest,
+    res: NextResponse,
+    metadata?: Record<string, any>
+  ) {
     const auditLog: AuditLogEntry = {
       timestamp: new Date().toISOString(),
       level,
       action,
       userId: req.headers.get('x-user-id') || undefined,
-      ip: req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown',
+      ip:
+        req.headers.get('x-forwarded-for') ||
+        req.headers.get('x-real-ip') ||
+        'unknown',
       userAgent: req.headers.get('user-agent') || 'unknown',
       resource: req.url,
       method: req.method,
       statusCode: res.status,
-      duration: Date.now() - parseInt(req.headers.get('x-request-start') || '0'),
+      duration:
+        Date.now() - parseInt(req.headers.get('x-request-start') || '0'),
       metadata,
     };
 
     logger.info(`AUDIT: ${action}`, auditLog);
   }
 
-  logLogin(req: NextRequest, res: NextResponse, success: boolean, userId?: string) {
+  logLogin(
+    req: NextRequest,
+    res: NextResponse,
+    success: boolean,
+    userId?: string
+  ) {
     this.log('LOGIN_ATTEMPT', success ? 'info' : 'warn', req, res, {
       success,
       userId,
@@ -46,7 +61,13 @@ class AuditLogger {
     this.log('LOGOUT', 'info', req, res, { userId });
   }
 
-  logDataAccess(req: NextRequest, res: NextResponse, resource: string, action: string, userId?: string) {
+  logDataAccess(
+    req: NextRequest,
+    res: NextResponse,
+    resource: string,
+    action: string,
+    userId?: string
+  ) {
     this.log('DATA_ACCESS', 'info', req, res, {
       resource,
       action,
@@ -54,7 +75,13 @@ class AuditLogger {
     });
   }
 
-  logDataModification(req: NextRequest, res: NextResponse, resource: string, action: string, userId?: string) {
+  logDataModification(
+    req: NextRequest,
+    res: NextResponse,
+    resource: string,
+    action: string,
+    userId?: string
+  ) {
     this.log('DATA_MODIFICATION', 'info', req, res, {
       resource,
       action,
@@ -62,8 +89,15 @@ class AuditLogger {
     });
   }
 
-  logSecurityEvent(req: NextRequest, res: NextResponse, event: string, severity: 'low' | 'medium' | 'high', metadata?: Record<string, any>) {
-    const level = severity === 'high' ? 'error' : severity === 'medium' ? 'warn' : 'info';
+  logSecurityEvent(
+    req: NextRequest,
+    res: NextResponse,
+    event: string,
+    severity: 'low' | 'medium' | 'high',
+    metadata?: Record<string, any>
+  ) {
+    const level =
+      severity === 'high' ? 'error' : severity === 'medium' ? 'warn' : 'info';
     this.log('SECURITY_EVENT', level, req, res, {
       event,
       severity,
@@ -71,7 +105,13 @@ class AuditLogger {
     });
   }
 
-  logAdminAction(req: NextRequest, res: NextResponse, action: string, userId: string, metadata?: Record<string, any>) {
+  logAdminAction(
+    req: NextRequest,
+    res: NextResponse,
+    action: string,
+    userId: string,
+    metadata?: Record<string, any>
+  ) {
     this.log('ADMIN_ACTION', 'info', req, res, {
       action,
       userId,
@@ -79,7 +119,12 @@ class AuditLogger {
     });
   }
 
-  logApiAccess(req: NextRequest, res: NextResponse, endpoint: string, userId?: string) {
+  logApiAccess(
+    req: NextRequest,
+    res: NextResponse,
+    endpoint: string,
+    userId?: string
+  ) {
     this.log('API_ACCESS', 'info', req, res, {
       endpoint,
       userId,
@@ -103,13 +148,35 @@ export function auditMiddleware(req: NextRequest, res: NextResponse) {
 
   // Log automático baseado na rota
   if (req.url.includes('/admin')) {
-    auditLogger.logAdminAction(req, res, 'ADMIN_ACCESS', req.headers.get('x-user-id') || 'unknown');
+    auditLogger.logAdminAction(
+      req,
+      res,
+      'ADMIN_ACCESS',
+      req.headers.get('x-user-id') || 'unknown'
+    );
   } else if (req.url.includes('/api')) {
-    auditLogger.logApiAccess(req, res, req.url, req.headers.get('x-user-id') || undefined);
+    auditLogger.logApiAccess(
+      req,
+      res,
+      req.url,
+      req.headers.get('x-user-id') || undefined
+    );
   } else if (req.method !== 'GET') {
-    auditLogger.logDataModification(req, res, req.url, req.method, req.headers.get('x-user-id') || undefined);
+    auditLogger.logDataModification(
+      req,
+      res,
+      req.url,
+      req.method,
+      req.headers.get('x-user-id') || undefined
+    );
   } else {
-    auditLogger.logDataAccess(req, res, req.url, req.method, req.headers.get('x-user-id') || undefined);
+    auditLogger.logDataAccess(
+      req,
+      res,
+      req.url,
+      req.method,
+      req.headers.get('x-user-id') || undefined
+    );
   }
 
   return res;

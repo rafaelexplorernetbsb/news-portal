@@ -11,17 +11,18 @@ export function middleware(request: NextRequest) {
     'directus_token',
     'directus_session',
     'directus_refresh',
-    'directus_access'
+    'directus_access',
   ];
 
   // Verificar se é uma requisição para o frontend (não admin)
-  const isFrontendRequest = !request.nextUrl.pathname.startsWith('/admin') &&
-                           !request.nextUrl.pathname.startsWith('/_next/static') &&
-                           !request.nextUrl.pathname.startsWith('/api/auth/login');
+  const isFrontendRequest =
+    !request.nextUrl.pathname.startsWith('/admin') &&
+    !request.nextUrl.pathname.startsWith('/_next/static') &&
+    !request.nextUrl.pathname.startsWith('/api/auth/login');
 
   if (isFrontendRequest) {
     // Remover cookies do Directus das requisições do frontend
-    directusCookies.forEach(cookieName => {
+    directusCookies.forEach((cookieName) => {
       // Remover cookie da requisição
       request.cookies.delete(cookieName);
 
@@ -35,7 +36,7 @@ export function middleware(request: NextRequest) {
         domain: 'localhost',
         secure: false,
         httpOnly: true,
-        sameSite: 'lax'
+        sameSite: 'lax',
       });
     });
   }

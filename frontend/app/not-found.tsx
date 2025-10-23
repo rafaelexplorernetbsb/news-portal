@@ -12,9 +12,7 @@ export default function NotFound() {
       <div className="max-w-md w-full text-center">
         {/* Ícone de erro 404 */}
         <div className="mb-8">
-          <div className="text-8xl font-bold text-gray-300 mb-4">
-            404
-          </div>
+          <div className="text-8xl font-bold text-gray-300 mb-4">404</div>
           <div className="w-16 h-1 bg-[#1c99da] mx-auto rounded-full"></div>
         </div>
 
@@ -25,8 +23,8 @@ export default function NotFound() {
 
         {/* Descrição */}
         <p className="text-gray-600 mb-8 leading-relaxed">
-          A página que você está procurando não existe ou foi movida.
-          Que tal explorar nossas últimas notícias?
+          A página que você está procurando não existe ou foi movida. Que tal
+          explorar nossas últimas notícias?
         </p>
 
         {/* Botões de ação */}

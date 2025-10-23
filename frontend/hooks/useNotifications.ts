@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 
 export function useNotifications() {
-  const [permission, setPermission] = useState<NotificationPermission>('default');
+  const [permission, setPermission] =
+    useState<NotificationPermission>('default');
   const [isSupported, setIsSupported] = useState(false);
 
   useEffect(() => {
@@ -21,17 +22,17 @@ export function useNotifications() {
 
     try {
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.ready.then(registration => {
+        navigator.serviceWorker.ready.then((registration) => {
           registration.showNotification(title, {
             icon: '/favicon.ico',
             badge: '/favicon.ico',
-            ...options
+            ...options,
           });
         });
       } else {
         new Notification(title, {
           icon: '/favicon.ico',
-          ...options
+          ...options,
         });
       }
     } catch (error) {
@@ -57,6 +58,6 @@ export function useNotifications() {
     permission,
     isSupported,
     sendNotification,
-    requestPermission
+    requestPermission,
   };
 }

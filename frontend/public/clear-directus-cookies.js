@@ -1,5 +1,5 @@
 // Script para limpar cookies do Directus antes de qualquer coisa carregar
-(function() {
+(function () {
   'use strict';
 
   const directusCookies = [
@@ -9,12 +9,12 @@
     'directus_token',
     'directus_session',
     'directus_refresh',
-    'directus_access'
+    'directus_access',
   ];
 
   // Função para limpar cookies
   function clearCookies() {
-    directusCookies.forEach(cookieName => {
+    directusCookies.forEach((cookieName) => {
       // Remover cookie do domínio atual
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
 

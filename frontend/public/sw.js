@@ -1,4 +1,4 @@
-self.addEventListener('push', function(event) {
+self.addEventListener('push', function (event) {
   if (event.data) {
     const data = event.data.json();
 
@@ -11,31 +11,32 @@ self.addEventListener('push', function(event) {
       actions: [
         {
           action: 'view',
-          title: 'Ver notícia'
+          title: 'Ver notícia',
         },
         {
           action: 'dismiss',
-          title: 'Dispensar'
-        }
-      ]
+          title: 'Dispensar',
+        },
+      ],
     };
 
     event.waitUntil(
-      self.registration.showNotification(data.title || 'CrônicaDigital', options)
+      self.registration.showNotification(
+        data.title || 'CrônicaDigital',
+        options
+      )
     );
   }
 });
 
-self.addEventListener('notificationclick', function(event) {
+self.addEventListener('notificationclick', function (event) {
   event.notification.close();
 
   if (event.action === 'view' && event.notification.data.url) {
-    event.waitUntil(
-      clients.openWindow(event.notification.data.url)
-    );
+    event.waitUntil(clients.openWindow(event.notification.data.url));
   }
 });
 
-self.addEventListener('notificationclose', function(event) {
+self.addEventListener('notificationclose', function (event) {
   // Silencioso em produção
 });

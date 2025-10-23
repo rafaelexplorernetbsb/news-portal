@@ -11,7 +11,8 @@ import {
 import { useEffect, useState } from 'react';
 
 export default function Footer() {
-  const [projectSettings, setProjectSettings] = useState<DirectusSettings | null>(null);
+  const [projectSettings, setProjectSettings] =
+    useState<DirectusSettings | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -49,15 +50,21 @@ export default function Footer() {
             {getProjectName(projectSettings?.project_name || null)}
           </h3>
           <p className="text-gray-300 leading-relaxed max-w-2xl mx-auto">
-            Informação que conecta você ao mundo. Seu portal de notícias confiável, trazendo as informações mais
-            relevantes e atualizadas do Brasil e do mundo.
+            Informação que conecta você ao mundo. Seu portal de notícias
+            confiável, trazendo as informações mais relevantes e atualizadas do
+            Brasil e do mundo.
           </p>
         </div>
 
         {/* Bottom Bar */}
         <div className="border-t border-gray-600 pt-6 text-center text-gray-400">
-          <p>&copy; 2025 {getProjectName(projectSettings?.project_name || null)}. Todos os direitos reservados.</p>
-          <p className="text-xs mt-2 uppercase tracking-wider">INFORMAÇÃO QUE CONECTA VOCÊ AO MUNDO</p>
+          <p>
+            &copy; 2025 {getProjectName(projectSettings?.project_name || null)}.
+            Todos os direitos reservados.
+          </p>
+          <p className="text-xs mt-2 uppercase tracking-wider">
+            INFORMAÇÃO QUE CONECTA VOCÊ AO MUNDO
+          </p>
         </div>
       </div>
     </footer>

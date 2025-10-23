@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   output: 'standalone',
@@ -64,7 +64,9 @@ const nextConfig: NextConfig = {
         new BundleAnalyzerPlugin({
           analyzerMode: 'static',
           openAnalyzer: false,
-          reportFilename: isServer ? '../analyze/server.html' : './analyze/client.html',
+          reportFilename: isServer
+            ? '../analyze/server.html'
+            : './analyze/client.html',
         })
       );
     }
@@ -126,7 +128,8 @@ const nextConfig: NextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "img-src 'self' data: blob: https: http:; frame-src 'self' https:;",
+            value:
+              "img-src 'self' data: blob: https: http:; frame-src 'self' https:;",
           },
         ],
       },

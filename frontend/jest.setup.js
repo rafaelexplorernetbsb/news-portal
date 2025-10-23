@@ -48,8 +48,12 @@ jest.mock('@/lib/directus', () => ({
   getCategorias: jest.fn().mockResolvedValue([]),
   getNoticiaBySlug: jest.fn().mockResolvedValue(null),
   getNoticiasByCategoria: jest.fn().mockResolvedValue([]),
-  getProjectName: jest.fn().mockImplementation((name) => name || 'Portal de Notícias'),
-  getProjectDescriptor: jest.fn().mockImplementation((desc) => desc || 'Sua fonte de notícias'),
+  getProjectName: jest
+    .fn()
+    .mockImplementation((name) => name || 'Portal de Notícias'),
+  getProjectDescriptor: jest
+    .fn()
+    .mockImplementation((desc) => desc || 'Sua fonte de notícias'),
   getProjectSettings: jest.fn().mockResolvedValue({
     project_name: 'Portal de Notícias',
     project_descriptor: 'Sua fonte de notícias',
@@ -74,7 +78,7 @@ global.ResizeObserver = jest.fn().mockImplementation(() => ({
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: jest.fn().mockImplementation(query => ({
+  value: jest.fn().mockImplementation((query) => ({
     matches: false,
     media: query,
     onchange: null,

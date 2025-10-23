@@ -11,12 +11,18 @@ describe('Home Page E2E Tests', () => {
 
   it('should display featured news section', () => {
     cy.get('[data-testid="featured-news"]').should('be.visible');
-    cy.get('[data-testid="featured-news"] .noticia-card').should('have.length.greaterThan', 0);
+    cy.get('[data-testid="featured-news"] .noticia-card').should(
+      'have.length.greaterThan',
+      0
+    );
   });
 
   it('should display latest news section', () => {
     cy.get('[data-testid="latest-news"]').should('be.visible');
-    cy.get('[data-testid="latest-news"] .noticia-card').should('have.length.greaterThan', 0);
+    cy.get('[data-testid="latest-news"] .noticia-card').should(
+      'have.length.greaterThan',
+      0
+    );
   });
 
   it('should display categories in navigation', () => {
@@ -46,7 +52,10 @@ describe('Home Page E2E Tests', () => {
 
   it('should show notification popup', () => {
     cy.get('[data-testid="notification-popup"]').should('be.visible');
-    cy.get('[data-testid="notification-popup"] button').should('contain', 'Permitir');
+    cy.get('[data-testid="notification-popup"] button').should(
+      'contain',
+      'Permitir'
+    );
   });
 
   it('should handle notification permission', () => {

@@ -1,6 +1,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Noticia, getImageUrl, formatarData, capitalizarCategoria, getCategoriaNome } from '@/lib/directus';
+import {
+  Noticia,
+  getImageUrl,
+  formatarData,
+  capitalizarCategoria,
+  getCategoriaNome,
+} from '@/lib/directus';
 import { useState, useEffect } from 'react';
 
 interface NoticiaCardProps {
@@ -35,13 +41,21 @@ export default function NoticiaCard({
         className="group flex gap-3 hover:bg-gray-50 p-3 rounded-lg transition-all border-b border-gray-100 last:border-b-0"
       >
         <div className="relative w-20 h-16 flex-shrink-0">
-          <Image src={imagemUrl} alt={noticia.titulo} fill className="object-cover rounded" unoptimized />
+          <Image
+            src={imagemUrl}
+            alt={noticia.titulo}
+            fill
+            className="object-cover rounded"
+            unoptimized
+          />
         </div>
         <div className="flex-1 min-w-0">
           <h4 className="font-semibold text-sm text-[#333333] group-hover:text-[#1c99da] transition-colors line-clamp-2 leading-snug">
             {noticia.titulo}
           </h4>
-          <p className="text-xs text-gray-500 mt-1 line-clamp-1">{formatarData(noticia.data_publicacao)}</p>
+          <p className="text-xs text-gray-500 mt-1 line-clamp-1">
+            {formatarData(noticia.data_publicacao)}
+          </p>
         </div>
       </Link>
     );
@@ -76,7 +90,9 @@ export default function NoticiaCard({
           <h3 className="text-lg font-bold text-[#333333] mb-2 group-hover:text-[#1c99da] transition-colors line-clamp-2 leading-snug">
             {noticia.titulo}
           </h3>
-          <p className="text-sm text-gray-600 mb-3 line-clamp-2 leading-relaxed">{noticia.resumo}</p>
+          <p className="text-sm text-gray-600 mb-3 line-clamp-2 leading-relaxed">
+            {noticia.resumo}
+          </p>
           <div className="flex items-center justify-between text-xs text-gray-500">
             <span>{formatarData(noticia.data_publicacao)}</span>
           </div>
@@ -105,7 +121,9 @@ export default function NoticiaCard({
           <h3 className="text-lg font-bold text-[#333333] mb-2 group-hover:text-[#1c99da] transition-colors line-clamp-2 leading-snug">
             {noticia.titulo}
           </h3>
-          <p className="text-sm text-gray-600 mb-3 line-clamp-2 leading-relaxed">{noticia.resumo}</p>
+          <p className="text-sm text-gray-600 mb-3 line-clamp-2 leading-relaxed">
+            {noticia.resumo}
+          </p>
           <div className="flex items-center justify-between text-xs text-gray-500">
             <span>{formatarData(noticia.data_publicacao)}</span>
           </div>
@@ -122,13 +140,21 @@ export default function NoticiaCard({
     >
       <div className="flex gap-4 p-4">
         <div className="relative w-24 h-16 flex-shrink-0">
-          <Image src={imagemUrl} alt={noticia.titulo} fill className="object-cover rounded" unoptimized />
+          <Image
+            src={imagemUrl}
+            alt={noticia.titulo}
+            fill
+            className="object-cover rounded"
+            unoptimized
+          />
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-[#333333] mb-1 group-hover:text-[#1c99da] transition-colors line-clamp-2 leading-snug text-sm">
             {noticia.titulo}
           </h3>
-          <p className="text-xs text-gray-500">{formatarData(noticia.data_publicacao)}</p>
+          <p className="text-xs text-gray-500">
+            {formatarData(noticia.data_publicacao)}
+          </p>
         </div>
       </div>
     </Link>

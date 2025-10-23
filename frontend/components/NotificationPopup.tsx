@@ -15,11 +15,15 @@ interface NotificationPopupProps {
   onDecline?: () => void;
 }
 
-export default function NotificationPopup({ onAccept, onDecline }: NotificationPopupProps) {
+export default function NotificationPopup({
+  onAccept,
+  onDecline,
+}: NotificationPopupProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [isRequesting, setIsRequesting] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-  const [projectSettings, setProjectSettings] = useState<DirectusSettings | null>(null);
+  const [projectSettings, setProjectSettings] =
+    useState<DirectusSettings | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
 
   useEffect(() => {
@@ -40,7 +44,9 @@ export default function NotificationPopup({ onAccept, onDecline }: NotificationP
   }, []);
 
   useEffect(() => {
-    const hasResponded = localStorage.getItem('notification-permission-responded');
+    const hasResponded = localStorage.getItem(
+      'notification-permission-responded'
+    );
     if (!hasResponded) {
       const timer = setTimeout(() => {
         setIsVisible(true);
@@ -65,11 +71,13 @@ export default function NotificationPopup({ onAccept, onDecline }: NotificationP
             const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
             if (!vapidPublicKey) {
-              throw new Error('NEXT_PUBLIC_VAPID_PUBLIC_KEY não está definida nas variáveis de ambiente');
+              throw new Error(
+                'NEXT_PUBLIC_VAPID_PUBLIC_KEY não está definida nas variáveis de ambiente'
+              );
             }
 
             function urlBase64ToUint8Array(base64String: string) {
-              const padding = '='.repeat((4 - base64String.length % 4) % 4);
+              const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
               const base64 = (base64String + padding)
                 .replace(/\-/g, '+')
                 .replace(/_/g, '/');
@@ -85,7 +93,7 @@ export default function NotificationPopup({ onAccept, onDecline }: NotificationP
 
             const subscription = await registration.pushManager.subscribe({
               userVisibleOnly: true,
-              applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+              applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
             });
 
             const response = await fetch('/api/push/subscribe', {
@@ -100,21 +108,29 @@ export default function NotificationPopup({ onAccept, onDecline }: NotificationP
               // Falha silenciosa
             }
 
-            registration.showNotification(getProjectName(projectSettings?.project_name || null) || 'Portal de Notícias', {
-              body: 'Você agora receberá notificações das principais notícias!',
-              icon: logoUrl || '/favicon.ico',
-              badge: logoUrl || '/favicon.ico',
-              tag: 'welcome-notification'
-            });
+            registration.showNotification(
+              getProjectName(projectSettings?.project_name || null) ||
+                'Portal de Notícias',
+              {
+                body: 'Você agora receberá notificações das principais notícias!',
+                icon: logoUrl || '/favicon.ico',
+                badge: logoUrl || '/favicon.ico',
+                tag: 'welcome-notification',
+              }
+            );
           } catch (error) {
             if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.ready.then(registration => {
-                registration.showNotification(getProjectName(projectSettings?.project_name || null) || 'Portal de Notícias', {
-                  body: 'Você agora receberá notificações das principais notícias!',
-                  icon: logoUrl || '/favicon.ico',
-                  badge: logoUrl || '/favicon.ico',
-                  tag: 'welcome-notification'
-                });
+              navigator.serviceWorker.ready.then((registration) => {
+                registration.showNotification(
+                  getProjectName(projectSettings?.project_name || null) ||
+                    'Portal de Notícias',
+                  {
+                    body: 'Você agora receberá notificações das principais notícias!',
+                    icon: logoUrl || '/favicon.ico',
+                    badge: logoUrl || '/favicon.ico',
+                    tag: 'welcome-notification',
+                  }
+                );
               });
             }
           }
@@ -143,12 +159,16 @@ export default function NotificationPopup({ onAccept, onDecline }: NotificationP
     setTimeout(() => setIsVisible(false), 300);
   };
 
-
   if (!isVisible) return null;
 
   return (
-    <div className={`fixed inset-0 z-50 flex items-start justify-center pt-4 transition-all duration-300 ${isClosing ? 'animate-out fade-out' : 'animate-in fade-in'}`} style={{ backgroundColor: 'rgba(0, 0, 0, 0.02)' }}>
-      <div className={`bg-white rounded-lg shadow-lg max-w-sm w-full mx-4 relative transition-all duration-500 ${isClosing ? 'animate-out slide-out-to-top-4' : 'animate-in slide-in-from-top-4'}`}>
+    <div
+      className={`fixed inset-0 z-50 flex items-start justify-center pt-4 transition-all duration-300 ${isClosing ? 'animate-out fade-out' : 'animate-in fade-in'}`}
+      style={{ backgroundColor: 'rgba(0, 0, 0, 0.02)' }}
+    >
+      <div
+        className={`bg-white rounded-lg shadow-lg max-w-sm w-full mx-4 relative transition-all duration-500 ${isClosing ? 'animate-out slide-out-to-top-4' : 'animate-in slide-in-from-top-4'}`}
+      >
         {/* Conteúdo do popup */}
         <div className="p-3 text-center">
           {/* Logo e Nome do Portal */}
@@ -180,7 +200,9 @@ export default function NotificationPopup({ onAccept, onDecline }: NotificationP
 
           {/* Texto principal */}
           <p className="text-sm text-gray-700 mb-3 leading-relaxed">
-            Você quer ficar por dentro das notícias mais importantes e receber <span className="text-[#db0202] font-semibold">notificações</span> em tempo real?
+            Você quer ficar por dentro das notícias mais importantes e receber{' '}
+            <span className="text-[#db0202] font-semibold">notificações</span>{' '}
+            em tempo real?
           </p>
 
           {/* Botões */}
@@ -203,7 +225,8 @@ export default function NotificationPopup({ onAccept, onDecline }: NotificationP
 
           {/* Texto explicativo */}
           <p className="text-xs text-gray-400 mt-2">
-            Você pode alterar essa configuração a qualquer momento nas configurações do seu navegador.
+            Você pode alterar essa configuração a qualquer momento nas
+            configurações do seu navegador.
           </p>
         </div>
       </div>

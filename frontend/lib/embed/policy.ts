@@ -14,7 +14,9 @@ export function isEmbeddable(url: string | undefined | null): boolean {
   try {
     const { hostname } = new URL(url);
     const host = hostname.toLowerCase();
-    return !NON_EMBED_HOSTS.some((blocked) => host === blocked || host.endsWith(`.${blocked}`));
+    return !NON_EMBED_HOSTS.some(
+      (blocked) => host === blocked || host.endsWith(`.${blocked}`)
+    );
   } catch {
     return false;
   }
@@ -28,5 +30,3 @@ export function getHost(url: string | undefined | null): string | null {
     return null;
   }
 }
-
-

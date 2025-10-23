@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Noticia, capitalizarCategoria, getNoticiasPorCategoria } from '@/lib/directus';
+import {
+  Noticia,
+  capitalizarCategoria,
+  getNoticiasPorCategoria,
+} from '@/lib/directus';
 import NoticiaCard from '@/components/NoticiaCard';
 import { CategoriaPageSkeleton } from '@/components/CategoriaPageSkeleton';
 
@@ -23,7 +27,10 @@ export default function CategoriaPage() {
   const [offset, setOffset] = useState(0);
   const [hasMore, setHasMore] = useState(true);
 
-  const loadNoticias = async (currentOffset: number, append: boolean = false) => {
+  const loadNoticias = async (
+    currentOffset: number,
+    append: boolean = false
+  ) => {
     try {
       if (append) {
         setLoadingMore(true);
@@ -32,14 +39,20 @@ export default function CategoriaPage() {
       }
 
       // Usar a função getNoticiasPorCategoria com offset
-      const result = await getNoticiasPorCategoria(slug, NOTICIAS_POR_PAGINA, currentOffset);
+      const result = await getNoticiasPorCategoria(
+        slug,
+        NOTICIAS_POR_PAGINA,
+        currentOffset
+      );
       const novasNoticias = result.noticias;
 
       if (append) {
         setNoticias((prev) => {
           // Criar um Map para evitar duplicatas baseado no ID
           const existingIds = new Set(prev.map((n) => n.id));
-          const uniqueNovasNoticias = novasNoticias.filter((n) => !existingIds.has(n.id));
+          const uniqueNovasNoticias = novasNoticias.filter(
+            (n) => !existingIds.has(n.id)
+          );
           return [...prev, ...uniqueNovasNoticias];
         });
       } else {
@@ -77,8 +90,12 @@ export default function CategoriaPage() {
       {/* Banner da Categoria */}
       <div className="bg-[#333333] text-white py-8">
         <div className="container mx-auto px-4">
-          <h1 className="text-3xl lg:text-4xl font-bold mb-2">{categoriaNome}</h1>
-          <p className="text-gray-300">Todas as notícias sobre {categoriaNome.toLowerCase()}</p>
+          <h1 className="text-3xl lg:text-4xl font-bold mb-2">
+            {categoriaNome}
+          </h1>
+          <p className="text-gray-300">
+            Todas as notícias sobre {categoriaNome.toLowerCase()}
+          </p>
         </div>
       </div>
 
@@ -86,7 +103,9 @@ export default function CategoriaPage() {
         {loading ? (
           <CategoriaPageSkeleton />
         ) : error ? (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl">{error}</div>
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl">
+            {error}
+          </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
             {/* Coluna Principal */}
@@ -96,7 +115,11 @@ export default function CategoriaPage() {
                   {/* Grid de Notícias */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {noticias.map((noticia, index) => (
-                      <NoticiaCard key={`${noticia.id}-${index}`} noticia={noticia} category />
+                      <NoticiaCard
+                        key={`${noticia.id}-${index}`}
+                        noticia={noticia}
+                        category
+                      />
                     ))}
                   </div>
 
@@ -123,8 +146,12 @@ export default function CategoriaPage() {
               ) : (
                 <div className="text-center py-20">
                   <div className="text-6xl mb-4">📰</div>
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Nenhuma notícia encontrada</h2>
-                  <p className="text-gray-600 mb-6">Não há notícias nesta categoria no momento.</p>
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                    Nenhuma notícia encontrada
+                  </h2>
+                  <p className="text-gray-600 mb-6">
+                    Não há notícias nesta categoria no momento.
+                  </p>
                 </div>
               )}
             </div>

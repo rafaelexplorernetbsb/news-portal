@@ -28,7 +28,11 @@ class Logger {
     this.service = service;
   }
 
-  private formatLog(level: LogEntry['level'], message: string, metadata?: Record<string, any>): LogEntry {
+  private formatLog(
+    level: LogEntry['level'],
+    message: string,
+    metadata?: Record<string, any>
+  ): LogEntry {
     return {
       timestamp: new Date().toISOString(),
       level,
@@ -51,11 +55,13 @@ class Logger {
   error(message: string, error?: Error, metadata?: Record<string, any>) {
     const log = this.formatLog('error', message, {
       ...metadata,
-      error: error ? {
-        name: error.name,
-        message: error.message,
-        stack: error.stack,
-      } : undefined,
+      error: error
+        ? {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+          }
+        : undefined,
     });
     console.error(JSON.stringify(log));
   }
@@ -90,7 +96,11 @@ class Logger {
   }
 
   // Database error logging
-  logDatabaseError(operation: string, error: Error, metadata?: Record<string, any>) {
+  logDatabaseError(
+    operation: string,
+    error: Error,
+    metadata?: Record<string, any>
+  ) {
     this.error(`Database Error: ${operation}`, error, {
       operation,
       ...metadata,
@@ -98,7 +108,11 @@ class Logger {
   }
 
   // Performance logging
-  logPerformance(operation: string, duration: number, metadata?: Record<string, any>) {
+  logPerformance(
+    operation: string,
+    duration: number,
+    metadata?: Record<string, any>
+  ) {
     this.info(`Performance: ${operation}`, {
       operation,
       duration,
@@ -113,7 +127,11 @@ export const apiLogger = new Logger('api');
 export const dbLogger = new Logger('database');
 
 // Middleware for request logging
-export function requestLogger(req: NextRequest, res: NextResponse, duration: number) {
+export function requestLogger(
+  req: NextRequest,
+  res: NextResponse,
+  duration: number
+) {
   logger.logRequest(req, res, duration);
 }
 

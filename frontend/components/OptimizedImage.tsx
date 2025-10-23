@@ -65,11 +65,7 @@ export default function OptimizedImage({
   if (fill) {
     return (
       <div className="relative" style={{ width, height }}>
-        <Image
-          {...imageProps}
-          fill
-          style={{ objectFit: 'cover' }}
-        />
+        <Image {...imageProps} fill style={{ objectFit: 'cover' }} />
         {isLoading && (
           <div className="absolute inset-0 bg-gray-200 animate-pulse" />
         )}
@@ -79,11 +75,7 @@ export default function OptimizedImage({
 
   return (
     <div className="relative">
-      <Image
-        {...imageProps}
-        width={width}
-        height={height}
-      />
+      <Image {...imageProps} width={width} height={height} />
       {isLoading && (
         <div
           className="absolute inset-0 bg-gray-200 animate-pulse"
