@@ -41,7 +41,7 @@ describe('ArticleMedia', () => {
     expect(screen.getByAltText('Test Image')).toBeInTheDocument();
 
     // NÃO deve existir iframe
-    expect(screen.queryByTitle('Vídeo')).not.toBeInTheDocument();
+    expect(screen.queryByTitle('Vídeo')).toBeNull();
   });
 
   it('should render video from videoUrl when embedHtml is not provided', () => {

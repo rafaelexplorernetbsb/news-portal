@@ -10,7 +10,7 @@ jest.mock('@/lib/directus', () => ({
 
 // Mock data
 const mockNoticia: Noticia = {
-  id: '1',
+  id: 1,
   titulo: 'Teste de Notícia',
   slug: 'teste-de-noticia',
   resumo: 'Este é um resumo de teste',
@@ -18,20 +18,18 @@ const mockNoticia: Noticia = {
   data_publicacao: '2024-01-01T10:00:00Z',
   destaque: true,
   categoria: {
-    id: '1',
+    id: 1,
     nome: 'Tecnologia',
     slug: 'tecnologia',
-    cor: '#1c99da',
   },
   autor: {
-    id: '1',
+    id: 1,
     nome: 'João Silva',
     email: 'joao@example.com',
   },
   imagem: {
     id: '1',
-    filename_disk: 'test-image.jpg',
-    title: 'Imagem de teste',
+    filename_download: 'test-image.jpg',
   },
   url_imagem: 'https://example.com/image.jpg',
 };
@@ -79,7 +77,7 @@ describe('NoticiaCard', () => {
   });
 
   it('displays fallback when image is not available', () => {
-    const noticiaWithoutImage = { ...mockNoticia, imagem: null, url_imagem: null };
+    const noticiaWithoutImage = { ...mockNoticia, imagem: undefined, url_imagem: undefined };
     render(<NoticiaCard noticia={noticiaWithoutImage} />);
 
     const image = screen.getByRole('img');
@@ -87,7 +85,7 @@ describe('NoticiaCard', () => {
   });
 
   it('handles missing category gracefully', async () => {
-    const noticiaWithoutCategory = { ...mockNoticia, categoria: null };
+    const noticiaWithoutCategory = { ...mockNoticia, categoria: 'sem-categoria' };
     render(<NoticiaCard noticia={noticiaWithoutCategory} />);
 
     // Verifica que a notícia ainda renderiza corretamente sem categoria
@@ -97,7 +95,7 @@ describe('NoticiaCard', () => {
   });
 
   it('handles missing author gracefully', async () => {
-    const noticiaWithoutAuthor = { ...mockNoticia, autor: null };
+    const noticiaWithoutAuthor = { ...mockNoticia, autor: { id: 0, nome: 'Autor Desconhecido' } };
     render(<NoticiaCard noticia={noticiaWithoutAuthor} />);
 
     // Verifica que a notícia ainda renderiza corretamente sem autor

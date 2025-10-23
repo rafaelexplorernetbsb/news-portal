@@ -15,7 +15,7 @@ jest.mock('@/lib/directus', () => ({
 
 const mockNoticias = [
   {
-    id: '1',
+    id: 1,
     titulo: 'Notícia de Destaque',
     slug: 'noticia-destaque',
     resumo: 'Resumo da notícia',
@@ -24,10 +24,10 @@ const mockNoticias = [
     destaque: true,
     categoria: { nome: 'Tecnologia', slug: 'tecnologia' },
     autor: { nome: 'João Silva' },
-    imagem: { filename_disk: 'test.jpg' },
+    imagem: { filename_download: 'test.jpg' },
   },
   {
-    id: '2',
+    id: 2,
     titulo: 'Última Notícia',
     slug: 'ultima-noticia',
     resumo: 'Resumo da última notícia',
@@ -36,7 +36,7 @@ const mockNoticias = [
     destaque: false,
     categoria: { nome: 'Política', slug: 'politica' },
     autor: { nome: 'Maria Santos' },
-    imagem: { filename_disk: 'test2.jpg' },
+    imagem: { filename_download: 'test2.jpg' },
   },
 ];
 
