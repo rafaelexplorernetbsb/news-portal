@@ -265,6 +265,11 @@ if [ ! -f "frontend/.env.local" ]; then
     cat > frontend/.env.local << EOF
 NEXT_PUBLIC_DIRECTUS_URL=http://localhost:8055
 NEXT_PUBLIC_API_TOKEN=
+
+# Variáveis para o proxy do servidor
+DIRECTUS_URL=http://localhost:8055
+DIRECTUS_ADMIN_EMAIL=admin@example.com
+DIRECTUS_ADMIN_PASSWORD=admin123
 EOF
     success "frontend/.env.local criado"
 else
@@ -912,6 +917,15 @@ if [ -n "$ACCESS_TOKEN" ] && [ "$ACCESS_TOKEN" != "null" ]; then
             sed -i.bak "s|NEXT_PUBLIC_API_TOKEN=.*|NEXT_PUBLIC_API_TOKEN=$STATIC_TOKEN|" frontend/.env.local
         else
             echo "NEXT_PUBLIC_API_TOKEN=$STATIC_TOKEN" >> frontend/.env.local
+        fi
+
+        # Garantir que as variáveis do servidor estejam presentes no frontend/.env.local
+        if ! grep -q "DIRECTUS_URL=" frontend/.env.local 2>/dev/null; then
+            echo "" >> frontend/.env.local
+            echo "# Variáveis para o proxy do servidor" >> frontend/.env.local
+            echo "DIRECTUS_URL=http://localhost:8055" >> frontend/.env.local
+            echo "DIRECTUS_ADMIN_EMAIL=admin@example.com" >> frontend/.env.local
+            echo "DIRECTUS_ADMIN_PASSWORD=admin123" >> frontend/.env.local
         fi
 
         # Atualizar webscraper-service/.env

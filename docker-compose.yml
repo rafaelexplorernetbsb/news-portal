@@ -29,7 +29,7 @@ services:
     image: redis:7-alpine
     container_name: ${COMPOSE_PROJECT_NAME:-news-portal}_redis_${ENV:-dev}
     restart: unless-stopped
-    command: redis-server
+    command: redis-server ${REDIS_PASSWORD:+--requirepass $REDIS_PASSWORD}
     volumes:
       - redis_data:/data
     ports:
@@ -70,26 +70,34 @@ services:
       CORS_ENABLED: ${CORS_ENABLED:-true}
       CORS_ORIGIN: ${CORS_ORIGIN:-true}
 
-      # Cache - Desabilitado temporariamente
-      CACHE_ENABLED: false
+      # Cache - Configuração dinâmica baseada no ambiente
+      CACHE_ENABLED: ${CACHE_ENABLED:-false}
+      CACHE_STORE: ${CACHE_STORE:-memory}
+      CACHE_REDIS: ${CACHE_REDIS:-redis://redis:6379}
 
       # Storage
       STORAGE_LOCATIONS: ${STORAGE_LOCATIONS:-local}
       STORAGE_LOCAL_ROOT: ${STORAGE_LOCAL_ROOT:-/directus/uploads}
       STORAGE_LOCAL_PUBLIC_URL: ${STORAGE_LOCAL_PUBLIC_URL:-/uploads}
 
-      # Logging
+      # Logging - Configuração dinâmica baseada no ambiente
       LOG_LEVEL: ${LOG_LEVEL:-info}
       LOG_STYLE: ${LOG_STYLE:-pretty}
 
       # Public URL
       PUBLIC_URL: ${DIRECTUS_URL:-http://localhost:8055}
 
+      # Rate Limiting - Apenas em produção
+      RATE_LIMITER_ENABLED: ${RATE_LIMITER_ENABLED:-false}
+      RATE_LIMITER_POINTS: ${RATE_LIMITER_POINTS:-50}
+      RATE_LIMITER_DURATION: ${RATE_LIMITER_DURATION:-1}
+
     volumes:
       - directus_uploads:/directus/uploads
-      - ./extensions:/directus/extensions
-      - .:/directus/project  # Montar projeto completo
+      - ./api/src/extensions:/directus/extensions
     ports:
+      # Em desenvolvimento: expõe na porta padrão
+      # Em produção: apenas localhost (via nginx)
       - "${DIRECTUS_PORT:-8055}:8055"
     depends_on:
       postgres:
@@ -105,11 +113,11 @@ services:
       retries: 3
 
   # ========================================
-  # FRONTEND (NEXT.JS) - Apenas em produção
+  # FRONTEND (NEXT.JS) - Condicional
   # ========================================
   frontend:
     build:
-      context: ./frontend
+      context: .
       dockerfile: Dockerfile
     container_name: ${COMPOSE_PROJECT_NAME:-news-portal}_frontend_${ENV:-dev}
     restart: unless-stopped
@@ -125,32 +133,10 @@ services:
     networks:
       - directus_network
     profiles:
-      - production  # Só roda em produção
+      - production
 
   # ========================================
-  # WEBSCRAPER SERVICE - Apenas em produção
-  # ========================================
-  webscraper:
-    build:
-      context: ./webscraper-service
-      dockerfile: Dockerfile
-    container_name: ${COMPOSE_PROJECT_NAME:-news-portal}_webscraper_${ENV:-dev}
-    restart: unless-stopped
-    environment:
-      DIRECTUS_URL: ${WEBSCRAPER_DIRECTUS_URL:-http://directus:8055}
-      DIRECTUS_TOKEN: ${WEBSCRAPER_DIRECTUS_TOKEN}
-      WEBSCRAPER_INTERVAL_MINUTES: ${WEBSCRAPER_INTERVAL_MINUTES:-5}
-      WEBSCRAPER_MAX_ARTICLES: ${WEBSCRAPER_MAX_ARTICLES:-10}
-      LOG_LEVEL: ${LOG_LEVEL:-info}
-    depends_on:
-      - directus
-    networks:
-      - directus_network
-    profiles:
-      - production  # Só roda em produção
-
-  # ========================================
-  # NGINX (REVERSE PROXY) - Apenas em produção
+  # NGINX (REVERSE PROXY) - Condicional
   # ========================================
   nginx:
     image: nginx:alpine
@@ -168,7 +154,7 @@ services:
     networks:
       - directus_network
     profiles:
-      - production  # Só roda em produção
+      - production
 
 volumes:
   postgres_data:
