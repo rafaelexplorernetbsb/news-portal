@@ -81,7 +81,6 @@ export default function Home() {
 
         setCategoriasComNoticias(categoriasComNoticiasFiltradas);
       } catch (err) {
-        console.error('Erro ao carregar notícias:', err);
         setError('Erro ao carregar notícias. Tente novamente mais tarde.');
       } finally {
         setLoading(false);

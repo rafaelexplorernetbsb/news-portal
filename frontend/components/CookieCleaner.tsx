@@ -33,8 +33,6 @@ export default function CookieCleaner() {
         localStorage.removeItem(cookieName);
         sessionStorage.removeItem(cookieName);
       });
-
-      console.log('🧹 Cookies do Directus limpos do frontend');
     };
 
     // Limpar cookies imediatamente

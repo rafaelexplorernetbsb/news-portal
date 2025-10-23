@@ -1,8 +1,12 @@
 import { createDirectus, rest, readItems, readItem, readSingleton } from '@directus/sdk';
 
 // Configuração do Directus
-const DIRECTUS_URL = 'http://localhost:8055';
+const DIRECTUS_URL = process.env.NEXT_PUBLIC_DIRECTUS_URL;
 const API_TOKEN = process.env.NEXT_PUBLIC_API_TOKEN || '';
+
+if (!DIRECTUS_URL) {
+  throw new Error('NEXT_PUBLIC_DIRECTUS_URL não está definida nas variáveis de ambiente');
+}
 
 // Tipos TypeScript para o SDK
 export interface Noticia {

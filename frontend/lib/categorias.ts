@@ -12,7 +12,6 @@ export async function getCategorias(): Promise<Categoria[]> {
 
     return categorias || [];
   } catch (error) {
-    console.error('Erro ao buscar categorias:', error);
     return [];
   }
 }
@@ -34,7 +33,6 @@ export async function getCategoriaPorSlug(slug: string): Promise<Categoria | nul
 
     return categorias[0] || null;
   } catch (error) {
-    console.error(`Erro ao buscar categoria com slug ${slug}:`, error);
     return null;
   }
 }
@@ -48,7 +46,6 @@ export async function getCategoriaPorId(id: number): Promise<Categoria | null> {
 
     return categoria || null;
   } catch (error) {
-    console.error(`Erro ao buscar categoria com ID ${id}:`, error);
     return null;
   }
 }
@@ -83,7 +80,6 @@ export async function getCategoriasComContagem(): Promise<Array<Categoria & { co
             contagem: noticias.length
           };
         } catch (error) {
-          console.error(`Erro ao contar notícias da categoria ${categoria.nome}:`, error);
           return {
             ...categoria,
             contagem: 0
@@ -94,7 +90,6 @@ export async function getCategoriasComContagem(): Promise<Array<Categoria & { co
 
     return categoriasComContagem;
   } catch (error) {
-    console.error('Erro ao buscar categorias com contagem:', error);
     return [];
   }
 }
@@ -109,7 +104,6 @@ export async function getCategoriasPopulares(limit: number = 5): Promise<Array<C
       .sort((a, b) => b.contagem - a.contagem)
       .slice(0, limit);
   } catch (error) {
-    console.error('Erro ao buscar categorias populares:', error);
     return [];
   }
 }
@@ -170,7 +164,6 @@ export async function getNoticiasPorCategoriaPaginated(
       categoria: categoriaData
     };
   } catch (error) {
-    console.error(`Erro ao buscar notícias da categoria ${categoria} com paginação:`, error);
     return {
       data: [],
       total: 0,

@@ -1,16 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const DIRECTUS_URL = 'http://localhost:8055';
+const DIRECTUS_URL = process.env.DIRECTUS_URL;
+const ADMIN_EMAIL = process.env.DIRECTUS_PROXY_EMAIL || process.env.DIRECTUS_ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.DIRECTUS_PROXY_PASSWORD || process.env.DIRECTUS_ADMIN_PASSWORD;
 
-// Credenciais do usuário admin
-const ADMIN_EMAIL = 'admin@example.com';
-const ADMIN_PASSWORD = 'admin123';
-
-// Cache para token do servidor
 let serverToken: string | null = null;
 let tokenExpiry: number = 0;
 
 async function getServerToken(): Promise<string> {
+  if (!DIRECTUS_URL) {
+    throw new Error('DIRECTUS_URL não está definida nas variáveis de ambiente');
+  }
+
+  if (!ADMIN_EMAIL) {
+    throw new Error('DIRECTUS_PROXY_EMAIL ou DIRECTUS_ADMIN_EMAIL não está definida nas variáveis de ambiente');
+  }
+
+  if (!ADMIN_PASSWORD) {
+    throw new Error('DIRECTUS_PROXY_PASSWORD ou DIRECTUS_ADMIN_PASSWORD não está definida nas variáveis de ambiente');
+  }
+
   if (!serverToken || Date.now() > tokenExpiry) {
     try {
       const response = await fetch(`${DIRECTUS_URL}/auth/login`, {
@@ -32,9 +41,12 @@ async function getServerToken(): Promise<string> {
       serverToken = data.data.access_token;
       tokenExpiry = Date.now() + 3600000;
     } catch (error) {
-      console.error('Erro ao renovar token do servidor:', error);
       throw error;
     }
+  }
+
+  if (!serverToken) {
+    throw new Error('Failed to get server token');
   }
 
   return serverToken;
@@ -45,7 +57,6 @@ export async function POST(request: NextRequest) {
     const subscription = await request.json();
     const token = await getServerToken();
 
-    // Salvar subscrição no Directus
     const response = await fetch(`${DIRECTUS_URL}/items/push_subscriptions`, {
       method: 'POST',
       headers: {
@@ -62,9 +73,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!response.ok) {
-      // Se a subscrição já existe, tentar atualizar
       if (response.status === 400 || response.status === 409) {
-        // Buscar a subscrição existente
         const searchResponse = await fetch(
           `${DIRECTUS_URL}/items/push_subscriptions?filter[endpoint][_eq]=${encodeURIComponent(subscription.endpoint)}`,
           {
@@ -77,7 +86,6 @@ export async function POST(request: NextRequest) {
         if (searchResponse.ok) {
           const searchData = await searchResponse.json();
           if (searchData.data && searchData.data.length > 0) {
-            // Atualizar a subscrição existente
             const existingId = searchData.data[0].id;
             const updateResponse = await fetch(
               `${DIRECTUS_URL}/items/push_subscriptions/${existingId}`,
@@ -115,7 +123,6 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error('Erro ao processar subscrição:', error);
     return NextResponse.json(
       { success: false, error: 'Erro ao processar subscrição' },
       { status: 500 }
@@ -128,7 +135,6 @@ export async function DELETE(request: NextRequest) {
     const { endpoint } = await request.json();
     const token = await getServerToken();
 
-    // Buscar a subscrição
     const searchResponse = await fetch(
       `${DIRECTUS_URL}/items/push_subscriptions?filter[endpoint][_eq]=${encodeURIComponent(endpoint)}`,
       {
@@ -150,7 +156,6 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Deletar a subscrição
     const subscriptionId = searchData.data[0].id;
     const deleteResponse = await fetch(
       `${DIRECTUS_URL}/items/push_subscriptions/${subscriptionId}`,
@@ -171,7 +176,6 @@ export async function DELETE(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error('Erro ao remover subscrição:', error);
     return NextResponse.json(
       { success: false, error: 'Erro ao remover subscrição' },
       { status: 500 }

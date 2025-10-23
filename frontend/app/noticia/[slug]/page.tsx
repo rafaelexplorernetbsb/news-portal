@@ -74,7 +74,6 @@ export default function NoticiaPage() {
           setNoticiasRelacionadas(relacionadas.data || []);
         }
       } catch (err) {
-        console.error('Erro ao carregar notícia:', err);
         setError('Erro ao carregar notícia. Tente novamente mais tarde.');
       } finally {
         setLoading(false);

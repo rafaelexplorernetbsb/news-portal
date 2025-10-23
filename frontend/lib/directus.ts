@@ -1,7 +1,5 @@
-// URL da API - detecta automaticamente se está sendo acessado via ngrok
 const getAPIUrl = () => {
   if (typeof window !== 'undefined') {
-    // Se estamos no cliente e a URL contém ngrok, usar URL absoluta
     if (window.location.hostname.includes('ngrok')) {
       return `${window.location.protocol}//${window.location.host}/api/directus`;
     }
@@ -11,35 +9,27 @@ const getAPIUrl = () => {
 
 const API_URL = getAPIUrl();
 
-// Removemos todas as credenciais e tokens do client-side
-// O proxy server-side gerencia a autenticação internamente
-
 async function fetchAPI(endpoint: string) {
   try {
     const url = `${API_URL}${endpoint}`;
-    console.log('Fazendo requisição para:', url); // Debug
 
     const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        'ngrok-skip-browser-warning': 'true', // Bypass do aviso do ngrok
+        'ngrok-skip-browser-warning': 'true',
       },
-      credentials: 'omit', // Não enviar cookies
-      mode: 'cors', // Permitir CORS
+      credentials: 'omit',
+      mode: 'cors',
     });
-
-    console.log('Resposta da API:', response.status, response.statusText); // Debug
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Erro da API:', response.status, errorText);
       throw new Error(`API Error: ${response.status} - ${errorText}`);
     }
 
     return response.json();
   } catch (error) {
-    console.error('Erro na fetchAPI:', error);
     throw error;
   }
 }
@@ -54,9 +44,9 @@ export interface Noticia {
     id: string;
     filename_download: string;
   } | string;
-  url_imagem?: string; // ← Novo campo para URL de imagem externa
-  video_url?: string; // ← URL do vídeo (Globoplay, YouTube, etc.)
-  embed_html?: string; // ← HTML do player embed
+  url_imagem?: string;
+  video_url?: string;
+  embed_html?: string;
   data_publicacao: string;
   destaque: boolean;
   categoria: string | number | {
@@ -107,7 +97,6 @@ export async function getProjectSettings(): Promise<DirectusSettings | null> {
     const result = await fetchAPI('/settings');
     return result.data || result;
   } catch (error) {
-    console.error('Erro ao buscar configurações do projeto:', error);
     return null;
   }
 }
@@ -117,10 +106,8 @@ export function getLogoUrl(project_logo: DirectusSettings['project_logo']): stri
     return null;
   }
 
-  // Usar o proxy da API para acessar assets
   let assetUrl = '/api/directus';
   if (typeof window !== 'undefined' && window.location.hostname.includes('ngrok')) {
-    // Se estamos no cliente e a URL contém ngrok, usar URL absoluta
     assetUrl = `${window.location.protocol}//${window.location.host}/api/directus`;
   }
 
@@ -183,17 +170,14 @@ export async function getNoticiaBySlug(slug: string): Promise<Noticia> {
 }
 
 export function getImageUrl(imagem: Noticia['imagem'], url_imagem?: string): string {
-  // Prioridade 1: URL de imagem externa
   if (url_imagem) {
     return url_imagem;
   }
 
-  // Prioridade 2: Imagem do Directus
   if (!imagem) {
     return '/placeholder.svg';
   }
 
-  // Sempre usa localhost:8055 para assets pois é acessado pelo navegador
   const assetUrl = 'http://localhost:8055';
 
   if (typeof imagem === 'object' && imagem.id) {
@@ -229,7 +213,6 @@ export async function getCategoriaNome(categoria: Noticia['categoria']): Promise
     return categoria.nome;
   }
 
-  // Se categoria é um número (ID), buscar o nome
   if (typeof categoria === 'number') {
     try {
       const categoriasData = await fetchAPI(`/items/categorias?filter[id][_eq]=${categoria}&limit=1`);
@@ -237,7 +220,7 @@ export async function getCategoriaNome(categoria: Noticia['categoria']): Promise
         return categoriasData.data[0].nome;
       }
     } catch (error) {
-      console.error(`Erro ao buscar categoria com ID ${categoria}:`, error);
+      return 'Categoria';
     }
   }
 
@@ -245,7 +228,6 @@ export async function getCategoriaNome(categoria: Noticia['categoria']): Promise
 }
 
 export function capitalizarCategoria(categoria: string): string {
-  // Verificar se categoria é válida
   if (!categoria || typeof categoria !== 'string') {
     return 'Categoria';
   }
@@ -277,15 +259,10 @@ export function getAutorNome(autor: Noticia['autor']): string {
 
 export async function getNoticiasPorCategoriaEspecifica(categoriaNome: string, limit: number = 12): Promise<Noticia[]> {
   try {
-    // Buscar mais notícias para garantir que temos o suficiente para filtrar
     const data: NoticiaResponse = await fetchAPI(
       `/items/noticias?limit=100&sort=-data_publicacao&fields=*,imagem.*,autor.*,categoria.*,url_imagem&t=${Date.now()}`
     );
 
-    console.log(`Debug - Total de notícias buscadas: ${data.data?.length || 0}`);
-    console.log(`Debug - Primeiras 5 datas:`, data.data?.slice(0, 5).map(n => n.data_publicacao));
-
-    // Filtrar localmente por categoria
     const noticiasFiltradas = data.data?.filter(noticia => {
       if (typeof noticia.categoria === 'string') {
         return noticia.categoria.toLowerCase().includes(categoriaNome.toLowerCase());
@@ -295,33 +272,24 @@ export async function getNoticiasPorCategoriaEspecifica(categoriaNome: string, l
       return false;
     }).slice(0, limit) || [];
 
-    console.log(`Debug - Notícias filtradas para "${categoriaNome}": ${noticiasFiltradas.length}`);
-    console.log(`Debug - Datas das notícias filtradas:`, noticiasFiltradas.map(n => n.data_publicacao));
-
     return noticiasFiltradas;
   } catch (error) {
-    console.error(`Erro ao buscar notícias da categoria ${categoriaNome}:`, error);
     return [];
   }
 }
 
 export async function getNoticiasPorCategoria(categoria: string, limit: number = 10, offset: number = 0): Promise<{ noticias: Noticia[], hasMore: boolean }> {
   try {
-    // Primeiro, buscar o ID da categoria pelo nome (capitalizado)
     const categoriaNome = capitalizarCategoria(categoria);
     const categoriasData = await fetchAPI(`/items/categorias?filter[nome][_eq]=${encodeURIComponent(categoriaNome)}&limit=1`);
 
     if (!categoriasData.data || categoriasData.data.length === 0) {
-      console.warn(`Categoria "${categoriaNome}" não encontrada`);
       return { noticias: [], hasMore: false };
     }
 
     const categoriaId = categoriasData.data[0].id;
-
-    // Buscar mais notícias para compensar a paginação
     const fetchLimit = Math.max(limit * 2, 30);
 
-    // Buscar as notícias por ID da categoria diretamente da API
     const data: NoticiaResponse = await fetchAPI(
       `/items/noticias?limit=${fetchLimit}&sort=-data_publicacao&fields=*,imagem.*,autor.*,categoria,url_imagem&filter[categoria][_eq]=${categoriaId}&t=${Date.now()}`
     );
@@ -330,12 +298,9 @@ export async function getNoticiasPorCategoria(categoria: string, limit: number =
       return { noticias: [], hasMore: false };
     }
 
-    // Aplicar paginação no resultado
     const startIndex = offset;
     const endIndex = startIndex + limit;
     const paginatedNoticias = data.data.slice(startIndex, endIndex);
-
-    // Verificar se há mais notícias disponíveis
     const hasMore = endIndex < data.data.length;
 
     return {
@@ -343,31 +308,26 @@ export async function getNoticiasPorCategoria(categoria: string, limit: number =
       hasMore
     };
   } catch (error) {
-    console.error(`Erro ao buscar notícias da categoria ${categoria}:`, error);
     return { noticias: [], hasMore: false };
   }
 }
 
 export async function getUltimasNoticiasPorCategoria(categoriaNome: string, limit: number = 12): Promise<Noticia[]> {
   try {
-    // Primeiro, buscar o ID da categoria pelo nome
     const categoriasData = await fetchAPI(`/items/categorias?filter[nome][_eq]=${encodeURIComponent(categoriaNome)}&limit=1`);
 
     if (!categoriasData.data || categoriasData.data.length === 0) {
-      console.warn(`Categoria "${categoriaNome}" não encontrada`);
       return [];
     }
 
     const categoriaId = categoriasData.data[0].id;
 
-    // Agora buscar as notícias por ID da categoria
     const data: NoticiaResponse = await fetchAPI(
       `/items/noticias?limit=${limit}&sort=-data_publicacao&fields=*,imagem.*,autor.*,categoria,url_imagem&filter[categoria][_eq]=${categoriaId}&t=${Date.now()}`
     );
 
     return data.data || [];
   } catch (error) {
-    console.error(`Erro ao buscar notícias da categoria ${categoriaNome}:`, error);
     return [];
   }
 }
@@ -384,7 +344,6 @@ export async function buscarNoticias(termo: string, limit: number = 50): Promise
 
     return data.data || [];
   } catch (error) {
-    console.error(`Erro ao buscar notícias com termo "${termo}":`, error);
     return [];
   }
 }
@@ -401,12 +360,10 @@ export async function getNoticiaPorSlug(slug: string): Promise<Noticia | null> {
 
     return data.data[0];
   } catch (error) {
-    console.error('Erro ao buscar notícia por slug:', error);
     return null;
   }
 }
 
-// Interface para Categoria
 export interface Categoria {
   id: number;
   nome: string;
@@ -414,14 +371,11 @@ export interface Categoria {
   descricao?: string;
   icone?: string;
 }
-
-// Função para buscar todas as categorias
 export async function getCategorias(): Promise<Categoria[]> {
   try {
     const data = await fetchAPI('/items/categorias?sort=nome&fields=id,nome,slug,descricao,icone');
     return data.data || [];
   } catch (error) {
-    console.error('Erro ao buscar categorias:', error);
     return [];
   }
 }

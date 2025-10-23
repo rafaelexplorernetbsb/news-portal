@@ -51,7 +51,6 @@ export async function getNoticiasDestaque(): Promise<Noticia[]> {
 
     return noticias || [];
   } catch (error) {
-    console.error('Erro ao buscar notícias em destaque:', error);
     return [];
   }
 }
@@ -69,7 +68,6 @@ export async function getUltimasNoticias(limit: number = 10): Promise<Noticia[]>
 
     return noticias || [];
   } catch (error) {
-    console.error('Erro ao buscar últimas notícias:', error);
     return [];
   }
 }
@@ -91,7 +89,6 @@ export async function getNoticiasPorCategoria(categoria: string, limit: number =
     );
 
     if (!categoriaData || categoriaData.length === 0) {
-      console.error(`Categoria não encontrada: ${categoria}`);
       return [];
     }
 
@@ -124,7 +121,6 @@ export async function getNoticiasPorCategoria(categoria: string, limit: number =
 
     return noticiasComCategoria.slice(0, limit);
   } catch (error) {
-    console.error(`Erro ao buscar notícias da categoria ${categoria}:`, error);
     return [];
   }
 }
@@ -180,7 +176,6 @@ export async function getNoticiaPorSlug(slug: string): Promise<Noticia | null> {
 
     return noticiaComCategoria;
   } catch (error) {
-    console.error(`Erro ao buscar notícia com slug ${slug}:`, error);
     return null;
   }
 }
@@ -212,7 +207,6 @@ export async function getNoticiasRelacionadas(categoria: string, slugExcluir: st
 
     return noticias || [];
   } catch (error) {
-    console.error(`Erro ao buscar notícias relacionadas:`, error);
     return [];
   }
 }
@@ -230,7 +224,6 @@ export async function getMaisLidas(limit: number = 5): Promise<Noticia[]> {
 
     return noticias || [];
   } catch (error) {
-    console.error('Erro ao buscar notícias mais lidas:', error);
     return [];
   }
 }
@@ -271,7 +264,6 @@ export async function getAllNoticias(page: number = 1, limit: number = 10): Prom
       totalPages
     };
   } catch (error) {
-    console.error('Erro ao buscar todas as notícias:', error);
     return {
       data: [],
       total: 0,
@@ -313,11 +305,9 @@ export async function buscarNoticias(termo: string, limit: number = 10): Promise
 
     return noticias || [];
   } catch (error) {
-    console.error(`Erro ao buscar notícias com termo "${termo}":`, error);
     return [];
   }
 }
 
-// Exportar funções auxiliares
 export { getImageUrl, formatarData, capitalizarCategoria, getAutorNome };
 

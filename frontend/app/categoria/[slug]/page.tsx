@@ -49,7 +49,6 @@ export default function CategoriaPage() {
       // Usar o hasMore retornado pela função
       setHasMore(result.hasMore);
     } catch (err) {
-      console.error('Erro ao carregar notícias:', err);
       setError('Erro ao carregar notícias da categoria.');
     } finally {
       setLoading(false);

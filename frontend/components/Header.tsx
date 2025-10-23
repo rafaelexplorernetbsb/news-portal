@@ -39,7 +39,7 @@ export default function Header() {
         const categoriasData = await getCategorias();
         setCategorias(categoriasData);
       } catch (error) {
-        console.error('Erro ao carregar dados do header:', error);
+        // Silencioso em produção
       }
     }
 

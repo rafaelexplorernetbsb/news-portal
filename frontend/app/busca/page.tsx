@@ -27,7 +27,6 @@ function BuscaContent() {
         const noticias = await buscarNoticias(query, 50);
         setResultados(noticias);
       } catch (err) {
-        console.error('Erro na busca:', err);
         setError('Erro ao realizar a busca. Tente novamente.');
       } finally {
         setLoading(false);

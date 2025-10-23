@@ -1,4 +1,3 @@
-// Service Worker para notificações
 self.addEventListener('push', function(event) {
   if (event.data) {
     const data = event.data.json();
@@ -27,7 +26,6 @@ self.addEventListener('push', function(event) {
   }
 });
 
-// Lidar com cliques nas notificações
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
 
@@ -38,7 +36,6 @@ self.addEventListener('notificationclick', function(event) {
   }
 });
 
-// Lidar com notificações fechadas
 self.addEventListener('notificationclose', function(event) {
-  console.log('Notificação fechada:', event.notification.tag);
+  // Silencioso em produção
 });

@@ -16,7 +16,6 @@ export function useNotifications() {
 
   const sendNotification = (title: string, options?: NotificationOptions) => {
     if (!isSupported || permission !== 'granted') {
-      console.warn('Notificações não estão disponíveis ou não foram permitidas');
       return;
     }
 
@@ -36,7 +35,7 @@ export function useNotifications() {
         });
       }
     } catch (error) {
-      console.error('Erro ao enviar notificação:', error);
+      // Silencioso em produção
     }
   };
 
@@ -50,7 +49,6 @@ export function useNotifications() {
       setPermission(result);
       return result;
     } catch (error) {
-      console.error('Erro ao solicitar permissão:', error);
       return 'denied';
     }
   };

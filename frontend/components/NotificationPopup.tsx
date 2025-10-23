@@ -25,7 +25,6 @@ export default function NotificationPopup({ onAccept, onDecline }: NotificationP
   useEffect(() => {
     async function fetchData() {
       try {
-        // Buscar configurações do projeto
         const settings = await getProjectSettings();
         if (settings) {
           setProjectSettings(settings);
@@ -33,7 +32,7 @@ export default function NotificationPopup({ onAccept, onDecline }: NotificationP
           setLogoUrl(logo);
         }
       } catch (error) {
-        console.error('Erro ao carregar dados do popup:', error);
+        // Silencioso em produção
       }
     }
 
@@ -41,10 +40,8 @@ export default function NotificationPopup({ onAccept, onDecline }: NotificationP
   }, []);
 
   useEffect(() => {
-    // Verificar se o usuário já respondeu anteriormente
     const hasResponded = localStorage.getItem('notification-permission-responded');
     if (!hasResponded) {
-      // Mostrar popup após 2 segundos
       const timer = setTimeout(() => {
         setIsVisible(true);
       }, 2000);
@@ -56,22 +53,20 @@ export default function NotificationPopup({ onAccept, onDecline }: NotificationP
     setIsRequesting(true);
 
     try {
-      // Solicitar permissão de notificação
       const permission = await Notification.requestPermission();
 
       if (permission === 'granted') {
-        // Salvar que o usuário aceitou
         localStorage.setItem('notification-permission-responded', 'accepted');
         localStorage.setItem('notification-permission', 'granted');
 
-        // Registrar para receber push notifications
         if ('serviceWorker' in navigator && 'PushManager' in window) {
           try {
             const registration = await navigator.serviceWorker.ready;
+            const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
-            // Gerar chave pública VAPID (vamos usar uma chave pública genérica por enquanto)
-            // Em produção, você deve gerar suas próprias chaves VAPID
-            const vapidPublicKey = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib37J8zaRypE3qv8YYSy1yWL0L9PwbIyDPIY6ZMgcI3gXZhKL0wLyX8Qp9g';
+            if (!vapidPublicKey) {
+              throw new Error('NEXT_PUBLIC_VAPID_PUBLIC_KEY não está definida nas variáveis de ambiente');
+            }
 
             function urlBase64ToUint8Array(base64String: string) {
               const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -93,7 +88,6 @@ export default function NotificationPopup({ onAccept, onDecline }: NotificationP
               applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
             });
 
-            // Salvar subscrição no servidor
             const response = await fetch('/api/push/subscribe', {
               method: 'POST',
               headers: {
@@ -103,12 +97,9 @@ export default function NotificationPopup({ onAccept, onDecline }: NotificationP
             });
 
             if (!response.ok) {
-              console.error('Erro ao salvar subscrição no servidor');
-            } else {
-              console.log('Subscrição salva com sucesso!');
+              // Falha silenciosa
             }
 
-            // Mostrar notificação de teste
             registration.showNotification(getProjectName(projectSettings?.project_name || null) || 'Portal de Notícias', {
               body: 'Você agora receberá notificações das principais notícias!',
               icon: logoUrl || '/favicon.ico',
@@ -116,9 +107,6 @@ export default function NotificationPopup({ onAccept, onDecline }: NotificationP
               tag: 'welcome-notification'
             });
           } catch (error) {
-            console.error('Erro ao registrar para push notifications:', error);
-
-            // Mesmo com erro no push, mostrar notificação local
             if ('serviceWorker' in navigator) {
               navigator.serviceWorker.ready.then(registration => {
                 registration.showNotification(getProjectName(projectSettings?.project_name || null) || 'Portal de Notícias', {
@@ -134,12 +122,11 @@ export default function NotificationPopup({ onAccept, onDecline }: NotificationP
 
         onAccept?.();
       } else {
-        // Usuário negou a permissão
         localStorage.setItem('notification-permission-responded', 'declined');
         localStorage.setItem('notification-permission', 'denied');
       }
     } catch (error) {
-      console.error('Erro ao solicitar permissão de notificação:', error);
+      // Silencioso em produção
     } finally {
       setIsRequesting(false);
       setIsClosing(true);
@@ -148,7 +135,6 @@ export default function NotificationPopup({ onAccept, onDecline }: NotificationP
   };
 
   const handleDecline = () => {
-    // Salvar que o usuário recusou
     localStorage.setItem('notification-permission-responded', 'declined');
     localStorage.setItem('notification-permission', 'denied');
 
