@@ -63,6 +63,7 @@ export async function GET(
   { params }: { params: Promise<{ path: string[] }> }
 ) {
   try {
+    const DIRECTUS_URL = process.env.DIRECTUS_URL;
     const resolvedParams = await params;
     const path = resolvedParams.path.join('/');
     const searchParams = request.nextUrl.searchParams;
@@ -135,6 +136,7 @@ export async function POST(
   { params }: { params: Promise<{ path: string[] }> }
 ) {
   try {
+    const DIRECTUS_URL = process.env.DIRECTUS_URL;
     const token = await getServerToken();
     const resolvedParams = await params;
     const path = resolvedParams.path.join('/');

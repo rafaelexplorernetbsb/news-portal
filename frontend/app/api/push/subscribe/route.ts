@@ -60,6 +60,7 @@ async function getServerToken(): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
+    const DIRECTUS_URL = process.env.DIRECTUS_URL;
     const subscription = await request.json();
     const token = await getServerToken();
 
@@ -138,6 +139,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const DIRECTUS_URL = process.env.DIRECTUS_URL;
     const { endpoint } = await request.json();
     const token = await getServerToken();
 
