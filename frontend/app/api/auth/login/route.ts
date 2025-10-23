@@ -1,28 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// Credenciais do usuário admin que sabemos que funcionam
-const ADMIN_EMAIL = process.env.DIRECTUS_ADMIN_EMAIL;
-const ADMIN_PASSWORD = process.env.DIRECTUS_ADMIN_PASSWORD;
-const DIRECTUS_URL = process.env.DIRECTUS_URL;
-
-if (!ADMIN_EMAIL) {
-  throw new Error(
-    'DIRECTUS_ADMIN_EMAIL não está definida nas variáveis de ambiente'
-  );
-}
-
-if (!ADMIN_PASSWORD) {
-  throw new Error(
-    'DIRECTUS_ADMIN_PASSWORD não está definida nas variáveis de ambiente'
-  );
-}
-
-if (!DIRECTUS_URL) {
-  throw new Error('DIRECTUS_URL não está definida nas variáveis de ambiente');
-}
-
 export async function POST(request: NextRequest) {
   try {
+    // Credenciais do usuário admin que sabemos que funcionam
+    const ADMIN_EMAIL = process.env.DIRECTUS_ADMIN_EMAIL;
+    const ADMIN_PASSWORD = process.env.DIRECTUS_ADMIN_PASSWORD;
+    const DIRECTUS_URL = process.env.DIRECTUS_URL;
+
+    if (!ADMIN_EMAIL) {
+      return NextResponse.json(
+        { error: 'DIRECTUS_ADMIN_EMAIL não está definida nas variáveis de ambiente' },
+        { status: 500 }
+      );
+    }
+
+    if (!ADMIN_PASSWORD) {
+      return NextResponse.json(
+        { error: 'DIRECTUS_ADMIN_PASSWORD não está definida nas variáveis de ambiente' },
+        { status: 500 }
+      );
+    }
+
+    if (!DIRECTUS_URL) {
+      return NextResponse.json(
+        { error: 'DIRECTUS_URL não está definida nas variáveis de ambiente' },
+        { status: 500 }
+      );
+    }
     const response = await fetch(`${DIRECTUS_URL}/auth/login`, {
       method: 'POST',
       headers: {

@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const DIRECTUS_URL = process.env.DIRECTUS_URL;
-const ADMIN_EMAIL =
-  process.env.DIRECTUS_PROXY_EMAIL || process.env.DIRECTUS_ADMIN_EMAIL;
-const ADMIN_PASSWORD =
-  process.env.DIRECTUS_PROXY_PASSWORD || process.env.DIRECTUS_ADMIN_PASSWORD;
-
 let serverToken: string | null = null;
 let tokenExpiry: number = 0;
 
 async function getServerToken(): Promise<string> {
+  const DIRECTUS_URL = process.env.DIRECTUS_URL;
+  const ADMIN_EMAIL =
+    process.env.DIRECTUS_PROXY_EMAIL || process.env.DIRECTUS_ADMIN_EMAIL;
+  const ADMIN_PASSWORD =
+    process.env.DIRECTUS_PROXY_PASSWORD || process.env.DIRECTUS_ADMIN_PASSWORD;
+
   if (!DIRECTUS_URL) {
     throw new Error('DIRECTUS_URL não está definida nas variáveis de ambiente');
   }
