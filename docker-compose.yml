@@ -94,7 +94,7 @@ services:
 
     volumes:
       - directus_uploads:/directus/uploads
-      - ./api/src/extensions:/directus/extensions
+      - ./extensions:/directus/extensions
     ports:
       # Em desenvolvimento: expõe na porta padrão
       # Em produção: apenas localhost (via nginx)

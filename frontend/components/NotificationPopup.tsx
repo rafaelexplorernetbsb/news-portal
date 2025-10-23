@@ -71,9 +71,20 @@ export default function NotificationPopup({
             const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
             if (!vapidPublicKey) {
-              throw new Error(
-                'NEXT_PUBLIC_VAPID_PUBLIC_KEY não está definida nas variáveis de ambiente'
+              console.warn('NEXT_PUBLIC_VAPID_PUBLIC_KEY não está definida nas variáveis de ambiente');
+              // Continua sem push notifications, mas mostra notificação local
+              registration.showNotification(
+                getProjectName(projectSettings?.project_name || null) ||
+                  'Portal de Notícias',
+                {
+                  body: 'Você agora receberá notificações das principais notícias!',
+                  icon: logoUrl || '/favicon.ico',
+                  badge: logoUrl || '/favicon.ico',
+                  tag: 'welcome-notification',
+                }
               );
+              onAccept?.();
+              return;
             }
 
             function urlBase64ToUint8Array(base64String: string) {
@@ -96,7 +107,12 @@ export default function NotificationPopup({
               applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
             });
 
-            const response = await fetch('/api/push/subscribe', {
+            // Timeout para evitar travamento
+            const timeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Timeout')), 10000)
+            );
+
+            const responsePromise = fetch('/api/push/subscribe', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -104,8 +120,13 @@ export default function NotificationPopup({
               body: JSON.stringify(subscription.toJSON()),
             });
 
-            if (!response.ok) {
-              // Falha silenciosa
+            try {
+              const response = await Promise.race([responsePromise, timeoutPromise]);
+              if (!response.ok) {
+                console.warn('Falha ao registrar push subscription');
+              }
+            } catch (error) {
+              console.warn('Timeout ou erro ao registrar push subscription:', error);
             }
 
             registration.showNotification(
