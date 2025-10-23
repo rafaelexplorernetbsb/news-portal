@@ -222,39 +222,30 @@ log "⚙️  Configurando arquivos .env..."
 DIRECTUS_KEY=$(openssl rand -hex 32 2>/dev/null || echo "directus-secret-key-$(date +%s)")
 DIRECTUS_SECRET=$(openssl rand -hex 32 2>/dev/null || echo "directus-secret-$(date +%s)")
 
-# .env principal
+# .env principal (usar env.example como base)
 if [ ! -f ".env" ]; then
     log "Criando .env principal..."
-    cat > .env << EOF
-# Configurações Gerais
-NODE_ENV=${MODE}
-PORT=8055
-
-# Configurações do Directus
-DIRECTUS_URL=http://localhost:8055
-DIRECTUS_KEY=${DIRECTUS_KEY}
-DIRECTUS_SECRET=${DIRECTUS_SECRET}
-DIRECTUS_ADMIN_EMAIL=admin@example.com
-DIRECTUS_ADMIN_PASSWORD=admin123
-DIRECTUS_DB_CLIENT=pg
-DIRECTUS_DB_HOST=db
-DIRECTUS_DB_PORT=5432
-DIRECTUS_DB_DATABASE=directus
-DIRECTUS_DB_USER=directus
-DIRECTUS_DB_PASSWORD=directus123
-
-# Configurações do Frontend
-NEXT_PUBLIC_DIRECTUS_URL=http://localhost:8055
-NEXT_PUBLIC_API_TOKEN=
-
-# Configurações do Webscraper
-WEBSCRAPER_INTERVAL_MINUTES=5
-WEBSCRAPER_MAX_ARTICLES=5
-G1_ENABLED=true
-FOLHA_ENABLED=true
-OLHAR_DIGITAL_ENABLED=true
-EOF
-    success ".env criado"
+    if [ -f "env.example" ]; then
+        cp env.example .env
+        # Ajustar configurações baseadas no modo
+        if [ "$MODE" = "prod" ]; then
+            log "Configurando variáveis para produção..."
+            sed -i.bak 's/ENV=dev/ENV=prod/' .env
+            sed -i.bak 's/DIRECTUS_URL=http:\/\/localhost:8055/DIRECTUS_URL=https:\/\/meusite.com.br\/api/' .env
+            sed -i.bak 's/NEXT_PUBLIC_DIRECTUS_URL=http:\/\/localhost:8055/NEXT_PUBLIC_DIRECTUS_URL=https:\/\/meusite.com.br\/api/' .env
+            sed -i.bak 's/NEXT_PUBLIC_SITE_URL=http:\/\/localhost:3000/NEXT_PUBLIC_SITE_URL=https:\/\/meusite.com.br/' .env
+            sed -i.bak 's/CACHE_ENABLED=false/CACHE_ENABLED=true/' .env
+            sed -i.bak 's/CACHE_STORE=memory/CACHE_STORE=redis/' .env
+            sed -i.bak 's/LOG_LEVEL=info/LOG_LEVEL=warn/' .env
+            sed -i.bak 's/LOG_STYLE=pretty/LOG_STYLE=json/' .env
+            sed -i.bak 's/RATE_LIMITER_ENABLED=false/RATE_LIMITER_ENABLED=true/' .env
+            rm -f .env.bak
+        fi
+        success ".env criado a partir do env.example"
+    else
+        error "Arquivo env.example não encontrado!"
+        exit 1
+    fi
 else
     info ".env já existe, mantendo configurações"
 fi
@@ -588,6 +579,12 @@ EOF
                 warning "Instalação do frontend com problemas, mas continuando..."
             }
         }
+
+        # Instalar dependências de teste (Babel) se não estiverem presentes
+        if ! pnpm list @babel/preset-env > /dev/null 2>&1; then
+            log "🔧 Instalando dependências de teste (Babel)..."
+            pnpm add --save-dev @babel/preset-env @babel/preset-react @babel/preset-typescript babel-jest
+        fi
     else
         # Fallback para npm se pnpm não estiver disponível
         npm install --legacy-peer-deps --ignore-scripts 2>&1 | grep -v "WARN" || {
@@ -597,6 +594,22 @@ EOF
                 warning "Instalação do frontend com problemas, mas continuando..."
             }
         }
+
+        # Instalar dependências de teste (Babel) se não estiverem presentes
+        if ! npm list @babel/preset-env > /dev/null 2>&1; then
+            log "🔧 Instalando dependências de teste (Babel)..."
+            npm install --save-dev @babel/preset-env @babel/preset-react @babel/preset-typescript babel-jest
+        fi
+    fi
+
+    # Instalar e configurar Cypress
+    log "Configurando Cypress para testes E2E..."
+    if command -v npx &> /dev/null; then
+        npx cypress install --force 2>&1 | grep -v "WARN" || {
+            warning "Erro ao instalar Cypress binário"
+            info "Você pode instalar manualmente depois com: npx cypress install"
+        }
+        success "Cypress configurado"
     fi
 
     cd - > /dev/null
@@ -632,11 +645,11 @@ if [ "$MODE" = "prod" ]; then
     log "Configurando para produção..."
     export ENV=prod
     export COMPOSE_PROJECT_NAME=news-portal
-    # Carregar arquivo de ambiente de produção se existir
-    if [ -f ".env.prod" ]; then
-        log "Carregando configurações de produção..."
+    # Carregar arquivo de ambiente principal
+    if [ -f ".env" ]; then
+        log "Carregando configurações do .env..."
         set -a
-        source .env.prod
+        source .env
         set +a
     fi
 else
@@ -1503,6 +1516,17 @@ echo -e "   • Ver logs:       ${YELLOW}tail -f frontend.log${NC}"
 echo -e "   • Health check:   ${YELLOW}./health-check.sh${NC}"
 echo -e "   • Diagnóstico:    ${YELLOW}./diagnose.sh${NC}"
 echo -e "   • Renovar token:  ${YELLOW}./refresh-token.sh${NC}"
+echo ""
+echo -e "${BLUE}🧪 Testes e Qualidade:${NC}"
+echo -e "   • Testes unitários:  ${YELLOW}cd frontend && npm test${NC}"
+echo -e "   • Testes E2E:        ${YELLOW}cd frontend && npm run test:e2e${NC}"
+echo -e "   • Cobertura:         ${YELLOW}cd frontend && npm run test:coverage${NC}"
+echo -e "   • Bundle analysis:   ${YELLOW}cd frontend && npm run analyze${NC}"
+echo ""
+echo -e "${BLUE}📊 Monitoramento (opcional):${NC}"
+echo -e "   • Iniciar:        ${YELLOW}docker-compose --profile monitoring up -d${NC}"
+echo -e "   • Grafana:        ${GREEN}http://localhost:3001${NC} (admin/admin123)"
+echo -e "   • Prometheus:     ${GREEN}http://localhost:9090${NC}"
 echo ""
 
 # Mostrar aviso sobre Node.js se necessário

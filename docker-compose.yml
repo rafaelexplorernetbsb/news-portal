@@ -117,7 +117,7 @@ services:
   # ========================================
   frontend:
     build:
-      context: .
+      context: ./frontend
       dockerfile: Dockerfile
     container_name: ${COMPOSE_PROJECT_NAME:-news-portal}_frontend_${ENV:-dev}
     restart: unless-stopped
@@ -126,6 +126,8 @@ services:
       NEXT_PUBLIC_API_TOKEN: ${NEXT_PUBLIC_API_TOKEN}
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-http://localhost:3000}
       NEXT_PUBLIC_SITE_NAME: ${NEXT_PUBLIC_SITE_NAME:-Portal de Notícias}
+    # Em produção: não expõe porta diretamente (via nginx)
+    # Em desenvolvimento: expõe para acesso direto
     ports:
       - "${FRONTEND_PORT:-3000}:3000"
     depends_on:
@@ -156,10 +158,82 @@ services:
     profiles:
       - production
 
+  # ========================================
+  # MONITORING - PROMETHEUS
+  # ========================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-news-portal}_prometheus_${ENV:-dev}
+    restart: unless-stopped
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - directus_network
+    profiles:
+      - monitoring
+
+  # ========================================
+  # MONITORING - GRAFANA
+  # ========================================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-news-portal}_grafana_${ENV:-dev}
+    restart: unless-stopped
+    ports:
+      - "${GRAFANA_PORT:-3001}:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin123}
+      GF_USERS_ALLOW_SIGN_UP: false
+      GF_INSTALL_PLUGINS: grafana-piechart-panel
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - directus_network
+    profiles:
+      - monitoring
+
+  # ========================================
+  # MONITORING - NODE EXPORTER
+  # ========================================
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: ${COMPOSE_PROJECT_NAME:-news-portal}_node_exporter_${ENV:-dev}
+    restart: unless-stopped
+    ports:
+      - "${NODE_EXPORTER_PORT:-9100}:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    networks:
+      - directus_network
+    profiles:
+      - monitoring
+
 volumes:
   postgres_data:
   redis_data:
   directus_uploads:
+  prometheus_data:
+  grafana_data:
 
 networks:
   directus_network:

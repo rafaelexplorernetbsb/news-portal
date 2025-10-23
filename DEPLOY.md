@@ -11,6 +11,30 @@ Este documento contém instruções passo a passo para fazer o deploy do Portal 
 - Certificado SSL configurado (Let's Encrypt recomendado)
 - Domínio configurado com DNS
 
+## 🌐 URLs de Produção
+
+Com a configuração do Nginx como reverse proxy, você terá:
+
+- **Frontend**: `https://meusite.com.br` → Portal de notícias
+- **Admin Directus**: `https://meusite.com.br/admin` → Painel administrativo
+- **API Directus**: `https://meusite.com.br/api` → API (usado pelo frontend)
+- **Assets**: `https://meusite.com.br/assets` → Imagens e arquivos
+- **Uploads**: `https://meusite.com.br/uploads` → Arquivos enviados
+
+### 🔧 Como Funciona
+
+1. **Nginx** recebe todas as requisições na porta 443 (HTTPS)
+2. **Roteamento inteligente**:
+   - `/admin` → Directus Admin (porta 8055)
+   - `/api` → Directus API (porta 8055) 
+   - `/assets` → Directus Assets (porta 8055)
+   - `/uploads` → Directus Uploads (porta 8055)
+   - `/` → Frontend Next.js (porta 3000)
+
+3. **Segurança**: Directus não fica exposto diretamente
+4. **Performance**: Cache de assets e compressão gzip
+5. **SSL**: Terminação SSL no Nginx
+
 ## 🔐 Passo 1: Preparação Inicial
 
 ### 1.1. Clone o Repositório
