@@ -71,7 +71,9 @@ export default function NotificationPopup({
             const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
             if (!vapidPublicKey) {
-              console.warn('NEXT_PUBLIC_VAPID_PUBLIC_KEY não está definida nas variáveis de ambiente');
+              console.warn(
+                'NEXT_PUBLIC_VAPID_PUBLIC_KEY não está definida nas variáveis de ambiente'
+              );
               // Continua sem push notifications, mas mostra notificação local
               registration.showNotification(
                 getProjectName(projectSettings?.project_name || null) ||
@@ -121,12 +123,18 @@ export default function NotificationPopup({
             });
 
             try {
-              const response = await Promise.race([responsePromise, timeoutPromise]) as Response;
+              const response = (await Promise.race([
+                responsePromise,
+                timeoutPromise,
+              ])) as Response;
               if (!response.ok) {
                 console.warn('Falha ao registrar push subscription');
               }
             } catch (error) {
-              console.warn('Timeout ou erro ao registrar push subscription:', error);
+              console.warn(
+                'Timeout ou erro ao registrar push subscription:',
+                error
+              );
             }
 
             registration.showNotification(
