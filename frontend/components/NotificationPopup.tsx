@@ -70,7 +70,31 @@ export default function NotificationPopup({
         if ('serviceWorker' in navigator && 'PushManager' in window) {
           try {
             console.log('🔔 Aguardando Service Worker...');
-            const registration = await navigator.serviceWorker.ready;
+
+            // Tentar obter o Service Worker existente ou registrar um novo
+            let registration = await navigator.serviceWorker.getRegistration();
+
+            if (!registration) {
+              console.log(
+                '🔔 Nenhum Service Worker encontrado, registrando...'
+              );
+              registration = await navigator.serviceWorker.register('/sw.js');
+              console.log('🔔 Service Worker registrado!');
+            } else {
+              console.log('🔔 Service Worker já registrado!');
+            }
+
+            // Aguardar com timeout de 5 segundos
+            const readyPromise = navigator.serviceWorker.ready;
+            const timeoutPromise = new Promise<ServiceWorkerRegistration>(
+              (_, reject) =>
+                setTimeout(
+                  () => reject(new Error('Service Worker timeout')),
+                  5000
+                )
+            );
+
+            registration = await Promise.race([readyPromise, timeoutPromise]);
             console.log('🔔 Service Worker pronto!');
 
             const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
@@ -162,10 +186,18 @@ export default function NotificationPopup({
             console.log('🔔 Notificação exibida com sucesso!');
           } catch (error) {
             console.error('🔔 Erro ao configurar push notifications:', error);
-            if ('serviceWorker' in navigator) {
-              try {
-                const registration = await navigator.serviceWorker.ready;
-                await registration.showNotification(
+
+            // Tentar mostrar notificação básica mesmo sem Service Worker pronto
+            try {
+              // Tentar obter qualquer registro existente
+              const existingRegistration =
+                await navigator.serviceWorker.getRegistration();
+
+              if (existingRegistration) {
+                console.log(
+                  '🔔 Tentando exibir notificação com registro existente...'
+                );
+                await existingRegistration.showNotification(
                   getProjectName(projectSettings?.project_name || null) ||
                     'Portal de Notícias',
                   {
@@ -176,12 +208,18 @@ export default function NotificationPopup({
                   }
                 );
                 console.log('🔔 Notificação de fallback exibida');
-              } catch (fallbackError) {
-                console.error(
-                  '🔔 Erro ao exibir notificação de fallback:',
-                  fallbackError
+              } else {
+                console.warn(
+                  '🔔 Não foi possível exibir notificação: Service Worker não disponível'
                 );
+                // Sucesso mesmo sem notificação - permissão foi concedida
               }
+            } catch (fallbackError) {
+              console.error(
+                '🔔 Erro ao exibir notificação de fallback:',
+                fallbackError
+              );
+              // Continua normalmente - permissão foi concedida de qualquer forma
             }
           }
         } else {
