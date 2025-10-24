@@ -4,9 +4,23 @@
   "description": "Push notifications endpoint for Directus",
   "type": "module",
   "directus:extension": {
-    "type": "endpoint",
-    "path": "dist/index.js",
-    "source": "src/index.ts",
+    "type": "bundle",
+    "path": {
+      "app": "dist/index.js",
+      "api": "dist/index.js"
+    },
+    "entries": [
+      {
+        "type": "endpoint",
+        "name": "push-notifications",
+        "source": "src/index.ts"
+      },
+      {
+        "type": "hook",
+        "name": "notify-new-news",
+        "source": "src/webhook.ts"
+      }
+    ],
     "host": "^11.12.0"
   },
   "scripts": {
