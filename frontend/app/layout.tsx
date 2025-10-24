@@ -20,6 +20,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR">
+      <head>
+        <Script
+          src="/isolate-directus-cookies.js"
+          strategy="beforeInteractive"
+        />
+      </head>
       <body className={inter.className}>
         <div className="min-h-screen bg-gray-50 flex flex-col">
           <Header />
