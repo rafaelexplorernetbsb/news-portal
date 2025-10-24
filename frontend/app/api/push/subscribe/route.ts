@@ -130,8 +130,13 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
+    console.error('❌ Erro ao processar subscrição push:', error);
     return NextResponse.json(
-      { success: false, error: 'Erro ao processar subscrição' },
+      {
+        success: false,
+        error: 'Erro ao processar subscrição',
+        details: error instanceof Error ? error.message : 'Erro desconhecido',
+      },
       { status: 500 }
     );
   }

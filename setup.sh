@@ -845,6 +845,16 @@ else
     warning "Falha ao executar seeds via CLI, mas continuando..."
 fi
 
+# Criar tabela push_subscriptions para notificações push
+log "Criando tabela push_subscriptions..."
+docker exec news-portal_db_dev sh -c "PGPASSWORD=directus123 psql -h localhost -U directus_dev -d directus_dev -c \"CREATE TABLE IF NOT EXISTS push_subscriptions (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), endpoint text NOT NULL UNIQUE, expiration_time timestamp, keys_p256dh text NOT NULL, keys_auth text NOT NULL, user_agent text, created_at timestamp DEFAULT CURRENT_TIMESTAMP, updated_at timestamp DEFAULT CURRENT_TIMESTAMP);\"" 2>/dev/null
+
+if [ $? -eq 0 ]; then
+    success "Tabela push_subscriptions criada com sucesso"
+else
+    warning "Falha ao criar tabela push_subscriptions, mas continuando..."
+fi
+
 # =====================================================
 # 13. GERAR TOKEN ESTÁTICO E ATUALIZAR .env
 # =====================================================
