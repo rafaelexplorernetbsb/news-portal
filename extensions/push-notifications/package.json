@@ -6,18 +6,18 @@
   "directus:extension": {
     "type": "bundle",
     "path": {
-      "app": "dist/index.js",
-      "api": "dist/index.js"
+      "app": "dist/app.js",
+      "api": "dist/api.js"
     },
     "entries": [
       {
         "type": "endpoint",
-        "name": "push-notifications",
+        "name": "endpoint",
         "source": "src/index.ts"
       },
       {
         "type": "hook",
-        "name": "notify-new-news",
+        "name": "hook",
         "source": "src/webhook.ts"
       }
     ],
