@@ -87,6 +87,11 @@ services:
       # Public URL
       PUBLIC_URL: ${DIRECTUS_URL:-http://localhost:8055}
 
+      # Push Notifications (VAPID)
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      VAPID_EMAIL: ${VAPID_EMAIL:-mailto:admin@example.com}
+
       # Rate Limiting - Apenas em produção
       RATE_LIMITER_ENABLED: ${RATE_LIMITER_ENABLED:-false}
       RATE_LIMITER_POINTS: ${RATE_LIMITER_POINTS:-50}
