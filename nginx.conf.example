@@ -25,17 +25,17 @@ server {
     location / {
         proxy_pass http://localhost:3000;
         proxy_http_version 1.1;
-        
+
         # Headers para proxy
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        
+
         # WebSocket support (para HMR e push notifications)
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
-        
+
         # Timeouts
         proxy_connect_timeout 60s;
         proxy_send_timeout 60s;
@@ -43,7 +43,7 @@ server {
 
         # IMPORTANTE: Remover cookies do Directus das requisições do frontend
         proxy_set_header Cookie "";
-        
+
         # Adicionar apenas cookies que NÃO são do Directus
         set $filtered_cookie "";
         if ($http_cookie ~* "(.*)directus_session_token=[^;]+(.*)" ) {
@@ -64,20 +64,20 @@ server {
         # Remover /admin do path antes de enviar ao Directus
         rewrite ^/admin(/.*)$ $1 break;
         rewrite ^/admin$ / break;
-        
+
         proxy_pass http://localhost:8055;
         proxy_http_version 1.1;
-        
+
         # Headers para proxy
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        
+
         # WebSocket support
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
-        
+
         # Timeouts maiores para uploads
         proxy_connect_timeout 300s;
         proxy_send_timeout 300s;
@@ -86,7 +86,7 @@ server {
 
         # CRÍTICO: Reescrever cookies do Directus para incluir Path=/admin
         proxy_cookie_path / /admin;
-        
+
         # Adicionar flags de segurança aos cookies
         proxy_cookie_flags ~ secure httponly samesite=lax;
     }
@@ -95,7 +95,7 @@ server {
     location /admin/assets {
         rewrite ^/admin/assets(/.*)$ /assets$1 break;
         proxy_pass http://localhost:8055;
-        
+
         # Headers básicos
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
