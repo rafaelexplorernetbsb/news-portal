@@ -59,9 +59,7 @@ export default function NotificationPopup({
     setIsRequesting(true);
 
     try {
-      console.log('🔔 Solicitando permissão de notificação...');
       const permission = await Notification.requestPermission();
-      console.log('🔔 Permissão recebida:', permission);
 
       if (permission === 'granted') {
         localStorage.setItem('notification-permission-responded', 'accepted');
@@ -69,22 +67,12 @@ export default function NotificationPopup({
 
         if ('serviceWorker' in navigator && 'PushManager' in window) {
           try {
-            console.log('🔔 Aguardando Service Worker...');
-
-            // Tentar obter o Service Worker existente ou registrar um novo
             let registration = await navigator.serviceWorker.getRegistration();
 
             if (!registration) {
-              console.log(
-                '🔔 Nenhum Service Worker encontrado, registrando...'
-              );
               registration = await navigator.serviceWorker.register('/sw.js');
-              console.log('🔔 Service Worker registrado!');
-            } else {
-              console.log('🔔 Service Worker já registrado!');
             }
 
-            // Aguardar com timeout de 5 segundos
             const readyPromise = navigator.serviceWorker.ready;
             const timeoutPromise = new Promise<ServiceWorkerRegistration>(
               (_, reject) =>
@@ -95,15 +83,10 @@ export default function NotificationPopup({
             );
 
             registration = await Promise.race([readyPromise, timeoutPromise]);
-            console.log('🔔 Service Worker pronto!');
 
             const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
             if (!vapidPublicKey) {
-              console.warn(
-                'NEXT_PUBLIC_VAPID_PUBLIC_KEY não está definida nas variáveis de ambiente'
-              );
-              // Continua sem push notifications, mas mostra notificação local
               await registration.showNotification(
                 getProjectName(projectSettings?.project_name || null) ||
                   'Portal de Notícias',
@@ -114,7 +97,6 @@ export default function NotificationPopup({
                   tag: 'welcome-notification',
                 }
               );
-              console.log('🔔 Notificação local exibida');
               onAccept?.();
               return;
             }
@@ -134,14 +116,11 @@ export default function NotificationPopup({
               return outputArray;
             }
 
-            console.log('🔔 Inscrevendo para push notifications...');
             const subscription = await registration.pushManager.subscribe({
               userVisibleOnly: true,
               applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
             });
-            console.log('🔔 Inscrição criada!');
 
-            // Timeout para evitar travamento na requisição ao servidor
             const subscribeTimeoutPromise = new Promise((_, reject) =>
               setTimeout(() => reject(new Error('Timeout')), 10000)
             );
@@ -155,24 +134,10 @@ export default function NotificationPopup({
             });
 
             try {
-              console.log('🔔 Enviando inscrição para servidor...');
-              const response = (await Promise.race([
-                responsePromise,
-                subscribeTimeoutPromise,
-              ])) as Response;
-              if (!response.ok) {
-                console.warn('Falha ao registrar push subscription');
-              } else {
-                console.log('🔔 Inscrição registrada no servidor!');
-              }
+              await Promise.race([responsePromise, subscribeTimeoutPromise]);
             } catch (error) {
-              console.warn(
-                'Timeout ou erro ao registrar push subscription:',
-                error
-              );
+              // Silencioso em produção
             }
-
-            console.log('🔔 Exibindo notificação de boas-vindas...');
             await registration.showNotification(
               getProjectName(projectSettings?.project_name || null) ||
                 'Portal de Notícias',
@@ -183,20 +148,12 @@ export default function NotificationPopup({
                 tag: 'welcome-notification',
               }
             );
-            console.log('🔔 Notificação exibida com sucesso!');
           } catch (error) {
-            console.error('🔔 Erro ao configurar push notifications:', error);
-
-            // Tentar mostrar notificação básica mesmo sem Service Worker pronto
             try {
-              // Tentar obter qualquer registro existente
               const existingRegistration =
                 await navigator.serviceWorker.getRegistration();
 
               if (existingRegistration) {
-                console.log(
-                  '🔔 Tentando exibir notificação com registro existente...'
-                );
                 await existingRegistration.showNotification(
                   getProjectName(projectSettings?.project_name || null) ||
                     'Portal de Notícias',
@@ -207,41 +164,25 @@ export default function NotificationPopup({
                     tag: 'welcome-notification',
                   }
                 );
-                console.log('🔔 Notificação de fallback exibida');
-              } else {
-                console.warn(
-                  '🔔 Não foi possível exibir notificação: Service Worker não disponível'
-                );
-                // Sucesso mesmo sem notificação - permissão foi concedida
               }
             } catch (fallbackError) {
-              console.error(
-                '🔔 Erro ao exibir notificação de fallback:',
-                fallbackError
-              );
-              // Continua normalmente - permissão foi concedida de qualquer forma
+              // Silencioso em produção
             }
           }
-        } else {
-          console.warn('🔔 Service Worker ou PushManager não disponível');
         }
 
         onAccept?.();
-        console.log('🔔 Processo concluído!');
       } else {
-        console.log('🔔 Permissão negada pelo usuário');
         localStorage.setItem('notification-permission-responded', 'declined');
         localStorage.setItem('notification-permission', 'denied');
       }
     } catch (error) {
-      console.error('🔔 Erro ao processar notificações:', error);
+      // Silencioso em produção
     } finally {
-      console.log('🔔 Finalizando popup...');
       setIsRequesting(false);
       setIsClosing(true);
       setTimeout(() => {
         setIsVisible(false);
-        console.log('🔔 Popup fechado');
       }, 300);
     }
   };

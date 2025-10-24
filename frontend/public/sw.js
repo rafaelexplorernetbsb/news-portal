@@ -1,14 +1,10 @@
 self.addEventListener('push', function (event) {
-  console.log('🔔 [SW] Push event recebido!', event);
-
   if (!event.data) {
-    console.warn('⚠️  [SW] Push event sem dados');
     return;
   }
 
   try {
     const data = event.data.json();
-    console.log('📦 [SW] Dados recebidos:', data);
 
     const options = {
       body: data.body || 'Nova notícia disponível',
@@ -30,20 +26,11 @@ self.addEventListener('push', function (event) {
       ],
     };
 
-    console.log('📤 [SW] Mostrando notificação:', data.title);
-
     event.waitUntil(
-      self.registration.showNotification(
-        data.title || 'Portal de Notícias',
-        options
-      ).then(() => {
-        console.log('✅ [SW] Notificação exibida com sucesso!');
-      }).catch((error) => {
-        console.error('❌ [SW] Erro ao exibir notificação:', error);
-      })
+      self.registration.showNotification(data.title || 'Portal de Notícias', options)
     );
   } catch (error) {
-    console.error('❌ [SW] Erro ao processar push:', error);
+    // Silencioso em produção
   }
 });
 
@@ -55,6 +42,4 @@ self.addEventListener('notificationclick', function (event) {
   }
 });
 
-self.addEventListener('notificationclose', function (event) {
-  // Silencioso em produção
-});
+self.addEventListener('notificationclose', function (event) {});

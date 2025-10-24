@@ -7,8 +7,6 @@ export async function POST(request: NextRequest) {
 
     const DIRECTUS_URL = process.env.DIRECTUS_URL || 'http://localhost:8055';
 
-    console.log('📤 Enviando push notification via proxy...');
-
     const response = await fetch(`${DIRECTUS_URL}/push-notifications/send`, {
       method: 'POST',
       headers: {
@@ -24,11 +22,8 @@ export async function POST(request: NextRequest) {
 
     const data = await response.json();
 
-    console.log('✅ Resposta do Directus:', data);
-
     return NextResponse.json(data);
   } catch (error) {
-    console.error('❌ Erro ao enviar push notification:', error);
     return NextResponse.json(
       {
         success: false,
