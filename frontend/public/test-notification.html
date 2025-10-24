@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Notificações Push</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+            display: block;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error { color: #f00; }
+        .success { color: #0f0; }
+        .info { color: #0ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔔 Teste de Notificações Push</h1>
+
+        <button onclick="testPermission()">1. Verificar Permissão</button>
+        <button onclick="testServiceWorker()">2. Registrar Service Worker</button>
+        <button onclick="testLocalNotification()">3. Teste Local (sem push)</button>
+        <button onclick="testPushSubscription()">4. Criar Subscrição Push</button>
+        <button onclick="testServerNotification()">5. Enviar Notificação do Servidor</button>
+        <button onclick="clearLog()">🗑️ Limpar Log</button>
+
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        const log = (msg, type = 'info') => {
+            const logDiv = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<div class="${type}">[${time}] ${msg}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(msg);
+        };
+
+        const clearLog = () => {
+            document.getElementById('log').innerHTML = '';
+        };
+
+        async function testPermission() {
+            log('🔍 Verificando permissão de notificações...', 'info');
+
+            if (!('Notification' in window)) {
+                log('❌ Este navegador não suporta notificações!', 'error');
+                return;
+            }
+
+            log(`📊 Permissão atual: ${Notification.permission}`, 'info');
+
+            if (Notification.permission === 'default') {
+                log('🙋 Solicitando permissão...', 'info');
+                const permission = await Notification.requestPermission();
+                log(`✅ Permissão: ${permission}`, permission === 'granted' ? 'success' : 'error');
+            } else if (Notification.permission === 'granted') {
+                log('✅ Permissão já concedida!', 'success');
+            } else {
+                log('❌ Permissão negada. Vá em Configurações do navegador para permitir.', 'error');
+            }
+        }
+
+        async function testServiceWorker() {
+            log('🔍 Verificando Service Worker...', 'info');
+
+            if (!('serviceWorker' in navigator)) {
+                log('❌ Service Worker não suportado!', 'error');
+                return;
+            }
+
+            try {
+                const registration = await navigator.serviceWorker.register('/sw.js');
+                log('✅ Service Worker registrado!', 'success');
+                log(`📍 Scope: ${registration.scope}`, 'info');
+
+                await navigator.serviceWorker.ready;
+                log('✅ Service Worker pronto!', 'success');
+            } catch (error) {
+                log(`❌ Erro ao registrar Service Worker: ${error.message}`, 'error');
+            }
+        }
+
+        async function testLocalNotification() {
+            log('🔔 Testando notificação local...', 'info');
+
+            if (Notification.permission !== 'granted') {
+                log('❌ Permissão não concedida!', 'error');
+                return;
+            }
+
+            try {
+                const registration = await navigator.serviceWorker.ready;
+                await registration.showNotification('🧪 Teste Local', {
+                    body: 'Esta é uma notificação de teste local (sem push)',
+                    icon: '/favicon.ico',
+                    badge: '/favicon.ico',
+                    requireInteraction: true,
+                    vibrate: [200, 100, 200]
+                });
+                log('✅ Notificação local exibida!', 'success');
+            } catch (error) {
+                log(`❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testPushSubscription() {
+            log('📡 Criando subscrição push...', 'info');
+
+            try {
+                const registration = await navigator.serviceWorker.ready;
+
+                const vapidPublicKey = 'BEMOcJ6Dkj_5DeGVdERtJa80y0XZez-AQYBZfnVO0cwwm23TkpZC3XM75qMnCpvXSU1eIqA1AAPCDHZ8vrn5izM';
+
+                function urlBase64ToUint8Array(base64String) {
+                    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+                    const base64 = (base64String + padding)
+                        .replace(/-/g, '+')
+                        .replace(/_/g, '/');
+                    const rawData = window.atob(base64);
+                    const outputArray = new Uint8Array(rawData.length);
+                    for (let i = 0; i < rawData.length; ++i) {
+                        outputArray[i] = rawData.charCodeAt(i);
+                    }
+                    return outputArray;
+                }
+
+                const subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+                });
+
+                log('✅ Subscrição criada!', 'success');
+                log(`📍 Endpoint: ${subscription.endpoint.substring(0, 50)}...`, 'info');
+
+                // Enviar para o servidor
+                const response = await fetch('/api/push/subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(subscription.toJSON())
+                });
+
+                if (response.ok) {
+                    log('✅ Subscrição salva no servidor!', 'success');
+                } else {
+                    log(`❌ Erro ao salvar no servidor: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Erro: ${error.message}`, 'error');
+            }
+        }
+
+        async function testServerNotification() {
+            log('📤 Enviando notificação do servidor...', 'info');
+
+            try {
+                // Usar proxy do Next.js para evitar CORS
+                const response = await fetch('/api/test-push', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        title: '🎯 TESTE DO SERVIDOR',
+                        body: 'Esta notificação foi enviada via API!',
+                        url: window.location.origin,
+                        icon: '/favicon.ico'
+                    })
+                });
+
+                log(`📊 Status da resposta: ${response.status}`, 'info');
+
+                if (!response.ok) {
+                    const text = await response.text();
+                    log(`❌ Erro HTTP ${response.status}: ${text.substring(0, 200)}`, 'error');
+                    return;
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    log(`❌ Resposta não é JSON. Content-Type: ${contentType}`, 'error');
+                    log(`📄 Primeiros caracteres: ${text.substring(0, 100)}`, 'error');
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    log(`✅ Servidor: ${data.message}`, 'success');
+                    log('👀 Verifique se a notificação apareceu!', 'info');
+                } else {
+                    log(`❌ Erro: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Erro de conexão: ${error.message}`, 'error');
+                log(`📋 Detalhes: ${error.stack}`, 'error');
+            }
+        }
+
+        // Auto-start
+        log('🚀 Página de teste carregada!', 'success');
+        log('👉 Clique nos botões na ordem para testar cada etapa', 'info');
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guia - Teste de Push Notifications</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            text-align: center;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+        .step h2 {
+            margin-top: 0;
+            color: #764ba2;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            border-left: 5px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .btn {
+            display: block;
+            background: #667eea;
+            color: white;
+            text-align: center;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .btn:hover {
+            background: #764ba2;
+        }
+        code {
+            background: #f8f9fa;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔔 Guia de Teste - Push Notifications</h1>
+
+        <p style="text-align: center; font-size: 18px; color: #666;">
+            Siga as instruções abaixo para testar o sistema de notificações push!
+        </p>
+
+        <div class="warning">
+            <strong>⚠️ IMPORTANTE:</strong>
+            <ul>
+                <li><strong>Navegador:</strong> Use Chrome, Edge ou Brave (não funciona em Safari/Firefox)</li>
+                <li><strong>Desktop:</strong> Funciona melhor em computador (mobile tem limitações)</li>
+                <li><strong>Permissões:</strong> Você precisará permitir notificações quando solicitado</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h2>📋 Passo 1: Acesse a Página de Teste</h2>
+            <a href="/test-notification.html" class="btn">🚀 INICIAR TESTE</a>
+        </div>
+
+        <div class="step">
+            <h2>🔘 Passo 2: Execute os Testes em Ordem</h2>
+            <p>Na página de teste, clique nos botões <strong>na ordem</strong>:</p>
+            <ol>
+                <li><strong>Verificar Permissão</strong> - Permite notificações no navegador</li>
+                <li><strong>Registrar Service Worker</strong> - Registra o worker para push</li>
+                <li><strong>Teste Local</strong> - Testa notificação local (deve aparecer!)</li>
+                <li><strong>Criar Subscrição Push</strong> - Cria subscrição no servidor</li>
+                <li><strong>Enviar do Servidor</strong> - Envia notificação via API</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h2>✅ Passo 3: O Que Esperar</h2>
+            <p><strong>Teste 3 (Local):</strong> Uma notificação deve aparecer imediatamente no canto da tela</p>
+            <p><strong>Teste 5 (Servidor):</strong> Uma notificação deve aparecer após alguns segundos</p>
+            <p><strong>Logs:</strong> Acompanhe os logs na área preta abaixo dos botões</p>
+        </div>
+
+        <div class="success">
+            <strong>✅ SUCESSO!</strong>
+            <p>Se você viu as notificações nos testes 3 e 5, o sistema está 100% funcional!</p>
+        </div>
+
+        <div class="warning">
+            <strong>❌ Problemas Comuns:</strong>
+            <ul>
+                <li><strong>Notificação não aparece:</strong> Verifique as configurações de notificação do seu sistema operacional</li>
+                <li><strong>Erro no teste 4:</strong> Recarregue a página (Ctrl+Shift+R)</li>
+                <li><strong>Teste 3 funciona mas 5 não:</strong> Verifique o modo "Não Perturbe" do seu SO</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 2px solid #f0f0f0;">
+            <a href="/test-notification.html" class="btn">🔔 COMEÇAR TESTE AGORA</a>
+            <p style="color: #999; margin-top: 20px;">Desenvolvido com ❤️ por Portal de Notícias</p>
+        </div>
+    </div>
+</body>
+</html>
+

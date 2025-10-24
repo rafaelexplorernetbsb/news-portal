@@ -1,13 +1,23 @@
 self.addEventListener('push', function (event) {
-  if (event.data) {
+  console.log('🔔 [SW] Push event recebido!', event);
+
+  if (!event.data) {
+    console.warn('⚠️  [SW] Push event sem dados');
+    return;
+  }
+
+  try {
     const data = event.data.json();
+    console.log('📦 [SW] Dados recebidos:', data);
 
     const options = {
       body: data.body || 'Nova notícia disponível',
-      icon: '/favicon.ico',
-      badge: '/favicon.ico',
+      icon: data.icon || '/favicon.ico',
+      badge: data.badge || '/favicon.ico',
       tag: data.tag || 'news-notification',
       data: data.data || {},
+      requireInteraction: true,
+      vibrate: [200, 100, 200],
       actions: [
         {
           action: 'view',
@@ -20,12 +30,20 @@ self.addEventListener('push', function (event) {
       ],
     };
 
+    console.log('📤 [SW] Mostrando notificação:', data.title);
+
     event.waitUntil(
       self.registration.showNotification(
-        data.title || 'CrônicaDigital',
+        data.title || 'Portal de Notícias',
         options
-      )
+      ).then(() => {
+        console.log('✅ [SW] Notificação exibida com sucesso!');
+      }).catch((error) => {
+        console.error('❌ [SW] Erro ao exibir notificação:', error);
+      })
     );
+  } catch (error) {
+    console.error('❌ [SW] Erro ao processar push:', error);
   }
 });
 
