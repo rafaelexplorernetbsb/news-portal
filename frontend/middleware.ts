@@ -1,21 +1,43 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  const response = NextResponse.next();
-
-  // Lista de cookies do Directus
-  const directusCookies = [
-    'directus_session_token',
-    'directus_refresh_token',
-  ];
-
-  // Remover cookies do Directus APENAS das requisições do frontend
-  // Isso impede que sejam enviados ao Next.js, mas não os deleta do navegador
-  directusCookies.forEach((cookieName) => {
-    if (request.cookies.has(cookieName)) {
-      // Remove da requisição atual
-      request.cookies.delete(cookieName);
+  // Clonar os headers da requisição
+  const requestHeaders = new Headers(request.headers);
+  
+  // Obter o cookie header original
+  const cookieHeader = requestHeaders.get('cookie');
+  
+  if (cookieHeader) {
+    // Lista de cookies do Directus
+    const directusCookies = [
+      'directus_session_token',
+      'directus_refresh_token',
+      'directus_access_token',
+    ];
+    
+    // Filtrar cookies removendo os do Directus
+    const filteredCookies = cookieHeader
+      .split(';')
+      .map(cookie => cookie.trim())
+      .filter(cookie => {
+        const cookieName = cookie.split('=')[0];
+        return !directusCookies.includes(cookieName);
+      })
+      .join('; ');
+    
+    // Atualizar o header Cookie (ou remover se vazio)
+    if (filteredCookies) {
+      requestHeaders.set('cookie', filteredCookies);
+    } else {
+      requestHeaders.delete('cookie');
     }
+  }
+  
+  // Criar resposta com headers modificados
+  const response = NextResponse.next({
+    request: {
+      headers: requestHeaders,
+    },
   });
 
   return response;

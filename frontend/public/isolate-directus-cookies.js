@@ -25,7 +25,7 @@
 
   // Interceptar o getter de cookies para filtrar
   const originalCookieDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie');
-  
+
   Object.defineProperty(document, 'cookie', {
     get: function() {
       const cookies = originalCookieDescriptor.get.call(this);
@@ -53,7 +53,7 @@
 
   // Deletar quando a página ganhar foco
   window.addEventListener('focus', deleteDirectusCookies);
-  
+
   // Deletar quando a página se tornar visível
   document.addEventListener('visibilitychange', function() {
     if (!document.hidden) {
