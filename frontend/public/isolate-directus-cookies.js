@@ -1,54 +1,67 @@
-// Script para isolar cookies do Directus
+// Script para isolar cookies do Directus de forma agressiva
 (function() {
   'use strict';
 
-  // Função para reescrever cookies do Directus com path /admin
-  function isolateDirectusCookies() {
-    const directusCookies = ['directus_session_token', 'directus_refresh_token'];
-    
-    document.cookie.split(';').forEach(function(cookie) {
-      const cookiePair = cookie.trim().split('=');
-      const cookieName = cookiePair[0];
-      
-      if (directusCookies.includes(cookieName)) {
-        const cookieValue = cookiePair[1];
-        
-        // Deletar cookie do path atual
-        document.cookie = cookieName + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
-        
-        // Recriar cookie APENAS para o Directus (path /admin ou domínio específico)
-        // Como estamos em localhost:3000 e o Directus está em localhost:8055,
-        // o cookie não deveria estar aqui. Então apenas deletamos.
-        document.cookie = cookieName + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost;';
-      }
+  const directusCookies = ['directus_session_token', 'directus_refresh_token', 'directus_access_token'];
+
+  // Função para deletar cookies do Directus de todas as formas possíveis
+  function deleteDirectusCookies() {
+    directusCookies.forEach(function(cookieName) {
+      // Deletar com path /
+      document.cookie = cookieName + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      // Deletar com domain localhost
+      document.cookie = cookieName + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost;';
+      // Deletar com domain .localhost
+      document.cookie = cookieName + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.localhost;';
+      // Deletar sem domain
+      document.cookie = cookieName + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=;';
+      // Deletar com max-age
+      document.cookie = cookieName + '=; max-age=0; path=/;';
     });
   }
 
-  // Executar imediatamente
-  isolateDirectusCookies();
+  // Executar IMEDIATAMENTE (antes de tudo)
+  deleteDirectusCookies();
 
-  // Interceptar tentativas de definir cookies
+  // Interceptar o getter de cookies para filtrar
   const originalCookieDescriptor = Object.getOwnPropertyDescriptor(Document.prototype, 'cookie');
+  
   Object.defineProperty(document, 'cookie', {
     get: function() {
-      return originalCookieDescriptor.get.call(this);
+      const cookies = originalCookieDescriptor.get.call(this);
+      // Filtrar cookies do Directus ao ler
+      return cookies.split(';')
+        .filter(function(cookie) {
+          const cookieName = cookie.trim().split('=')[0];
+          return !directusCookies.includes(cookieName);
+        })
+        .join(';');
     },
     set: function(value) {
-      // Se for tentativa de definir cookie do Directus, bloquear
-      const directusCookies = ['directus_session_token', 'directus_refresh_token'];
       const cookieName = value.split('=')[0].trim();
-      
+      // Bloquear tentativas de criar cookies do Directus
       if (directusCookies.includes(cookieName)) {
-        // Não permitir
         return;
       }
-      
-      // Outros cookies podem ser definidos normalmente
       originalCookieDescriptor.set.call(this, value);
+    },
+    configurable: true
+  });
+
+  // Deletar continuamente (a cada 1 segundo)
+  setInterval(deleteDirectusCookies, 1000);
+
+  // Deletar quando a página ganhar foco
+  window.addEventListener('focus', deleteDirectusCookies);
+  
+  // Deletar quando a página se tornar visível
+  document.addEventListener('visibilitychange', function() {
+    if (!document.hidden) {
+      deleteDirectusCookies();
     }
   });
 
-  // Executar periodicamente para limpar se aparecerem
-  setInterval(isolateDirectusCookies, 3000);
+  // Deletar antes de descarregar (ao navegar)
+  window.addEventListener('beforeunload', deleteDirectusCookies);
 })();
 
