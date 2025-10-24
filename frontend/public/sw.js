@@ -27,7 +27,10 @@ self.addEventListener('push', function (event) {
     };
 
     event.waitUntil(
-      self.registration.showNotification(data.title || 'Portal de Notícias', options)
+      self.registration.showNotification(
+        data.title || 'Portal de Notícias',
+        options
+      )
     );
   } catch (error) {
     // Silencioso em produção
