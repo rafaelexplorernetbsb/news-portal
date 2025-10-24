@@ -92,6 +92,10 @@ services:
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
       VAPID_EMAIL: ${VAPID_EMAIL:-mailto:admin@example.com}
 
+      # Token Expiration - 1 ano para webscrapers
+      ACCESS_TOKEN_TTL: ${ACCESS_TOKEN_TTL:-365d}
+      REFRESH_TOKEN_TTL: ${REFRESH_TOKEN_TTL:-365d}
+
       # Rate Limiting - Apenas em produção
       RATE_LIMITER_ENABLED: ${RATE_LIMITER_ENABLED:-false}
       RATE_LIMITER_POINTS: ${RATE_LIMITER_POINTS:-50}
