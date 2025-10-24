@@ -18,8 +18,8 @@ export function middleware(request: NextRequest) {
     // Filtrar cookies removendo os do Directus
     const filteredCookies = cookieHeader
       .split(';')
-      .map(cookie => cookie.trim())
-      .filter(cookie => {
+      .map((cookie) => cookie.trim())
+      .filter((cookie) => {
         const cookieName = cookie.split('=')[0];
         return !directusCookies.includes(cookieName);
       })
