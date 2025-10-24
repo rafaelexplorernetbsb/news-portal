@@ -59,7 +59,9 @@ export default function NotificationPopup({
     setIsRequesting(true);
 
     try {
+      console.log('🔔 Solicitando permissão de notificação...');
       const permission = await Notification.requestPermission();
+      console.log('🔔 Permissão recebida:', permission);
 
       if (permission === 'granted') {
         localStorage.setItem('notification-permission-responded', 'accepted');
@@ -67,7 +69,10 @@ export default function NotificationPopup({
 
         if ('serviceWorker' in navigator && 'PushManager' in window) {
           try {
+            console.log('🔔 Aguardando Service Worker...');
             const registration = await navigator.serviceWorker.ready;
+            console.log('🔔 Service Worker pronto!');
+
             const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
             if (!vapidPublicKey) {
@@ -75,7 +80,7 @@ export default function NotificationPopup({
                 'NEXT_PUBLIC_VAPID_PUBLIC_KEY não está definida nas variáveis de ambiente'
               );
               // Continua sem push notifications, mas mostra notificação local
-              registration.showNotification(
+              await registration.showNotification(
                 getProjectName(projectSettings?.project_name || null) ||
                   'Portal de Notícias',
                 {
@@ -85,6 +90,7 @@ export default function NotificationPopup({
                   tag: 'welcome-notification',
                 }
               );
+              console.log('🔔 Notificação local exibida');
               onAccept?.();
               return;
             }
@@ -104,10 +110,12 @@ export default function NotificationPopup({
               return outputArray;
             }
 
+            console.log('🔔 Inscrevendo para push notifications...');
             const subscription = await registration.pushManager.subscribe({
               userVisibleOnly: true,
               applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
             });
+            console.log('🔔 Inscrição criada!');
 
             // Timeout para evitar travamento
             const timeoutPromise = new Promise((_, reject) =>
@@ -123,12 +131,15 @@ export default function NotificationPopup({
             });
 
             try {
+              console.log('🔔 Enviando inscrição para servidor...');
               const response = (await Promise.race([
                 responsePromise,
                 timeoutPromise,
               ])) as Response;
               if (!response.ok) {
                 console.warn('Falha ao registrar push subscription');
+              } else {
+                console.log('🔔 Inscrição registrada no servidor!');
               }
             } catch (error) {
               console.warn(
@@ -137,7 +148,8 @@ export default function NotificationPopup({
               );
             }
 
-            registration.showNotification(
+            console.log('🔔 Exibindo notificação de boas-vindas...');
+            await registration.showNotification(
               getProjectName(projectSettings?.project_name || null) ||
                 'Portal de Notícias',
               {
@@ -147,10 +159,13 @@ export default function NotificationPopup({
                 tag: 'welcome-notification',
               }
             );
+            console.log('🔔 Notificação exibida com sucesso!');
           } catch (error) {
+            console.error('🔔 Erro ao configurar push notifications:', error);
             if ('serviceWorker' in navigator) {
-              navigator.serviceWorker.ready.then((registration) => {
-                registration.showNotification(
+              try {
+                const registration = await navigator.serviceWorker.ready;
+                await registration.showNotification(
                   getProjectName(projectSettings?.project_name || null) ||
                     'Portal de Notícias',
                   {
@@ -160,22 +175,36 @@ export default function NotificationPopup({
                     tag: 'welcome-notification',
                   }
                 );
-              });
+                console.log('🔔 Notificação de fallback exibida');
+              } catch (fallbackError) {
+                console.error(
+                  '🔔 Erro ao exibir notificação de fallback:',
+                  fallbackError
+                );
+              }
             }
           }
+        } else {
+          console.warn('🔔 Service Worker ou PushManager não disponível');
         }
 
         onAccept?.();
+        console.log('🔔 Processo concluído!');
       } else {
+        console.log('🔔 Permissão negada pelo usuário');
         localStorage.setItem('notification-permission-responded', 'declined');
         localStorage.setItem('notification-permission', 'denied');
       }
     } catch (error) {
-      // Silencioso em produção
+      console.error('🔔 Erro ao processar notificações:', error);
     } finally {
+      console.log('🔔 Finalizando popup...');
       setIsRequesting(false);
       setIsClosing(true);
-      setTimeout(() => setIsVisible(false), 300);
+      setTimeout(() => {
+        setIsVisible(false);
+        console.log('🔔 Popup fechado');
+      }, 300);
     }
   };
 
